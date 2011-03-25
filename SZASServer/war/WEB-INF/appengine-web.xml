@@ -12,7 +12,7 @@
 		<include path="/favicon.ico" />
 		<include path="/images/*" />
 		<include path="/stylesheets/*" />
-		<include path="/usermanager/*" />
+		<include path="/usersmanager/*" />
 	</static-files>
 
 </appengine-web-app>

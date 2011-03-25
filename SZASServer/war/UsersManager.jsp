@@ -10,7 +10,7 @@
 <meta name="Author" content="Jacek Marchwicki - jacek@3made.pl" />
 <meta name="Robots" content="index,follow" />
 <link rel="stylesheet" href="/stylesheets/main.css" type="text/css" />
-<script type="text/javascript" language="javascript" src="usermanager/usermanager.nocache.js"></script>
+<script type="text/javascript" language="javascript" src="usersmanager/usersmanager.nocache.js"></script>
 <title>SZAS-form application</title>
 <!--[if IE]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
