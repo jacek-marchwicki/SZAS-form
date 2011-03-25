@@ -4,3 +4,15 @@ body {
 	font-family: Verdana, Helvetica, sans-serif;
 	background-color: #FFFFCC;
 }
+#main {
+		margin: 0px auto;
+		width: 350px;
+		}
+header {
+	margin-top: 20px;
+	text-align: center;
+
+	}
+h1 {
+	text-align: center;
+	}
