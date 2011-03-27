@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 
 public class UniversalServiceImplTest {
-	private class MockElement extends UniversalTuple {
+	private class MockElement extends Tuple {
 		int data = 0;
 	}
 	private static final int EXAMPLE_DATA = 5;

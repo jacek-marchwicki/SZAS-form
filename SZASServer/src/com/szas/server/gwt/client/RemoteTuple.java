@@ -1,6 +1,6 @@
 package com.szas.server.gwt.client;
 
-public class RemoteTuple extends UniversalTuple {
+public class RemoteTuple extends Tuple {
 	private boolean deleted;
 
 	public void setDeleted(boolean deleted) {

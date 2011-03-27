@@ -2,7 +2,7 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
-public class UniversalServiceImpl<T extends UniversalTuple> implements UniversalService<T> {
+public class UniversalServiceImpl<T extends Tuple> implements UniversalService<T> {
 	
 	private ArrayList<T> elements = new ArrayList<T>();
 	private int lastId = 0;
