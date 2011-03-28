@@ -2,7 +2,7 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
-public class UniversalServiceImpl<T extends Tuple> implements UniversalService<T> {
+public class UniversalDAOImpl<T extends Tuple> implements UniversalDAO<T> {
 	
 	private ArrayList<T> elements = new ArrayList<T>();
 	private int lastId = 0;

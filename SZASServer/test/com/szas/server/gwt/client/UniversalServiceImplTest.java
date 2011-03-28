@@ -12,11 +12,11 @@ public class UniversalServiceImplTest {
 		int data = 0;
 	}
 	private static final int EXAMPLE_DATA = 5;
-	UniversalService<MockElement> universalService;
+	UniversalDAO<MockElement> universalService;
 	@Before
 	public void setUp() {
 		universalService =
-			new UniversalServiceImpl<UniversalServiceImplTest.MockElement>();
+			new UniversalDAOImpl<UniversalServiceImplTest.MockElement>();
 	}
 	
 	@Test

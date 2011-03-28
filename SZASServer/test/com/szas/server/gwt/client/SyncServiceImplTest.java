@@ -10,7 +10,7 @@ public class SyncServiceImplTest {
 	private class MockSubTuple extends Tuple {
 		public int data = 0;
 	}
-	private class MockTupleLocalService implements LocalService<MockSubTuple> {
+	private class MockTupleLocalService implements LocalDAO<MockSubTuple> {
 
 		@Override
 		public ArrayList<MockSubTuple> getAll() {
@@ -43,7 +43,7 @@ public class SyncServiceImplTest {
 		}
 		
 	}
-	SyncService syncService;
+	LocalSyncHelper syncService;
 	@Before
 	public void setUp() {
 		// TODO
@@ -51,7 +51,7 @@ public class SyncServiceImplTest {
 	}
 	@Test
 	public void testSyncing() {
-		LocalService<MockSubTuple> mockTuples = new MockTupleLocalService();
+		LocalDAO<MockSubTuple> mockTuples = new MockTupleLocalService();
 		syncService.append(MockSubTuple.class, mockTuples);
 	}
 }

@@ -3,7 +3,7 @@ package com.szas.server.gwt.client;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class LocalServiceImpl<T extends Tuple> implements LocalService<T> {
+public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T>, UniversalDAO<T> {
 	
 	public ArrayList<LocalTuple<T>> elements =
 		new ArrayList<LocalTuple<T>>();
@@ -71,6 +71,18 @@ public class LocalServiceImpl<T extends Tuple> implements LocalService<T> {
 			elementsToSync.add(localTuple);
 		}
 		return elementsToSync;
+	}
+
+	@Override
+	public ArrayList<Object> getUnknownElementsToSync() {
+		ArrayList<Object> objects =
+			new ArrayList<Object>();
+		ArrayList<LocalTuple<T>> elementsToSync =
+			getElementsToSync();
+		for (LocalTuple<T> elementToSync : elementsToSync) {
+			objects.add(elementToSync);
+		}
+		return objects;
 	}
 
 }

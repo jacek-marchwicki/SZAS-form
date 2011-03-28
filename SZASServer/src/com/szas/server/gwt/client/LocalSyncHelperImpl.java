@@ -5,33 +5,30 @@ import java.util.ArrayList;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-public class SyncServiceImpl implements SyncService {
+public class LocalSyncHelperImpl implements LocalSyncHelper {
 	
 	private final SyncingServiceAsync syncingServiceAsync =
 		GWT.create(SyncingService.class);
 	
-	private class ServiceHolder {
+	private ArrayList<ServiceHolder> serviceHolders =
+		new ArrayList<ServiceHolder>();
+
+	private static class ServiceHolder {
 		
-		public Class<? extends LocalTuple<?>> tupleClass;
-		public LocalService<?> localService;
+		public Class<? extends Tuple> tupleClass;
+		public LocalDAO<? extends Tuple> localService;
 		
-		public ServiceHolder(Class<? extends LocalTuple<?>> tupleClass,
-				LocalService<?> localService) {
+		public ServiceHolder(Class<? extends Tuple> tupleClass,
+				LocalDAO<?> localService) {
 			this.tupleClass = tupleClass;
 			this.localService = localService;
 		}
 	}
-	public class ToSyncElementsHolder {
-		public Class<? extends LocalTuple<?>> tupleClass;
-		public ArrayList<?> elementsToSync;
-	}
-	
-	ArrayList<ServiceHolder> serviceHolders =
-		new ArrayList<SyncServiceImpl.ServiceHolder>();
+
 
 	@Override
-	public void append(Class<? extends LocalTuple<?>> tupleClass,
-			LocalService<?> localService) {
+	public void append(Class<? extends Tuple> tupleClass,
+			LocalDAO<?> localService) {
 		ServiceHolder serviceHolder =
 			new ServiceHolder(tupleClass, localService);
 		serviceHolders.add(serviceHolder);
@@ -40,13 +37,13 @@ public class SyncServiceImpl implements SyncService {
 	@Override
 	public void sync() {
 		ArrayList<ToSyncElementsHolder> toSyncElementsHolders = 
-			new ArrayList<SyncServiceImpl.ToSyncElementsHolder>();
+			new ArrayList<ToSyncElementsHolder>();
 		
 		for (ServiceHolder serviceHolder : serviceHolders) {
 			ToSyncElementsHolder toSyncElementsHolder = 
 				new ToSyncElementsHolder();
 			toSyncElementsHolder.elementsToSync = 
-				serviceHolder.localService.getElementsToSync();
+				serviceHolder.localService.getUnknownElementsToSync();
 			toSyncElementsHolder.tupleClass =
 				serviceHolder.tupleClass;
 		}

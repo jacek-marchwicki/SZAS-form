@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.szas.server.gwt.client.SyncingService;
-import com.szas.server.gwt.client.SyncServiceImpl.ToSyncElementsHolder;
+import com.szas.server.gwt.client.ToSyncElementsHolder;
 
 @SuppressWarnings("serial")
 public class SyncingServiceImpl extends RemoteServiceServlet implements
