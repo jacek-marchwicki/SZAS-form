@@ -69,7 +69,7 @@ public class SyncHelpersTest {
 	}
 	@Test
 	public void testGetting() {
-		// TODO create test for getting data
+		assertTrue("create test for getting data", false);
 	}
 	private MockSubTuple makeExampleTuple() {
 		MockSubTuple newTuple = new MockSubTuple();

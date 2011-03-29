@@ -4,28 +4,45 @@ import java.util.ArrayList;
 
 public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 
+	ArrayList<RemoteTuple<T>> elements = 
+		new ArrayList<RemoteTuple<T>>();
+	
 	@Override
 	public ArrayList<T> getAll() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<T> ret = new ArrayList<T>();
+		for (RemoteTuple<T> localTuple : elements) {
+			if (localTuple.isDeleted())
+				continue;
+			T element = localTuple.getElement();
+			ret.add(element);
+		}
+		return ret;
 	}
 
 	@Override
 	public void insert(T element) {
-		// TODO Auto-generated method stub
-		
+		// TODO update modiffication date
+		RemoteTuple<T> localTuple = new RemoteTuple<T>();
+		localTuple.setDeleted(false);
+		localTuple.setElement(element);
+		elements.add(localTuple);
 	}
 
 	@Override
 	public void delete(T element) {
-		// TODO Auto-generated method stub
-		
+		// TODO update modiffication date
+		for (RemoteTuple<T> localTuple : elements) {
+			T listElement = localTuple.getElement();
+			if (! listElement.equals(element)) 
+				continue;
+			localTuple.setDeleted(true);
+			return;
+		}
 	}
 
 	@Override
 	public void update(T element) {
-		// TODO Auto-generated method stub
-		
+		// TODO update modiffication date
 	}
 
 	@Override

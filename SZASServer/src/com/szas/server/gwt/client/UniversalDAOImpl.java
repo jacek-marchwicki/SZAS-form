@@ -5,7 +5,6 @@ import java.util.ArrayList;
 public class UniversalDAOImpl<T extends Tuple> implements UniversalDAO<T> {
 	
 	private ArrayList<T> elements = new ArrayList<T>();
-	private int lastId = 0;
 
 	@Override
 	public ArrayList<T> getAll() {
@@ -14,8 +13,6 @@ public class UniversalDAOImpl<T extends Tuple> implements UniversalDAO<T> {
 
 	@Override
 	public void insert(T element) {
-		element.setId(lastId);
-		lastId+=1;
 		elements.add(element);
 	}
 

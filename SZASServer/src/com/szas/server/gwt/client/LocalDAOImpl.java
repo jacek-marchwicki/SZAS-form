@@ -1,14 +1,12 @@
 package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 	
 	public ArrayList<LocalTuple<T>> elements =
 		new ArrayList<LocalTuple<T>>();
-	private Random random = new Random();
-
+	
 	@Override
 	public ArrayList<T> getAll() {
 		ArrayList<T> ret = new ArrayList<T>();
@@ -26,7 +24,6 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 		LocalTuple<T> localTuple = new LocalTuple<T>();
 		localTuple.setStatus(LocalTuple.Status.INSERTING);
 		localTuple.setElement(element);
-		element.setRandomId(random);
 		elements.add(localTuple);
 	}
 
