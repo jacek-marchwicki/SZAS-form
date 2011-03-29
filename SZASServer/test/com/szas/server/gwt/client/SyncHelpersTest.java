@@ -69,8 +69,33 @@ public class SyncHelpersTest {
 	}
 	@Test
 	public void testGetting() {
-		assertTrue("create test for getting data", false);
+		MockSubTuple remoteTuple = new MockSubTuple();
+		remoteTuple.data = EXAMPLE_DATA;
+		
+		remoteMockTuples.insert(remoteTuple);
+		assertEquals(1, remoteMockTuples.getAll().size());
+		
+		localSyncHelper.sync();
+		
+		assertEquals("size after sync schoud be same", 1, remoteMockTuples.getAll().size());
+		
+		assertEquals("Size after sync schould be equal",
+				remoteMockTuples.getAll().size(),
+				localMockTuples.getAll().size());
+		
+		ArrayList<MockSubTuple> localTuples = remoteMockTuples.getAll();
+		MockSubTuple localTuple = localTuples.get(0);
+		
+		localTuple.data = NEW_EXAMPLE_DATA;
+		remoteMockTuples.update(localTuple);
+		
+		localSyncHelper.sync();
+		
+		ArrayList<MockSubTuple> remoteTuples = localMockTuples.getAll();
+		assertEquals("(sync after update schould not lead to create new rows)",1,remoteTuples.size());
+		localTuple.assertSame(remoteTuple);
 	}
+	
 	private MockSubTuple makeExampleTuple() {
 		MockSubTuple newTuple = new MockSubTuple();
 		newTuple.data = EXAMPLE_DATA;
