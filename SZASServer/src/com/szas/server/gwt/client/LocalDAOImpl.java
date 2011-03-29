@@ -64,7 +64,7 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 		ArrayList<LocalTuple<T>> elementsToSync =
 			new ArrayList<LocalTuple<T>>();
 		for (LocalTuple<T> localTuple : elements) {
-			if (localTuple.getStatus() != LocalTuple.Status.SYNCED)
+			if (localTuple.getStatus() == LocalTuple.Status.SYNCED)
 				continue;
 			elementsToSync.add(localTuple);
 		}
