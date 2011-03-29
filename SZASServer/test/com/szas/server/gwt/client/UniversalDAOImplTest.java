@@ -10,8 +10,13 @@ import static org.junit.Assert.*;
 public class UniversalDAOImplTest {
 	protected class MockElement extends Tuple {
 		int data = 0;
+		public void testEuality(MockElement other) {
+			assertEquals(data, other.data);
+			assertEquals(getId(), other.getId());
+		}
 	}
-	private static final int EXAMPLE_DATA = 5;
+	protected static final int EXAMPLE_DATA = 5;
+	protected static final int NEW_EXAMPLE_DATA = 6;
 	protected UniversalDAO<MockElement> universalDAO;
 	@Before
 	public void setUp() {
