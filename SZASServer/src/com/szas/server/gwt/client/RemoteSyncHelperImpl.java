@@ -10,12 +10,12 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 	private static class ServiceHolder {
 		
 		public String className;
-		public RemoteDAO<?> remoteService;
+		public RemoteDAO<?> remoteDAO;
 		
 		public ServiceHolder(String className,
 				RemoteDAO<?> remoteService) {
 			this.className = className;
-			this.remoteService = remoteService;
+			this.remoteDAO = remoteService;
 		}
 	}
 	
@@ -23,18 +23,30 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 		for (ServiceHolder serviceHolder : serviceHolders) {
 			if (!serviceHolder.className.equals(localClassName))
 				continue;
-			return serviceHolder.remoteService;
+			return serviceHolder.remoteDAO;
 		}
+		// TODO throw error
 		return null;
 	}
 	
 	@Override
-	public Void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
+	public ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
+		ArrayList<SyncedElementsHolder> syncedElementsHolders = 
+			new ArrayList<SyncedElementsHolder>();
 		for (ToSyncElementsHolder toSyncElementsHolder : toSyncElementsHolders) {
 			RemoteDAO<?> remoteDAO = findRemoteDAO(toSyncElementsHolder.className);
-			remoteDAO.syncUnknownElements(toSyncElementsHolder.elementsToSync);
+			
+			SyncedElementsHolder syncedElementsHolder = 
+				new SyncedElementsHolder();
+			syncedElementsHolders.add(syncedElementsHolder);
+			syncedElementsHolder.className = toSyncElementsHolder.className;
+			syncedElementsHolder.syncTimestamp =
+				remoteDAO.getTimestamp();
+			syncedElementsHolder.syncedElements = 
+				remoteDAO.syncUnknownElements(toSyncElementsHolder.elementsToSync,
+						toSyncElementsHolder.lastTimestamp);
 		}
-		return null;
+		return syncedElementsHolders;
 	}
 	@Override
 	public void append(String className,

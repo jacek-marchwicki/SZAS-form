@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 	
+	private long lastTimestamp = -1;
+	
 	public ArrayList<LocalTuple<T>> elements =
 		new ArrayList<LocalTuple<T>>();
 	
@@ -81,6 +83,53 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 			objects.add(elementToSync);
 		}
 		return objects;
+	}
+
+	@Override
+	public long getLastTimestamp() {
+		return lastTimestamp;
+	}
+
+	@Override
+	public void setLastTimestamp(long lastTimestamp) {
+		this.lastTimestamp = lastTimestamp;
+	}
+
+	@Override
+	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
+		// TODO Auto-generated method stub
+		for (RemoteTuple<T> remoteTuple : syncedElements) {
+			T remoteElement = remoteTuple.getElement();
+			LocalTuple<T> found = null;
+			for (LocalTuple<T> localTuple : elements) {
+				T localElement = localTuple.getElement();
+				if (remoteElement.getId() != localElement.getId())
+					continue;
+				found = localTuple;
+			}
+			if (remoteTuple.isDeleted()) {
+				if (found != null)
+					elements.remove(found);
+				break;
+			}
+			if (found == null) {
+				found = new LocalTuple<T>();
+				elements.add(found);
+			}
+			found.setStatus(LocalTuple.Status.SYNCED);
+			found.setElement(remoteElement);
+		}
+	}
+
+	@Override
+	public void setSyncedUnknownElements(ArrayList<Object> syncedElements) {
+		ArrayList<RemoteTuple<T>> ret = 
+			new ArrayList<RemoteTuple<T>>();
+		for (Object element: syncedElements) {
+			// TODO - fix if casting not work
+			ret.add((RemoteTuple<T>)element);
+		}
+		setSyncedElements(ret);
 	}
 
 }

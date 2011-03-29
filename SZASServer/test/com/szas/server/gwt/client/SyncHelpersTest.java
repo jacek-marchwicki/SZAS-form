@@ -28,7 +28,7 @@ public class SyncHelpersTest {
 			@Override
 			public void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders,
 					SyncLocalServiceResult callback) {
-				Void result = remoteSyncHelper.sync(toSyncElementsHolders);
+				ArrayList<SyncedElementsHolder> result = remoteSyncHelper.sync(toSyncElementsHolders);
 				callback.onSuccess(result);
 			}
 		});

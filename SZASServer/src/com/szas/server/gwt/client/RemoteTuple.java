@@ -4,6 +4,7 @@ package com.szas.server.gwt.client;
 public class RemoteTuple<T extends Tuple> {
 	private boolean deleted;
 	private T element;
+	private long timestamp;
 
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
@@ -18,5 +19,13 @@ public class RemoteTuple<T extends Tuple> {
 	}
 	public T getElement() {
 		return element;
+	}
+
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public long getTimestamp() {
+		return timestamp;
 	}
 }

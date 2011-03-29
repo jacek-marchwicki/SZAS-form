@@ -5,4 +5,5 @@ import java.util.ArrayList;
 public final class ToSyncElementsHolder {
 	public String className;
 	public ArrayList<Object> elementsToSync; // ArrayList<LocalTuple<T>>
+	long lastTimestamp;
 }

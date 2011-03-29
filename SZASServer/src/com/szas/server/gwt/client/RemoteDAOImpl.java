@@ -3,6 +3,17 @@ package com.szas.server.gwt.client;
 import java.util.ArrayList;
 
 public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
+	int timestamp = 0;
+	
+	@Override
+	public long getTimestamp() {
+		return timestamp;
+	}
+	
+	private int getNextTimestamp() {
+		timestamp +=1;
+		return timestamp -1;
+	}
 
 	ArrayList<RemoteTuple<T>> elements = 
 		new ArrayList<RemoteTuple<T>>();
@@ -21,45 +32,83 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 
 	@Override
 	public void insert(T element) {
-		// TODO update modiffication date
-		RemoteTuple<T> localTuple = new RemoteTuple<T>();
-		localTuple.setDeleted(false);
-		localTuple.setElement(element);
-		elements.add(localTuple);
+		RemoteTuple<T> remoteTuple = new RemoteTuple<T>();
+		remoteTuple.setTimestamp(getNextTimestamp());
+		remoteTuple.setDeleted(false);
+		remoteTuple.setElement(element);
+		elements.add(remoteTuple);
 	}
 
 	@Override
 	public void delete(T element) {
-		// TODO update modiffication date
-		for (RemoteTuple<T> localTuple : elements) {
-			T listElement = localTuple.getElement();
+		for (RemoteTuple<T> remoteTuple : elements) {
+			T listElement = remoteTuple.getElement();
 			if (! listElement.equals(element)) 
 				continue;
-			localTuple.setDeleted(true);
+			remoteTuple.setTimestamp(getNextTimestamp());
+			remoteTuple.setDeleted(true);
 			return;
 		}
 	}
 
 	@Override
 	public void update(T element) {
-		// TODO update modiffication date
+		for (RemoteTuple<T> remoteTuple : elements) {
+			T listElement = remoteTuple.getElement();
+			if (! listElement.equals(element)) 
+				continue;
+			remoteTuple.setTimestamp(getNextTimestamp());
+			return;
+		}
 	}
 
 	@Override
-	public void syncElements(ArrayList<LocalTuple<T>> elements) {
-		// TODO Auto-generated method stub
+	public ArrayList<RemoteTuple<T>> syncElements(ArrayList<LocalTuple<T>> elements, long lastTimestamp) {
+		for (LocalTuple<T> localTuple : elements) {
+			T localElement = localTuple.getElement();
+			for (RemoteTuple<T> remoteTuple : this.elements) {
+				T remoteElement = remoteTuple.getElement();
+				if (localElement.getId() != remoteElement.getId()) 
+					continue;
+				if (remoteTuple.getTimestamp() > lastTimestamp) {
+					// inserting was synced before changes
+					// TODO return exception
+					break;
+				}
+				remoteTuple.setElement(localElement);
+				break;
+			}
+		}
+		
+		ArrayList<RemoteTuple<T>> ret = 
+			new ArrayList<RemoteTuple<T>>();
+		for (RemoteTuple<T> remoteTuple : this.elements) {
+			if (remoteTuple.getTimestamp() <= lastTimestamp)
+				continue;
+			ret.add(remoteTuple);
+		}
+		return ret;
 	}
 
-	@SuppressWarnings("unchecked")
+
 	@Override
-	public void syncUnknownElements(ArrayList<Object> elements) {
+	public ArrayList<Object> syncUnknownElements(ArrayList<Object> elements, long lastTimestamp) {
 		ArrayList<LocalTuple<T>> knownElements = 
 			new ArrayList<LocalTuple<T>>();
+		ArrayList<Object> ret = 
+			new ArrayList<Object>();
+		
 		for (Object element : elements) {
-			// TODO fix if element not match
+			// TODO throw some exception
 			knownElements.add((LocalTuple<T>) element);
 		}
 		
+		ArrayList<RemoteTuple<T>> returnList =
+			syncElements(knownElements, lastTimestamp);
+		for (RemoteTuple<T> element: returnList) {
+			ret.add((Object)element);
+		}
+		return ret;
 	}
 
 }

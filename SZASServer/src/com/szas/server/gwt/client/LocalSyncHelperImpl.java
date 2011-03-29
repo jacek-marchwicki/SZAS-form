@@ -15,12 +15,12 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 	private static class ServiceHolder {
 		
 		public String className;
-		public LocalDAO<? extends Tuple> localService;
+		public LocalDAO<? extends Tuple> localDAO;
 		
 		public ServiceHolder(String className,
 				LocalDAO<?> localService) {
 			this.className = className;
-			this.localService = localService;
+			this.localDAO = localService;
 		}
 	}
 
@@ -39,26 +39,54 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 			new ArrayList<ToSyncElementsHolder>();
 		
 		for (ServiceHolder serviceHolder : serviceHolders) {
+			LocalDAO<?> localDAO = serviceHolder.localDAO;
 			ToSyncElementsHolder toSyncElementsHolder = 
 				new ToSyncElementsHolder();
 			toSyncElementsHolder.elementsToSync = 
-				serviceHolder.localService.getUnknownElementsToSync();
+				localDAO.getUnknownElementsToSync();
 			toSyncElementsHolder.className =
 				serviceHolder.className;
+			toSyncElementsHolder.lastTimestamp = 
+				localDAO.getLastTimestamp();
 		}
 		getSyncLocalService().sync(toSyncElementsHolders, new SyncLocalServiceResult() {
 			
 			@Override
-			public void onSuccess(Void result) {
-				// TODO receive data from server
-				// TODO update localServices
-			}
-			
-			@Override
 			public void onFailure(Throwable caught) {
-				// TODO do something if connection fails
+				
+				fail(caught);
+			}
+
+			@Override
+			public void onSuccess(ArrayList<SyncedElementsHolder> result) {
+				success(result);
 			}
 		});
+	}
+
+	protected void fail(Throwable caught) {
+		// TODO do something if connection fails
+	}
+
+	protected void success(ArrayList<SyncedElementsHolder> result) {
+		// TODO receive data from server
+		// TODO update localServices
+		for (SyncedElementsHolder syncedElementsHolder : result) {
+			LocalDAO<?> localDAO = findLocalDAO(syncedElementsHolder.className);
+			localDAO.setSyncedUnknownElements(syncedElementsHolder.syncedElements);
+			localDAO.setLastTimestamp(syncedElementsHolder.syncTimestamp);
+		}
+		
+	}
+
+	private LocalDAO<?> findLocalDAO(String className) {
+		for (ServiceHolder serviceHolder : serviceHolders) {
+			if (!serviceHolder.className.equals(className))
+				continue;
+			return serviceHolder.localDAO;
+		}
+		// TODO Throw error
+		return null;
 	}
 
 	public void setSyncLocalService(SyncLocalService syncLocalService) {
