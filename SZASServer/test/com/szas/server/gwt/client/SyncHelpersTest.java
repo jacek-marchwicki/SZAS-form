@@ -36,8 +36,8 @@ public class SyncHelpersTest {
 		localMockTuples = new LocalDAOImpl<MockSubTuple>();
 		remoteMockTuples = new RemoteDAOImpl<MockSubTuple>();
 		
-		localSyncHelper.append(MockSubTuple.class, localMockTuples);
-		remoteSyncHelper.append(MockSubTuple.class, remoteMockTuples);
+		localSyncHelper.append(MockSubTuple.class.getName(), localMockTuples);
+		remoteSyncHelper.append(MockSubTuple.class.getName(), remoteMockTuples);
 	}
 	@Test
 	public void testPushing() {

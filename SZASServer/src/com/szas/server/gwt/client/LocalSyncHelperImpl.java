@@ -14,22 +14,22 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 
 	private static class ServiceHolder {
 		
-		public Class<? extends Tuple> tupleClass;
+		public String className;
 		public LocalDAO<? extends Tuple> localService;
 		
-		public ServiceHolder(Class<? extends Tuple> tupleClass,
+		public ServiceHolder(String className,
 				LocalDAO<?> localService) {
-			this.tupleClass = tupleClass;
+			this.className = className;
 			this.localService = localService;
 		}
 	}
 
 
 	@Override
-	public void append(Class<? extends Tuple> tupleClass,
+	public void append(String className,
 			LocalDAO<?> localService) {
 		ServiceHolder serviceHolder =
-			new ServiceHolder(tupleClass, localService);
+			new ServiceHolder(className, localService);
 		serviceHolders.add(serviceHolder);
 	}
 
@@ -43,8 +43,8 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 				new ToSyncElementsHolder();
 			toSyncElementsHolder.elementsToSync = 
 				serviceHolder.localService.getUnknownElementsToSync();
-			toSyncElementsHolder.tupleClass =
-				serviceHolder.tupleClass;
+			toSyncElementsHolder.className =
+				serviceHolder.className;
 		}
 		getSyncLocalService().sync(toSyncElementsHolders, new SyncLocalServiceResult() {
 			

@@ -9,19 +9,19 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 
 	private static class ServiceHolder {
 		
-		public Class<? extends Tuple> tupleClass;
+		public String className;
 		public RemoteDAO<?> remoteService;
 		
-		public ServiceHolder(Class<? extends Tuple> tupleClass,
+		public ServiceHolder(String className,
 				RemoteDAO<?> remoteService) {
-			this.tupleClass = tupleClass;
+			this.className = className;
 			this.remoteService = remoteService;
 		}
 	}
 	
-	private RemoteDAO<?> findRemoteDAO(Class<? extends Tuple> localTupleClass) {
+	private RemoteDAO<?> findRemoteDAO(String localClassName) {
 		for (ServiceHolder serviceHolder : serviceHolders) {
-			if (!serviceHolder.tupleClass.equals(localTupleClass))
+			if (!serviceHolder.className.equals(localClassName))
 				continue;
 			return serviceHolder.remoteService;
 		}
@@ -31,16 +31,16 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 	@Override
 	public Void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
 		for (ToSyncElementsHolder toSyncElementsHolder : toSyncElementsHolders) {
-			RemoteDAO<?> remoteDAO = findRemoteDAO(toSyncElementsHolder.tupleClass);
+			RemoteDAO<?> remoteDAO = findRemoteDAO(toSyncElementsHolder.className);
 			remoteDAO.syncUnknownElements(toSyncElementsHolder.elementsToSync);
 		}
 		return null;
 	}
 	@Override
-	public void append(Class<? extends Tuple> tupleClass,
+	public void append(String className,
 			RemoteDAO<?> remoteService) {
 		ServiceHolder serviceHolder =
-			new ServiceHolder(tupleClass, remoteService);
+			new ServiceHolder(className, remoteService);
 		serviceHolders.add(serviceHolder);
 		
 	}
