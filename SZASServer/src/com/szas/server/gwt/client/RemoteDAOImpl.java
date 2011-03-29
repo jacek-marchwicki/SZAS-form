@@ -66,6 +66,7 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 	public ArrayList<RemoteTuple<T>> syncElements(ArrayList<LocalTuple<T>> elements, long lastTimestamp) {
 		for (LocalTuple<T> localTuple : elements) {
 			T localElement = localTuple.getElement();
+			boolean found = false;
 			for (RemoteTuple<T> remoteTuple : this.elements) {
 				T remoteElement = remoteTuple.getElement();
 				if (localElement.getId() != remoteElement.getId()) 
@@ -73,10 +74,21 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 				if (remoteTuple.getTimestamp() > lastTimestamp) {
 					// inserting was synced before changes
 					// TODO return exception
+					found = true;
 					break;
 				}
 				remoteTuple.setElement(localElement);
+				remoteTuple.setDeleted(localTuple.getStatus() == LocalTuple.Status.DELETING);
+				remoteTuple.setTimestamp(getNextTimestamp());
+				found = true;
 				break;
+			}
+			if (!found) {
+				RemoteTuple<T> remoteTuple = new RemoteTuple<T>();
+				remoteTuple.setElement(localElement);
+				remoteTuple.setDeleted(localTuple.getStatus() == LocalTuple.Status.DELETING);
+				remoteTuple.setTimestamp(getNextTimestamp());
+				this.elements.add(remoteTuple);
 			}
 		}
 		

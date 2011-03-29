@@ -48,8 +48,9 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 				serviceHolder.className;
 			toSyncElementsHolder.lastTimestamp = 
 				localDAO.getLastTimestamp();
+			toSyncElementsHolders.add(toSyncElementsHolder);
 		}
-		getSyncLocalService().sync(toSyncElementsHolders, new SyncLocalServiceResult() {
+		syncLocalService.sync(toSyncElementsHolders, new SyncLocalServiceResult() {
 			
 			@Override
 			public void onFailure(Throwable caught) {
