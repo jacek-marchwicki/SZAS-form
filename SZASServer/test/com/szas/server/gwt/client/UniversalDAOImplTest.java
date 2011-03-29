@@ -14,6 +14,12 @@ public class UniversalDAOImplTest {
 			assertEquals(data, other.data);
 			assertEquals(getId(), other.getId());
 		}
+		public MockElement copy(MockElement element) {
+			MockElement mockElement = new MockElement();
+			mockElement.id = element.getId();
+			mockElement.data = element.data;
+			return mockElement;
+		}
 	}
 	protected static final int EXAMPLE_DATA = 5;
 	protected static final int NEW_EXAMPLE_DATA = 6;

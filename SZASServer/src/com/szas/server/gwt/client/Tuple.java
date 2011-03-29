@@ -4,7 +4,7 @@ import java.util.Random;
 
 public abstract class Tuple {
 	private static final Random random = new Random();
-	private int id;
+	protected int id;
 	
 	public Tuple() {
 		id = random.nextInt();

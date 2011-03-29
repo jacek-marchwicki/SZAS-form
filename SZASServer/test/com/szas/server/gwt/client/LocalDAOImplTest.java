@@ -15,7 +15,7 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		universalDAO = localDAO;
 	}
 	@Test
-	public void testSyncInsered() {
+	public void testSyncInfoInsered() {
 		MockElement element = new MockElement();
 		element.data = EXAMPLE_DATA;
 		localDAO.insert(element);
@@ -28,7 +28,7 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 	}
 	
 	@Test
-	public void testSyncUpdated() {
+	public void testSyncInfoUpdated() {
 		MockElement element = new MockElement();
 		element.data = EXAMPLE_DATA;
 		universalDAO.insert(element);
@@ -39,8 +39,7 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		
 		
 		elementToSync.setStatus(LocalTuple.Status.SYNCED);
-		// TODO inform LocalDAO about changes state to SYNCED
-		
+		// TODO inform LocalDAO about changes state to SYNCED		
 		
 		element.data = NEW_EXAMPLE_DATA;
 		universalDAO.update(element);
@@ -54,7 +53,7 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 	}
 	
 	@Test
-	public void testSyncDeleted() {
+	public void testSyncInfoDeleted() {
 		MockElement element = new MockElement();
 		element.data = EXAMPLE_DATA;
 		universalDAO.insert(element);
