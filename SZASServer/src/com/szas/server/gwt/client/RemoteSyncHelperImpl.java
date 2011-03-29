@@ -29,11 +29,12 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 	}
 	
 	@Override
-	public void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
+	public Void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
 		for (ToSyncElementsHolder toSyncElementsHolder : toSyncElementsHolders) {
 			RemoteDAO<?> remoteDAO = findRemoteDAO(toSyncElementsHolder.tupleClass);
 			remoteDAO.syncUnknownElements(toSyncElementsHolder.elementsToSync);
 		}
+		return null;
 	}
 	@Override
 	public void append(Class<? extends Tuple> tupleClass,

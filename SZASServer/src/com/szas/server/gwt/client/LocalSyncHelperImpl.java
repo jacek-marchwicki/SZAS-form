@@ -2,13 +2,12 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.user.client.rpc.AsyncCallback;
-
 public class LocalSyncHelperImpl implements LocalSyncHelper {
 	
-	private final SyncingServiceAsync syncingServiceAsync =
-		GWT.create(SyncingService.class);
+	private SyncLocalService syncLocalService;
+	public LocalSyncHelperImpl(SyncLocalService syncLocalService) {
+		this.syncLocalService = syncLocalService;
+	}
 	
 	private ArrayList<ServiceHolder> serviceHolders =
 		new ArrayList<ServiceHolder>();
@@ -47,7 +46,7 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 			toSyncElementsHolder.tupleClass =
 				serviceHolder.tupleClass;
 		}
-		syncingServiceAsync.sync(toSyncElementsHolders, new AsyncCallback<Void>() {
+		getSyncLocalService().sync(toSyncElementsHolders, new SyncLocalServiceResult() {
 			
 			@Override
 			public void onSuccess(Void result) {
@@ -60,6 +59,14 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 				// TODO do something if connection fails
 			}
 		});
+	}
+
+	public void setSyncLocalService(SyncLocalService syncLocalService) {
+		this.syncLocalService = syncLocalService;
+	}
+
+	public SyncLocalService getSyncLocalService() {
+		return syncLocalService;
 	}
 
 }

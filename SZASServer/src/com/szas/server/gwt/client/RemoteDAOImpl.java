@@ -2,7 +2,7 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
-public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T>, UniversalDAO<T> {
+public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 
 	@Override
 	public ArrayList<T> getAll() {
@@ -33,6 +33,7 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T>, UniversalDA
 		// TODO Auto-generated method stub
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void syncUnknownElements(ArrayList<Object> elements) {
 		ArrayList<LocalTuple<T>> knownElements = 

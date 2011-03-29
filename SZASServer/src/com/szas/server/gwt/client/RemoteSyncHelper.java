@@ -4,5 +4,5 @@ import java.util.ArrayList;
 
 public interface RemoteSyncHelper {
 	public void append(Class<? extends Tuple> tupleClass, RemoteDAO<?> localService);
-	void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolder);
+	Void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders);
 }

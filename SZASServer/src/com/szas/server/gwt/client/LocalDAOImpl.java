@@ -3,7 +3,7 @@ package com.szas.server.gwt.client;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T>, UniversalDAO<T> {
+public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 	
 	public ArrayList<LocalTuple<T>> elements =
 		new ArrayList<LocalTuple<T>>();
@@ -27,6 +27,7 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T>, UniversalDAO<
 		localTuple.setStatus(LocalTuple.Status.INSERTING);
 		localTuple.setElement(element);
 		element.setRandomId(random);
+		elements.add(localTuple);
 	}
 
 	@Override
