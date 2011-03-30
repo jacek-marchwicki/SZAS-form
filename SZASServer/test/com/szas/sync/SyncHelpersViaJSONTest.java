@@ -2,6 +2,10 @@ package com.szas.sync;
 
 import java.util.ArrayList;
 
+import com.szas.sync.SyncHelpersTest;
+import com.szas.sync.SyncedElementsHolder;
+import com.szas.sync.ToSyncElementsHolder;
+import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.local.SyncLocalService;
 import com.szas.sync.local.SyncLocalServiceResult;
 
