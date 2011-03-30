@@ -45,6 +45,7 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 			syncedElementsHolder.syncedElements = 
 				remoteDAO.syncUnknownElements(toSyncElementsHolder.elementsToSync,
 						toSyncElementsHolder.lastTimestamp);
+			syncedElementsHolders.add(syncedElementsHolder);
 		}
 		return syncedElementsHolders;
 	}

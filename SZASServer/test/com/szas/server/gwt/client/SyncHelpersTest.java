@@ -10,11 +10,18 @@ import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 
 public class SyncHelpersTest {
-	public class MockSubTuple extends Tuple {
-		public int data = 0;
+	protected static class MockSubTuple extends Tuple {
+		private static final long serialVersionUID = 1L;
+		private int data = 0;
 		public void assertSame(MockSubTuple otherTuple) {
-			assertEquals("Data schould be the same", this.data, otherTuple.data);
+			assertEquals("Data schould be the same", this.getData(), otherTuple.getData());
 			assertEquals("Index schould be the same", this.getId(), otherTuple.getId());
+		}
+		public void setData(int data) {
+			this.data = data;
+		}
+		public int getData() {
+			return data;
 		}
 	}
 	private static final int EXAMPLE_DATA = 10;
@@ -71,7 +78,7 @@ public class SyncHelpersTest {
 		MockSubTuple remoteTuple = remoteTuples.get(0);
 		localTuple.assertSame(remoteTuple);	
 		
-		remoteTuple.data = NEW_EXAMPLE_DATA;
+		remoteTuple.setData(NEW_EXAMPLE_DATA);
 		remoteMockTuples.update(remoteTuple);
 		
 		localSyncHelper.sync();
@@ -84,7 +91,7 @@ public class SyncHelpersTest {
 	@Test
 	public void testGetting() {
 		MockSubTuple remoteTuple = new MockSubTuple();
-		remoteTuple.data = EXAMPLE_DATA;
+		remoteTuple.setData(EXAMPLE_DATA);
 		
 		remoteMockTuples.insert(remoteTuple);
 		assertEquals(1, remoteMockTuples.getAll().size());
@@ -100,7 +107,7 @@ public class SyncHelpersTest {
 		ArrayList<MockSubTuple> localTuples = remoteMockTuples.getAll();
 		MockSubTuple localTuple = localTuples.get(0);
 		
-		localTuple.data = NEW_EXAMPLE_DATA;
+		localTuple.setData(NEW_EXAMPLE_DATA);
 		remoteMockTuples.update(localTuple);
 		
 		localSyncHelper.sync();
@@ -112,7 +119,7 @@ public class SyncHelpersTest {
 	
 	private MockSubTuple makeExampleTuple() {
 		MockSubTuple newTuple = new MockSubTuple();
-		newTuple.data = EXAMPLE_DATA;
+		newTuple.setData(EXAMPLE_DATA);
 		return newTuple;
 	}
 }
