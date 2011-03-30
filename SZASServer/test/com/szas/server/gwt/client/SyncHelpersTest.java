@@ -1,13 +1,10 @@
 package com.szas.server.gwt.client;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import flexjson.JSONDeserializer;
-import flexjson.JSONSerializer;
 
 public class SyncHelpersTest {
 	protected static class MockSubTuple extends Tuple {
@@ -30,29 +27,26 @@ public class SyncHelpersTest {
 	RemoteSyncHelper remoteSyncHelper;
 	RemoteDAO<MockSubTuple> remoteMockTuples;
 	private LocalDAO<MockSubTuple> localMockTuples;
-	@Before
-	public void setUp() {
-		remoteSyncHelper = new RemoteSyncHelperImpl();
-		localSyncHelper = new LocalSyncHelperImpl(new SyncLocalService() {
+	protected SyncLocalService getSyncLocalService() {
+		return new SyncLocalService() {
 			
 			@Override
 			public void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders,
 					SyncLocalServiceResult callback) {
-				String serialized;
-				serialized = new JSONSerializer().include("*").serialize(toSyncElementsHolders);
-				ArrayList<ToSyncElementsHolder> get;
-				get = new JSONDeserializer<ArrayList<ToSyncElementsHolder>>().deserialize(serialized);
-				ArrayList<SyncedElementsHolder> result;
 				try {
-					result = remoteSyncHelper.sync(get);
+					ArrayList<SyncedElementsHolder> result =
+						remoteSyncHelper.sync(toSyncElementsHolders);
 					callback.onSuccess(result);
 				} catch (WrongObjectThrowable e) {
 					callback.onFailure(e);
-				}
-				//ArrayList<SyncedElementsHolder> result = remoteSyncHelper.sync(toSyncElementsHolders);
-				
+				}				
 			}
-		});
+		};
+	}
+	@Before
+	public void setUp() {
+		remoteSyncHelper = new RemoteSyncHelperImpl();
+		localSyncHelper = new LocalSyncHelperImpl(getSyncLocalService());
 		
 		localMockTuples = new LocalDAOImpl<MockSubTuple>();
 		remoteMockTuples = new RemoteDAOImpl<MockSubTuple>();
