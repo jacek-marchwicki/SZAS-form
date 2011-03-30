@@ -8,10 +8,28 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-name>usersServlet</servlet-name>
 		<servlet-class>com.szas.server.gwt.server.UsersServiceImpl</servlet-class>
 	</servlet>
+	
+	<servlet>
+		<servlet-name>syncNoAuthServlet</servlet-name>
+		<servlet-class>com.szas.server.SyncNoAuthServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>syncServlet</servlet-name>
+		<servlet-class>com.szas.server.SyncServlet</servlet-class>
+	</servlet>
 
 	<servlet-mapping>
 		<servlet-name>usersServlet</servlet-name>
 		<url-pattern>/usersmanager/users</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>syncNoAuthServlet</servlet-name>
+		<url-pattern>/syncnoauth</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>syncServlet</servlet-name>
+		<url-pattern>/sync</url-pattern>
 	</servlet-mapping>
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>
