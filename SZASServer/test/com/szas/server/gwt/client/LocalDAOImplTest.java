@@ -152,12 +152,12 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 			localDAO.getElementsToSync();
 		syncedElements = 
 			new ArrayList<RemoteTuple<MockElement>>();
-		for (LocalTuple<MockElement> elementToSync : elementsToSync) {
+		for (MockElement mockElement : localDAO.getAll()) {
 			RemoteTuple<MockElement> remoteTuple = 
 				new RemoteTuple<UniversalDAOImplTest.MockElement>();
 			remoteTuple.setDeleted(true);
 			remoteTuple.setTimestamp(NEW_EXAMPLE_TIMESTAMP);
-			remoteTuple.setElement(elementToSync.getElement());
+			remoteTuple.setElement(mockElement);
 			syncedElements.add(remoteTuple);
 		}
 		localDAO.setSyncedElements(syncedElements);
