@@ -42,5 +42,10 @@
 			<type>2</type>
 			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/SZASData/src</locationURI>
 		</link>
+		<link>
+			<name>SZASDataTest</name>
+			<type>2</type>
+			<locationURI>$%7BPARENT-1-PROJECT_LOC%7D/SZASData/test</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

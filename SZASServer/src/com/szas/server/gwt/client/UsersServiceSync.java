@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.szas.sync.ContentObserver;
 
 public class UsersServiceSync implements UsersService {
 
