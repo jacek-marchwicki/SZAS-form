@@ -8,5 +8,5 @@ public interface LocalDAO<T extends Tuple> extends UniversalDAO<T>{
 	public long getLastTimestamp();
 	public void setLastTimestamp(long lastTimestamp);
 	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements);
-	public void setSyncedUnknownElements(ArrayList<Object> syncedElements);
+	public void setSyncedUnknownElements(ArrayList<Object> syncedElements) throws WrongObjectThrowable;
 }

@@ -74,8 +74,13 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 		// TODO update localServices
 		for (SyncedElementsHolder syncedElementsHolder : result) {
 			LocalDAO<?> localDAO = findLocalDAO(syncedElementsHolder.className);
-			localDAO.setSyncedUnknownElements(syncedElementsHolder.syncedElements);
-			localDAO.setLastTimestamp(syncedElementsHolder.syncTimestamp);
+			try {
+				localDAO.setSyncedUnknownElements(syncedElementsHolder.syncedElements);
+				localDAO.setLastTimestamp(syncedElementsHolder.syncTimestamp);
+			} catch (WrongObjectThrowable e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 	}

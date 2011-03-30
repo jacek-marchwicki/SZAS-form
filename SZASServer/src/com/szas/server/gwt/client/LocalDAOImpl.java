@@ -1,8 +1,9 @@
 package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
-public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
+public class LocalDAOImpl<T extends Tuple> extends ContentObserverProviderImpl implements LocalDAO<T> {
 	
 	private long lastTimestamp = -1;
 	
@@ -27,6 +28,7 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 		localTuple.setStatus(LocalTuple.Status.INSERTING);
 		localTuple.setElement(element);
 		elements.add(localTuple);
+		notifyContentObservers();
 	}
 
 	@Override
@@ -39,11 +41,13 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 			if (localTuple.getStatus() == LocalTuple.Status.INSERTING)
 			{
 				elements.remove(localTuple);
-				return;
+				break;
 			}
 			localTuple.setStatus(LocalTuple.Status.DELETING);
-			return;
+			break;
 		}
+		notifyContentObservers();
+		return;
 	}
 
 	@Override
@@ -55,10 +59,11 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 				continue;
 			if (localTuple.getStatus() == LocalTuple.Status.INSERTING)
 			{
-				return;
+				break;
 			}
 			localTuple.setStatus(LocalTuple.Status.UPDATING);
 		}
+		notifyContentObservers();
 	}
 
 	@Override
@@ -97,7 +102,7 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 
 	@Override
 	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
-		// TODO Auto-generated method stub
+		
 		for (RemoteTuple<T> remoteTuple : syncedElements) {
 			T remoteElement = remoteTuple.getElement();
 			LocalTuple<T> found = null;
@@ -106,11 +111,12 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 				if (remoteElement.getId() != localElement.getId())
 					continue;
 				found = localTuple;
+				break;
 			}
 			if (remoteTuple.isDeleted()) {
 				if (found != null)
 					elements.remove(found);
-				break;
+				continue;
 			}
 			if (found == null) {
 				found = new LocalTuple<T>();
@@ -119,15 +125,27 @@ public class LocalDAOImpl<T extends Tuple> implements LocalDAO<T> {
 			found.setStatus(LocalTuple.Status.SYNCED);
 			found.setElement(remoteElement);
 		}
+		for (Iterator<LocalTuple<T>> iter = elements.iterator(); iter.hasNext();) {
+			LocalTuple<T> localTuple = iter.next();
+			if (localTuple.getStatus() == LocalTuple.Status.SYNCED)
+				continue;
+			iter.remove();
+		}
+		notifyContentObservers();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void setSyncedUnknownElements(ArrayList<Object> syncedElements) {
+	public void setSyncedUnknownElements(ArrayList<Object> syncedElements) throws WrongObjectThrowable {
 		ArrayList<RemoteTuple<T>> ret = 
 			new ArrayList<RemoteTuple<T>>();
 		for (Object element: syncedElements) {
-			// TODO - fix if casting not work
-			ret.add((RemoteTuple<T>)element);
+			// TODO - WrongObjectThrowable if casting not work
+			try {
+				ret.add((RemoteTuple<T>)element);
+			} catch (ClassCastException exception) {
+				throw new WrongObjectThrowable();
+			}
 		}
 		setSyncedElements(ret);
 	}

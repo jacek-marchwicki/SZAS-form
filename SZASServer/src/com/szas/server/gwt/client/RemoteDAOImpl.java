@@ -2,7 +2,7 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
-public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
+public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl implements RemoteDAO<T> {
 	int timestamp = 0;
 	
 	@Override
@@ -37,6 +37,7 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 		remoteTuple.setDeleted(false);
 		remoteTuple.setElement(element);
 		elements.add(remoteTuple);
+		notifyContentObservers();
 	}
 
 	@Override
@@ -47,8 +48,9 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 				continue;
 			remoteTuple.setTimestamp(getNextTimestamp());
 			remoteTuple.setDeleted(true);
-			return;
+			break;
 		}
+		notifyContentObservers();
 	}
 
 	@Override
@@ -58,8 +60,9 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 			if (! listElement.equals(element)) 
 				continue;
 			remoteTuple.setTimestamp(getNextTimestamp());
-			return;
+			break;
 		}
+		notifyContentObservers();
 	}
 
 	@Override
@@ -99,20 +102,24 @@ public class RemoteDAOImpl<T extends Tuple> implements RemoteDAO<T> {
 				continue;
 			ret.add(remoteTuple);
 		}
+		notifyContentObservers();
 		return ret;
 	}
 
-
+	@SuppressWarnings("unchecked")
 	@Override
-	public ArrayList<Object> syncUnknownElements(ArrayList<Object> elements, long lastTimestamp) {
+	public ArrayList<Object> syncUnknownElements(ArrayList<Object> elements, long lastTimestamp) throws WrongObjectThrowable {
 		ArrayList<LocalTuple<T>> knownElements = 
 			new ArrayList<LocalTuple<T>>();
 		ArrayList<Object> ret = 
 			new ArrayList<Object>();
 		
 		for (Object element : elements) {
-			// TODO throw some exception
-			knownElements.add((LocalTuple<T>) element);
+			try {
+				knownElements.add((LocalTuple<T>) element);
+			} catch (ClassCastException e) {
+				throw new WrongObjectThrowable();
+			}
 		}
 		
 		ArrayList<RemoteTuple<T>> returnList =

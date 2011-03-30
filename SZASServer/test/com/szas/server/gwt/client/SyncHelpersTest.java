@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
+
 public class SyncHelpersTest {
-	private class MockSubTuple extends Tuple {
+	public class MockSubTuple extends Tuple {
 		public int data = 0;
 		public void assertSame(MockSubTuple otherTuple) {
 			assertEquals("Data schould be the same", this.data, otherTuple.data);
@@ -28,8 +31,19 @@ public class SyncHelpersTest {
 			@Override
 			public void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders,
 					SyncLocalServiceResult callback) {
-				ArrayList<SyncedElementsHolder> result = remoteSyncHelper.sync(toSyncElementsHolders);
-				callback.onSuccess(result);
+				String serialized;
+				serialized = new JSONSerializer().include("*").serialize(toSyncElementsHolders);
+				ArrayList<ToSyncElementsHolder> get;
+				get = new JSONDeserializer<ArrayList<ToSyncElementsHolder>>().deserialize(serialized);
+				ArrayList<SyncedElementsHolder> result;
+				try {
+					result = remoteSyncHelper.sync(get);
+					callback.onSuccess(result);
+				} catch (WrongObjectThrowable e) {
+					callback.onFailure(e);
+				}
+				//ArrayList<SyncedElementsHolder> result = remoteSyncHelper.sync(toSyncElementsHolders);
+				
 			}
 		});
 		

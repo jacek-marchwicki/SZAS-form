@@ -7,7 +7,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 
-public class UniversalDAOImplTest {
+public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 	protected class MockElement extends Tuple {
 		int data = 0;
 		public void testEuality(MockElement other) {
@@ -26,8 +26,11 @@ public class UniversalDAOImplTest {
 	protected UniversalDAO<MockElement> universalDAO;
 	@Before
 	public void setUp() {
+		UniversalDAOImpl<MockElement> universalDAOImpl =
+			new UniversalDAOImpl<MockElement>();
 		universalDAO =
-			new UniversalDAOImpl<UniversalDAOImplTest.MockElement>();
+			universalDAOImpl;
+		contentObserverProviderImpl = universalDAOImpl;
 	}
 	
 	@Test
@@ -38,9 +41,15 @@ public class UniversalDAOImplTest {
 	
 	@Test
 	public void testInsertElement() {
+		MyContentObserver myContentObserver = new MyContentObserver();
+		contentObserverProviderImpl.addContentObserver(myContentObserver);
+		
 		MockElement mockElement = new MockElement();
 		mockElement.data = EXAMPLE_DATA;
 		universalDAO.insert(mockElement);
+		
+		assertTrue("Content observer schould be notiffied", myContentObserver.notiffied);
+		
 		int size = universalDAO.getAll().size();
 		assertEquals("Size of list after insertion schould be 1",size,1);
 		ArrayList<MockElement> mockElements = 
@@ -52,16 +61,39 @@ public class UniversalDAOImplTest {
 	
 	@Test
 	public void testUpdateElement() {
+		MyContentObserver myContentObserver = new MyContentObserver();
+		contentObserverProviderImpl.addContentObserver(myContentObserver);
+		
 		MockElement mockElement = new MockElement();
 		universalDAO.insert(mockElement);
 		mockElement.data = EXAMPLE_DATA;
+		myContentObserver.notiffied = false;
+		
 		universalDAO.update(mockElement);
+		
+		assertTrue("Content observer schould be notiffied", myContentObserver.notiffied);
 		
 		ArrayList<MockElement> mockElements = 
 			universalDAO.getAll();
 		MockElement receivedMockElement = mockElements.get(0);
 		assertEquals("Received value schould be equals as inserted", 
 				receivedMockElement.data, EXAMPLE_DATA);
+	}
+	
+	@Test
+	public void testDeleteElement() {
+		MyContentObserver myContentObserver = new MyContentObserver();
+		contentObserverProviderImpl.addContentObserver(myContentObserver);
+		
+		MockElement mockElement = new MockElement();
+		universalDAO.insert(mockElement);
+		myContentObserver.notiffied = false;
+		
+		universalDAO.delete(mockElement);
+		
+		assertTrue("Content observer schould be notiffied", myContentObserver.notiffied);
+		
+		assertEquals("Element schould be deleted", 0, universalDAO.getAll().size());
 	}
 	
 }

@@ -30,7 +30,7 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 	}
 	
 	@Override
-	public ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
+	public ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) throws WrongObjectThrowable {
 		ArrayList<SyncedElementsHolder> syncedElementsHolders = 
 			new ArrayList<SyncedElementsHolder>();
 		for (ToSyncElementsHolder toSyncElementsHolder : toSyncElementsHolders) {
