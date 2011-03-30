@@ -85,6 +85,7 @@ public class SyncHelpersTest {
 		
 		ArrayList<MockSubTuple> localTuples = localMockTuples.getAll();
 		assertEquals("(sync after update schould not lead to create new rows)",1,localTuples.size());
+		localTuple = localTuples.get(0);
 		remoteTuple.assertSame(localTuple);
 		
 	}
