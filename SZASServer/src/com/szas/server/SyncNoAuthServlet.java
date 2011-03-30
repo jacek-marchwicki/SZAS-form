@@ -22,8 +22,7 @@ public class SyncNoAuthServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 		
-		// TODO
-		req.getContentType();
+		// TODO check incomming content type
 		
 		BufferedReader bufferedReader = req.getReader();
 		ArrayList<ToSyncElementsHolder> toSyncElementsHolders =
