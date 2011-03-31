@@ -4,9 +4,11 @@ import java.util.ArrayList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.ToSyncElementsHolder;
 
 @RemoteServiceRelativePath("syncing")
 public interface SyncingService extends RemoteService {
-	void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders);
+	ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders);
+	SerializableWhiteSpace dummy(SerializableWhiteSpace d);
 }

@@ -8,6 +8,7 @@ import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.local.LocalTuple;
 
 public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl implements RemoteDAO<T> {
+	private static final long serialVersionUID = 1L;
 	int timestamp = 0;
 	
 	@Override

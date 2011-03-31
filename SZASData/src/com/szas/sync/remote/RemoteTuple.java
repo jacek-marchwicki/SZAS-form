@@ -1,9 +1,15 @@
 package com.szas.sync.remote;
 
+import java.io.Serializable;
+
 import com.szas.sync.Tuple;
 
 
-public class RemoteTuple<T extends Tuple> {
+
+public class RemoteTuple<T extends Tuple> implements Serializable {
+	private static final long serialVersionUID = 1L;
+	public RemoteTuple() {
+	}
 	private boolean deleted;
 	private T element;
 	private long timestamp;

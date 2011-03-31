@@ -1,6 +1,8 @@
 package com.szas.sync;
 
-public interface ContentObserverProvider {
+import java.io.Serializable;
+
+public interface ContentObserverProvider extends Serializable{
 
 	void addContentObserver(ContentObserver contentObserver);
 

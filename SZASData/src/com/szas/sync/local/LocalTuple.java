@@ -1,8 +1,13 @@
 package com.szas.sync.local;
 
+import java.io.Serializable;
+
 import com.szas.sync.Tuple;
 
-public class LocalTuple<T extends Tuple> {
+public class LocalTuple<T extends Tuple> implements Serializable {
+	private static final long serialVersionUID = 1L;
+	public LocalTuple() {
+	}
 	public enum Status {
 		INSERTING,
 		UPDATING,

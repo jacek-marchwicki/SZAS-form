@@ -5,8 +5,8 @@
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	version="2.5">
 	<servlet>
-		<servlet-name>usersServlet</servlet-name>
-		<servlet-class>com.szas.server.gwt.server.UsersServiceImpl</servlet-class>
+		<servlet-name>syncingService</servlet-name>
+		<servlet-class>com.szas.server.gwt.server.SyncingServiceImpl</servlet-class>
 	</servlet>
 	
 	<servlet>
@@ -20,8 +20,8 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>usersServlet</servlet-name>
-		<url-pattern>/usersmanager/users</url-pattern>
+		<servlet-name>syncingService</servlet-name>
+		<url-pattern>/usersmanager/syncing</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>syncNoAuthServlet</servlet-name>

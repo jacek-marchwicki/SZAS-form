@@ -8,8 +8,10 @@ import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.remote.RemoteTuple;
 
-public class LocalDAOImpl<T extends Tuple> extends ContentObserverProviderImpl implements LocalDAO<T> {
-	
+public class LocalDAOImpl<T extends Tuple>
+extends ContentObserverProviderImpl implements LocalDAO<T> {
+	private static final long serialVersionUID = 1L;
+
 	private long lastTimestamp = -1;
 	
 	public ArrayList<LocalTuple<T>> elements =
