@@ -14,9 +14,6 @@ import com.szas.sync.ToSyncElementsHolder;
 import com.szas.sync.WrongObjectThrowable;
 import com.thoughtworks.xstream.XStream;
 
-import flexjson.JSONDeserializer;
-import flexjson.JSONSerializer;
-
 public class SyncNoAuthXmlServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	@Override
