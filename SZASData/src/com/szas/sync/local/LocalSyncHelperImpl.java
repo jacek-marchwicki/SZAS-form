@@ -7,7 +7,7 @@ import com.szas.sync.ToSyncElementsHolder;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 
-public class LocalSyncHelperImpl implements LocalSyncHelper {
+public class LocalSyncHelperImpl extends SyncObserverProviderImpl implements LocalSyncHelper {
 	
 	private SyncLocalService syncLocalService;
 	public LocalSyncHelperImpl(SyncLocalService syncLocalService) {
@@ -40,6 +40,7 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 
 	@Override
 	public void sync() {
+		notifySyncObserverStart();
 		ArrayList<ToSyncElementsHolder> toSyncElementsHolders = 
 			new ArrayList<ToSyncElementsHolder>();
 		
@@ -59,7 +60,6 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 			
 			@Override
 			public void onFailure(Throwable caught) {
-				
 				fail(caught);
 			}
 
@@ -71,7 +71,7 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 	}
 
 	protected void fail(Throwable caught) {
-		// TODO do something if connection fails
+		notifySyncObserverFail(caught);
 	}
 
 	protected void success(ArrayList<SyncedElementsHolder> result) {
@@ -87,7 +87,7 @@ public class LocalSyncHelperImpl implements LocalSyncHelper {
 				e.printStackTrace();
 			}
 		}
-		
+		notifySyncObserverSucses();
 	}
 
 	private LocalDAO<?> findLocalDAO(String className) {

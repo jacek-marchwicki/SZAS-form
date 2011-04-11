@@ -44,11 +44,11 @@ public class RemoteSyncHelperImpl implements RemoteSyncHelper {
 				new SyncedElementsHolder();
 			syncedElementsHolders.add(syncedElementsHolder);
 			syncedElementsHolder.className = toSyncElementsHolder.className;
-			syncedElementsHolder.syncTimestamp =
-				remoteDAO.getTimestamp();
 			syncedElementsHolder.syncedElements = 
 				remoteDAO.syncUnknownElements(toSyncElementsHolder.elementsToSync,
 						toSyncElementsHolder.lastTimestamp);
+			syncedElementsHolder.syncTimestamp =
+				remoteDAO.getTimestamp();
 		}
 		return syncedElementsHolders;
 	}

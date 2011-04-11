@@ -1,16 +1,21 @@
 package com.szas.server;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
-import com.szas.sync.Tuple;
-import com.szas.sync.remote.RemoteTuple;
+import com.szas.sync.SyncedElementsHolder;
+
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
 
 @PersistenceCapable
-public class PersistentRemoteTuple<T extends Tuple> extends RemoteTuple<T> {
+public class PersistentRemoteTuple implements Serializable{
 	private static final long serialVersionUID = 1L;
 	@PrimaryKey
     @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -20,10 +25,13 @@ public class PersistentRemoteTuple<T extends Tuple> extends RemoteTuple<T> {
 	private boolean deleted;
 	
 	@Persistent
-	private T element;
+	private String element;
 	
 	@Persistent
 	private long timestamp;
+	
+	@Persistent 
+	private String className;
 	
 	public PersistentRemoteTuple() {
 	}
@@ -35,11 +43,11 @@ public class PersistentRemoteTuple<T extends Tuple> extends RemoteTuple<T> {
 		return deleted;
 	}
 	
-	public void setElement(T element) {
-		this.element = element;
+	public void setElement(Object element) {
+		this.element = new JSONSerializer().include("*").serialize(element);
 	}
-	public T getElement() {
-		return element;
+	public Object getElement() {
+		return new JSONDeserializer<ArrayList<SyncedElementsHolder>>().deserialize(element);
 	}
 
 	public void setTimestamp(long timestamp) {
@@ -54,5 +62,11 @@ public class PersistentRemoteTuple<T extends Tuple> extends RemoteTuple<T> {
 	}
 	public Key getKey() {
 		return key;
+	}
+	public void setClassName(String className) {
+		this.className = className;
+	}
+	public String getClassName() {
+		return className;
 	}
 }

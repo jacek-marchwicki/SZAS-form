@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 
 public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
-	protected class MockElement extends Tuple {
+	protected static class MockElement extends Tuple {
 		private static final long serialVersionUID = 1L;
 		private int data = 0;
 		public MockElement() {
@@ -84,9 +84,10 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		
 		ArrayList<MockElement> mockElements = 
 			universalDAO.getAll();
+		assertEquals("Size of list after insertion schould be 1",mockElements.size(),1);
 		MockElement receivedMockElement = mockElements.get(0);
 		assertEquals("Received value schould be equals as inserted", 
-				receivedMockElement.getData(), EXAMPLE_DATA);
+				EXAMPLE_DATA, receivedMockElement.getData());
 	}
 	
 	@Test

@@ -11,10 +11,11 @@ public final class StaticSyncer {
 	private final static RemoteDAO<UserTuple> usersDAO;
 	static {
 		syncHelper = new RemoteSyncHelperImpl();
-		usersDAO = new RemoteDAOImpl<UserTuple>();
+		//usersDAO = new RemoteDAOImpl<UserTuple>();
+		usersDAO = new PersistentRemoteDAO<UserTuple>(UserTuple.class);
 		syncHelper.append("users", usersDAO);
 		
-		UserTuple user;
+		/*UserTuple user;
 		user = new UserTuple();
 		user.setName("Jacek");
 		usersDAO.insert(user);
@@ -25,7 +26,7 @@ public final class StaticSyncer {
 		
 		user = new UserTuple();
 		user.setName("Tomek");
-		usersDAO.insert(user);
+		usersDAO.insert(user);*/
 	}
 	public static RemoteSyncHelper getSyncHelper() {
 		return syncHelper;

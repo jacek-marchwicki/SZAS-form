@@ -1,5 +1,5 @@
 package com.szas.sync;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 
@@ -12,6 +12,7 @@ import com.szas.sync.local.LocalSyncHelper;
 import com.szas.sync.local.LocalSyncHelperImpl;
 import com.szas.sync.local.SyncLocalService;
 import com.szas.sync.local.SyncLocalServiceResult;
+import com.szas.sync.local.SyncObserver;
 import com.szas.sync.remote.RemoteDAO;
 import com.szas.sync.remote.RemoteDAOImpl;
 import com.szas.sync.remote.RemoteSyncHelper;
@@ -34,10 +35,11 @@ public class SyncHelpersTest {
 	}
 	private static final int EXAMPLE_DATA = 10;
 	private static final int NEW_EXAMPLE_DATA = 12;
-	LocalSyncHelper localSyncHelper;
-	RemoteSyncHelper remoteSyncHelper;
-	RemoteDAO<MockSubTuple> remoteMockTuples;
+	private LocalSyncHelper localSyncHelper;
+	protected RemoteSyncHelper remoteSyncHelper;
+	private RemoteDAO<MockSubTuple> remoteMockTuples;
 	private LocalDAO<MockSubTuple> localMockTuples;
+	private MockSyncObserver mockSyncObserver;
 	protected SyncLocalService getSyncLocalService() {
 		return new SyncLocalService() {
 			
@@ -54,10 +56,39 @@ public class SyncHelpersTest {
 			}
 		};
 	}
+	protected static class MockSyncObserver implements SyncObserver {
+		public boolean sucess = false;
+		public boolean fail = false;
+		public boolean start = false;
+		@Override
+		public void onSucces() {
+			sucess = true;
+		}
+
+		@Override
+		public void onFail(Throwable throwable) {
+			fail = true;
+		}
+		
+		@Override
+		public void onStart() {
+			start = true;
+		}
+		
+		public void reset() {
+			sucess = false;
+			fail = false;
+			start = false;
+		}
+	}
+	
 	@Before
 	public void setUp() {
+		mockSyncObserver = new MockSyncObserver();
+		
 		remoteSyncHelper = new RemoteSyncHelperImpl();
 		localSyncHelper = new LocalSyncHelperImpl(getSyncLocalService());
+		localSyncHelper.addSyncObserver(mockSyncObserver);
 		
 		localMockTuples = new LocalDAOImpl<MockSubTuple>();
 		remoteMockTuples = new RemoteDAOImpl<MockSubTuple>();
@@ -71,7 +102,10 @@ public class SyncHelpersTest {
 		localMockTuples.insert(localTuple);
 		assertEquals("Size after insertion schould be 1",1,localMockTuples.getAll().size());
 		
+		mockSyncObserver.reset();
 		localSyncHelper.sync();
+		assertTrue("start Sync Observer schould be notiffied", mockSyncObserver.start);
+		assertTrue("succes Sync Observer schould be notiffied", mockSyncObserver.sucess);
 		
 		assertEquals("Size after sync schould be same" ,1,localMockTuples.getAll().size());
 		

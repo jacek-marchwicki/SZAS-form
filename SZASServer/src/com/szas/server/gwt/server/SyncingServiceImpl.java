@@ -17,7 +17,8 @@ public class SyncingServiceImpl extends RemoteServiceServlet implements
 	@Override
 	public ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
 		try {
-			return StaticSyncer.getSyncHelper().sync(toSyncElementsHolders);
+			ArrayList<SyncedElementsHolder> value = StaticSyncer.getSyncHelper().sync(toSyncElementsHolders);
+			return value;
 		} catch (WrongObjectThrowable e) {
 			return null;
 		}

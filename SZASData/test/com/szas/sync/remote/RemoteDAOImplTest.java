@@ -12,7 +12,7 @@ import com.szas.sync.WrongObjectThrowable;
 
 public class RemoteDAOImplTest extends UniversalDAOImplTest {
 	private static final long EXAMPLE_TIMESTAMP = 5;
-	private RemoteDAO<MockElement> remoteDAO;
+	protected RemoteDAO<MockElement> remoteDAO;
 
 	@Before
 	public void setUp() {

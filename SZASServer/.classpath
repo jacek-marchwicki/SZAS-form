@@ -15,5 +15,7 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/xpp3_min-1.1.4c.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/xstream-gae.jar"/>
+	<classpathentry kind="lib" path="libs/appengine-testing.jar"/>
+	<classpathentry kind="lib" path="libs/appengine-api-stubs.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
