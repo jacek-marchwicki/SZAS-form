@@ -10,5 +10,6 @@ import com.szas.sync.ToSyncElementsHolder;
 @RemoteServiceRelativePath("syncing")
 public interface SyncingService extends RemoteService {
 	ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders);
+	String getChannel();
 	SerializableWhiteSpace dummy(SerializableWhiteSpace d);
 }

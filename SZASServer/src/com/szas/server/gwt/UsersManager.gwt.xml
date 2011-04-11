@@ -9,6 +9,7 @@
   <inherits name="com.szas.data.Data" />
   <inherits name="com.szas.sync.Sync" />
   <inherits name='com.google.gwt.user.theme.standard.Standard'/>
+  <inherits name='no.eirikb.gwtchannelapi.GwtChannelApi' />
   <!-- <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 

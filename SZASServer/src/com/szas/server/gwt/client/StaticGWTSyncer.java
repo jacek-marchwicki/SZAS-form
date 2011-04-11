@@ -2,6 +2,10 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
+import no.eirikb.gwtchannelapi.client.Channel;
+import no.eirikb.gwtchannelapi.client.ChannelListener;
+import no.eirikb.gwtchannelapi.client.Message;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.szas.data.UserTuple;
@@ -51,6 +55,27 @@ public final class StaticGWTSyncer {
 		syncHelper = new LocalSyncHelperImpl(syncLocalService);
 		usersDAO = new LocalDAOImpl<UserTuple>();
 		getSynchelper().append("users", getUsersdao());
+		syncingService.getChannel(new AsyncCallback<String>() {
+			
+			@Override
+			public void onSuccess(String result) {
+				Channel channel = new Channel(result);
+				channel.addChannelListener(new ChannelListener() {
+					
+					@Override
+					public void onReceive(Message message) {
+						StaticGWTSyncer.getSynchelper().sync();
+					}
+				});
+				channel.join();
+			}
+			
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 	public static LocalDAO<UserTuple> getUsersdao() {
 		return usersDAO;

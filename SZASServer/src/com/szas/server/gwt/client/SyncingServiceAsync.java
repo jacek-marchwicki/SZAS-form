@@ -14,4 +14,6 @@ public interface SyncingServiceAsync {
 	void dummy(SerializableWhiteSpace d,
 			AsyncCallback<SerializableWhiteSpace> callback);
 
+	void getChannel(AsyncCallback<String> callback);
+
 }
