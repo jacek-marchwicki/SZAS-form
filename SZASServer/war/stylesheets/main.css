@@ -4,15 +4,29 @@ body {
 	font-family: Verdana, Helvetica, sans-serif;
 	background-color: #FFFFCC;
 }
+
 #main {
-		margin: 0px auto;
-		width: 350px;
-		}
+	margin: 0px auto;
+	width: 350px;
+}
+
 header {
 	margin-top: 20px;
 	text-align: center;
+}
 
-	}
 h1 {
 	text-align: center;
-	}
+}
+
+.GALD-WOL,.GALD-WOJ {
+	padding: 2px 10px 2px 5px;
+}
+
+.GALD-WON {
+	border: solid 1px #cccccc;
+	width: 200px;
+	height: 150px;
+	overflow-y: scroll;
+	overflow-x: hidden;
+}
