@@ -3,6 +3,7 @@ package com.szas.server;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -16,6 +17,10 @@ import com.szas.sync.remote.RemoteDAO;
 import com.szas.sync.remote.RemoteTuple;
 
 public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProviderImpl implements RemoteDAO<T> {
+
+	private static final Logger log =
+		Logger.getLogger(PersistentRemoteDAO.class.getName());
+
 	private static final long serialVersionUID = 1L;
 
 	private Class<T> tupleClass;
@@ -86,11 +91,16 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 	public void insert(T element) {
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
+			long nextTimestamp = getNextTimestamp();
+
 			PersistentRemoteTuple remoteTuple = new PersistentRemoteTuple();
-			remoteTuple.setClassName(tupleClass.getName());
-			remoteTuple.setElement(element);
 			remoteTuple.setDeleted(false);
-			remoteTuple.setTimestamp(getNextTimestamp());
+			remoteTuple.setElement(element);
+			remoteTuple.setTimestamp(nextTimestamp);
+			remoteTuple.setInsertionTimestamp(nextTimestamp);
+			remoteTuple.setClassName(tupleClass.getName());
+			remoteTuple.setId(element.getId());
+
 			pm.makePersistent(remoteTuple);
 			notifyContentObservers();
 		} finally {
@@ -103,23 +113,17 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
-			query.setFilter("className == currentClassName");
-			query.declareParameters("String lastNameParam");
+			query.setFilter("className == currentClassName && id == myId");
+			query.declareParameters("String lastNameParam, long myId");
 			@SuppressWarnings("unchecked")
 			List<PersistentRemoteTuple> results =
-				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName());
+				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),element.getId());
 
 			if (results == null || results.isEmpty())
 				return;
-
-			for (PersistentRemoteTuple remoteTuple : results) {
-				T listElement = (T) remoteTuple.getElement();
-				if (listElement.getId() != element.getId())
-					continue;
-				remoteTuple.setTimestamp(getNextTimestamp());
-				remoteTuple.setDeleted(true);
-				break;
-			}
+			PersistentRemoteTuple remoteTuple = results.get(0);
+			remoteTuple.setTimestamp(getNextTimestamp());
+			remoteTuple.setDeleted(true);
 			notifyContentObservers();
 		} finally {
 			pm.close();
@@ -131,24 +135,87 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
-			query.setFilter("className == currentClassName");
-			query.declareParameters("String lastNameParam");
+			query.setFilter("className == currentClassName && id == myId");
+			query.declareParameters("String lastNameParam, long myId");
 			@SuppressWarnings("unchecked")
 			List<PersistentRemoteTuple> results =
-				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName());
+				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),element.getId());
 
 			if (results == null || results.isEmpty())
 				return;
-
-			for (PersistentRemoteTuple remoteTuple : results) {
-				T listElement = (T) remoteTuple.getElement();
-				if (listElement.getId() != element.getId())
-					continue;
-				remoteTuple.setElement(element);
-				remoteTuple.setTimestamp(getNextTimestamp());
-				break;
-			}
+			PersistentRemoteTuple remoteTuple = results.get(0);
+			remoteTuple.setElement(element);
+			remoteTuple.setTimestamp(getNextTimestamp());
 			notifyContentObservers();
+		} finally {
+			pm.close();
+		}
+	}
+
+	private void syncElement(LocalTuple<T> localTuple, long lastTimestamp) {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			T localElement = localTuple.getElement();
+
+			if (localTuple.getStatus() ==  LocalTuple.Status.SYNCED) {
+				log.severe("Client should not send synced elements");
+				return;
+			}
+
+			Query query = pm.newQuery(PersistentRemoteTuple.class);
+			query.setFilter("className == currentClassName && id == myId");
+			query.declareParameters("String lastNameParam, long myId");
+			query.setRange(0, 1);
+
+			@SuppressWarnings("unchecked")
+			List<PersistentRemoteTuple> results =
+				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),localElement.getId());
+
+			if (results != null && results.size() > 0) {
+				// not found
+				PersistentRemoteTuple remoteTuple = results.get(0);
+				if (remoteTuple.getTimestamp() > lastTimestamp) {
+					log.warning("Item changed on server");
+					return;
+				}
+				if (remoteTuple.isDeleted()) {
+					log.severe("Item already deleted on server");
+					return;
+				}
+				if (localTuple.getStatus() ==  LocalTuple.Status.INSERTING) {
+					log.warning("Already inserted");
+					return;
+				}
+				log.info("Updating/Deleting element");
+				remoteTuple.setDeleted(localTuple.getStatus() == LocalTuple.Status.DELETING);
+				remoteTuple.setElement(localElement);
+				remoteTuple.setTimestamp(getNextTimestamp());
+			} else {
+				if (localTuple.getStatus() ==  LocalTuple.Status.UPDATING) {
+					log.warning("Nothing to update");
+					return;
+				}
+				if (localTuple.getStatus() ==  LocalTuple.Status.DELETING) {
+					log.severe("Nothing to delete");
+					return;
+				}
+				if (localTuple.getStatus() ==  LocalTuple.Status.INSERTING) {
+					log.info("inserting");
+
+					long nextTimestamp = getNextTimestamp();
+
+					PersistentRemoteTuple remoteTuple = new PersistentRemoteTuple();
+					remoteTuple.setDeleted(false);
+					remoteTuple.setElement(localElement);
+					remoteTuple.setTimestamp(nextTimestamp);
+					remoteTuple.setInsertionTimestamp(nextTimestamp);
+					remoteTuple.setClassName(tupleClass.getName());
+					remoteTuple.setId(localElement.getId());
+
+					pm.makePersistent(remoteTuple);
+				}
+			}
+
 		} finally {
 			pm.close();
 		}
@@ -158,57 +225,26 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 	public ArrayList<RemoteTuple<T>> syncElements(ArrayList<LocalTuple<T>> elements, long lastTimestamp) {
 		ArrayList<RemoteTuple<T>> ret = 
 			new ArrayList<RemoteTuple<T>>();
+
+		for (LocalTuple<T> localTuple : elements) {
+			syncElement(localTuple, lastTimestamp);
+		}
+
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
 			query.setFilter("className == currentClassName");
-			query.declareParameters("String lastNameParam");
-			@SuppressWarnings("unchecked")
-			List<PersistentRemoteTuple> results =
-				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName());
-
-			for (LocalTuple<T> localTuple : elements) {
-				T localElement = localTuple.getElement();
-				boolean found = false;
-				for (PersistentRemoteTuple remoteTuple : results) {
-					T remoteElement = (T) remoteTuple.getElement();
-					if (localElement.getId() != remoteElement.getId()) 
-						continue;
-					if (remoteTuple.getTimestamp() > lastTimestamp) {
-						// inserting was synced before changes
-						// TODO return exception
-						found = true;
-						break;
-					}
-					remoteTuple.setElement(localElement);
-					remoteTuple.setDeleted(localTuple.getStatus() == LocalTuple.Status.DELETING);
-					remoteTuple.setTimestamp(getNextTimestamp());
-					found = true;
-					break;
-				}
-				if (!found) {
-					PersistentRemoteTuple remoteTuple = new PersistentRemoteTuple();
-					remoteTuple.setElement(localElement);
-					remoteTuple.setDeleted(localTuple.getStatus() == LocalTuple.Status.DELETING);
-					remoteTuple.setTimestamp(getNextTimestamp());
-					remoteTuple.setClassName(tupleClass.getName());
-					pm.makePersistent(remoteTuple);
-				}
-			}
-		} finally {
-			pm.close();
-		}
-		pm = PMF.get().getPersistenceManager();
-		try {
-			Query query = pm.newQuery(PersistentRemoteTuple.class);
-			query.setFilter("className == currentClassName");
-			query.setFilter("timestamp >= lastTimestamp");
+			query.setFilter("timestamp > lastTimestamp");
 			query.declareParameters("String lastNameParam, long lastTimestamp");
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),lastTimestamp);
 
 
 			for (PersistentRemoteTuple remoteTuple : results) {
+				if (remoteTuple.isDeleted()) {
+					if (remoteTuple.getInsertionTimestamp() > lastTimestamp)
+						continue;
+				}
 				RemoteTuple<T> remoteTuple2 = new RemoteTuple<T>();
 				remoteTuple2.setDeleted(remoteTuple.isDeleted());
 				remoteTuple2.setElement((T) remoteTuple.getElement());

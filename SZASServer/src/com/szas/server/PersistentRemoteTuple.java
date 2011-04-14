@@ -30,8 +30,14 @@ public class PersistentRemoteTuple implements Serializable{
 	@Persistent
 	private long timestamp;
 	
+	@Persistent
+	private long insertionTimestamp;
+	
 	@Persistent 
 	private String className;
+	
+	@Persistent
+	private long id;
 	
 	public PersistentRemoteTuple() {
 	}
@@ -68,5 +74,17 @@ public class PersistentRemoteTuple implements Serializable{
 	}
 	public String getClassName() {
 		return className;
+	}
+	public void setId(long id) {
+		this.id = id;
+	}
+	public long getId() {
+		return id;
+	}
+	public void setInsertionTimestamp(long insertionTimestamp) {
+		this.insertionTimestamp = insertionTimestamp;
+	}
+	public long getInsertionTimestamp() {
+		return insertionTimestamp;
 	}
 }
