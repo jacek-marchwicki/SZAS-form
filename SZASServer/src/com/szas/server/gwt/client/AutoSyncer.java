@@ -25,32 +25,41 @@ public class AutoSyncer {
 	private ArrayList<AutoSyncerObserver> syncerObservers =
 		new ArrayList<AutoSyncerObserver>();
 
+	/**
+	 * add observer
+	 * @param autoSyncerObserver instance of AutoSyncerObserver
+	 */
 	public void addAutoSyncerObserver(AutoSyncerObserver autoSyncerObserver) {
 		syncerObservers.add(autoSyncerObserver);
 	}
+	/**
+	 * remove observer
+	 * @param autoSyncerObserver instance of AutoSyncerObserver
+	 * @return true if element was in the list
+	 */
 	public boolean removeAutoSyncerObserver(AutoSyncerObserver autoSyncerObserver) {
 		return syncerObservers.remove(autoSyncerObserver);
 	}
 
-	public void notifyAutoSyncerObserversStarted() {
+	private void notifyAutoSyncerObserversStarted() {
 		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
 			autoSyncerObserver.onStarted();
 		}
 	}
 
-	public void notifyAutoSyncerObserversSuccess() {
+	private void notifyAutoSyncerObserversSuccess() {
 		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
 			autoSyncerObserver.onSuccess();
 		}
 	}
 
-	public void notifyAutoSyncerObserversFail() {
+	private void notifyAutoSyncerObserversFail() {
 		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
 			autoSyncerObserver.onFail();
 		}
 	}
 
-	public void notifyAutoSyncerObserversWait(int waitTime) {
+	private void notifyAutoSyncerObserversWait(int waitTime) {
 		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
 			autoSyncerObserver.onWait(waitTime);
 		}
@@ -105,6 +114,10 @@ public class AutoSyncer {
 		super.finalize();
 	}
 
+	/**
+	 * Add LocalDAO for watching changes
+	 * @param dao
+	 */
 	public void addWatcher(LocalDAO<?> dao) {
 		dao.addContentObserver(new ContentObserver() {
 
@@ -161,6 +174,10 @@ public class AutoSyncer {
 		timer.scheduleRepeating(TIMER_DELAY);
 	}
 
+	
+	/**
+	 * Inform AutoSyncer that are changes pending to commit
+	 */
 	public void trySync() {
 		if (syncing) {
 			if (!forceSync)
@@ -170,6 +187,10 @@ public class AutoSyncer {
 		}
 	}
 
+	
+	/**
+	 * Force to sync now
+	 */
 	public void syncNow() {
 		if (syncing) {
 			forceSync = true;
