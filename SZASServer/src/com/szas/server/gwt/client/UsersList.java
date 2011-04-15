@@ -18,6 +18,8 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.szas.data.UserTuple;
 import com.szas.sync.ContentObserver;
+import com.google.gwt.uibinder.client.UiHandler;
+import com.google.gwt.event.dom.client.ClickEvent;
 
 public class UsersList extends Composite  {
 	
@@ -115,5 +117,10 @@ public class UsersList extends Composite  {
 	public UsersList() {
 		initWidget(uiBinder.createAndBindUi(this));
 		usersUpdated();
+	}
+	
+	@UiHandler("addButton")
+	void onAddButtonClick(ClickEvent event) {
+		History.newItem("user",true);
 	}
 }
