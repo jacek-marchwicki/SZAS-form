@@ -89,7 +89,7 @@ public class UsersList extends Composite  {
 		contentObserver = new ContentObserver() {
 
 			@Override
-			public void onChange() {
+			public void onChange(boolean whileSync) {
 				usersUpdated();
 			}
 		};

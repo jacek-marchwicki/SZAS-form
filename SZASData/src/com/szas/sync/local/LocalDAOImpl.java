@@ -77,7 +77,7 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 		localTuple.setStatus(LocalTuple.Status.INSERTING);
 		localTuple.setElement(element);
 		elementsToSync.put(objId, localTuple);
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -99,7 +99,7 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 			// there are no object
 			return;
 		}
-		notifyContentObservers();
+		notifyContentObservers(false);
 		return;
 	}
 
@@ -127,7 +127,7 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 		localTuple.setStatus(status);
 		localTuple.setElement(element);
 		elementsToSync.put(objId, localTuple);
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -180,7 +180,7 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 			if (remoteTuple.isDeleted() == false)
 				elements.put(objId, remoteElement);
 		}
-		notifyContentObservers();
+		notifyContentObservers(true);
 	}
 
 	@SuppressWarnings("unchecked")

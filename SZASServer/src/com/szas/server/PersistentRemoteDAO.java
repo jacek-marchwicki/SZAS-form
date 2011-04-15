@@ -58,6 +58,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		return getTimestamp() + 1;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ArrayList<T> getAll() {
 		ArrayList<T> ret = new ArrayList<T>();
@@ -68,7 +69,6 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 			query.setFilter("className == currentClassName");
 			query.setFilter("deleted == false");
 			query.declareParameters("String lastNameParam");
-			@SuppressWarnings("unchecked")
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName());
 			if (results == null || results.isEmpty())
@@ -101,7 +101,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 			remoteTuple.setId(element.getId());
 
 			pm.makePersistent(remoteTuple);
-			notifyContentObservers();
+			notifyContentObservers(false);
 		} finally {
 			pm.close();
 		}
@@ -123,7 +123,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 			PersistentRemoteTuple remoteTuple = results.get(0);
 			remoteTuple.setTimestamp(getNextTimestamp());
 			remoteTuple.setDeleted(true);
-			notifyContentObservers();
+			notifyContentObservers(false);
 		} finally {
 			pm.close();
 		}
@@ -145,7 +145,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 			PersistentRemoteTuple remoteTuple = results.get(0);
 			remoteTuple.setElement(element);
 			remoteTuple.setTimestamp(getNextTimestamp());
-			notifyContentObservers();
+			notifyContentObservers(false);
 		} finally {
 			pm.close();
 		}
@@ -220,6 +220,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public ArrayList<RemoteTuple<T>> syncElements(ArrayList<LocalTuple<T>> elements, long lastTimestamp) {
 		ArrayList<RemoteTuple<T>> ret = 
@@ -250,7 +251,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 				remoteTuple2.setTimestamp(remoteTuple.getTimestamp());
 				ret.add(remoteTuple2);
 			}
-			notifyContentObservers();
+			notifyContentObservers(true);
 		} finally {
 			pm.close();
 		}

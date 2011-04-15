@@ -43,7 +43,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 		remoteTuple.setDeleted(false);
 		remoteTuple.setElement(element);
 		elements.add(remoteTuple);
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 			remoteTuple.setDeleted(true);
 			break;
 		}
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 			remoteTuple.setTimestamp(getNextTimestamp());
 			break;
 		}
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 				continue;
 			ret.add(remoteTuple);
 		}
-		notifyContentObservers();
+		notifyContentObservers(true);
 		return ret;
 	}
 

@@ -1,0 +1,182 @@
+package com.szas.server.gwt.client;
+
+import java.util.ArrayList;
+
+import com.google.gwt.user.client.Timer;
+import com.szas.sync.ContentObserver;
+import com.szas.sync.local.LocalDAO;
+import com.szas.sync.local.LocalSyncHelper;
+import com.szas.sync.local.SyncObserver;
+
+public class AutoSyncer {
+	private static final int TIMER_DELAY = 1000;
+	private static final int START_SYNC_TIME = 10;
+	private static final int MAX_SYNC_TIME = 5*60;
+
+	private int actualSyncTime = START_SYNC_TIME;
+	private int waitTime = 0;
+	private boolean syncing = false;
+	private boolean newDataThroughSyncing = false;
+	private LocalSyncHelper syncHelper;
+	private Timer timer;
+	private boolean forceSync = false;
+	private SyncObserver syncObserver;
+
+	private ArrayList<AutoSyncerObserver> syncerObservers =
+		new ArrayList<AutoSyncerObserver>();
+
+	public void addAutoSyncerObserver(AutoSyncerObserver autoSyncerObserver) {
+		syncerObservers.add(autoSyncerObserver);
+	}
+	public boolean removeAutoSyncerObserver(AutoSyncerObserver autoSyncerObserver) {
+		return syncerObservers.remove(autoSyncerObserver);
+	}
+
+	public void notifyAutoSyncerObserversStarted() {
+		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
+			autoSyncerObserver.onStarted();
+		}
+	}
+
+	public void notifyAutoSyncerObserversSuccess() {
+		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
+			autoSyncerObserver.onSuccess();
+		}
+	}
+
+	public void notifyAutoSyncerObserversFail() {
+		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
+			autoSyncerObserver.onFail();
+		}
+	}
+
+	public void notifyAutoSyncerObserversWait(int waitTime) {
+		for (AutoSyncerObserver autoSyncerObserver : syncerObservers) {
+			autoSyncerObserver.onWait(waitTime);
+		}
+	}
+
+	private class MyTimer extends Timer {
+
+		@Override
+		public void run() {
+			waitTime--;
+			notifyAutoSyncerObserversWait(waitTime);
+			if (waitTime == 0) {
+				timer.cancel();
+				syncHelper.sync();
+			}
+		}
+	}
+
+	public interface AutoSyncerObserver {
+		public void onStarted();
+		public void onSuccess();
+		public void onFail();
+		public void onWait(int waitTime);
+	}
+
+	public AutoSyncer(LocalSyncHelper syncHelper) {
+		this.syncHelper = syncHelper;
+		this.timer = new MyTimer();
+		syncObserver = new SyncObserver() {
+
+			@Override
+			public void onSucces() {
+				syncSuccessed();
+			}
+
+			@Override
+			public void onStart() {
+				syncStarted();
+			}
+
+			@Override
+			public void onFail(Throwable caught) {
+				syncFail(caught);
+			}
+		};
+		syncHelper.addSyncObserver(syncObserver);
+	}
+
+	@Override
+	public void finalize() throws Throwable {
+		syncHelper.addSyncObserver(syncObserver);
+		super.finalize();
+	}
+
+	public void addWatcher(LocalDAO<?> dao) {
+		dao.addContentObserver(new ContentObserver() {
+
+			@Override
+			public void onChange(boolean whileSync) {
+				if (whileSync)
+					return;
+				trySync();
+			}
+		});
+	}
+
+	protected void calculateIncrementedTime() {
+		actualSyncTime = actualSyncTime * 2;
+		if (actualSyncTime > MAX_SYNC_TIME)
+			actualSyncTime = MAX_SYNC_TIME;
+	}
+
+	protected void syncFail(Throwable caught) {
+		notifyAutoSyncerObserversFail();
+		syncing = false;
+		calculateIncrementedTime();
+		newDataThroughSyncing = false;
+		if (forceSync) {
+			forceSync = false;
+			syncHelper.sync();
+		} else {
+			scheduleSync();
+		}
+	}
+
+	protected void syncStarted() {
+		notifyAutoSyncerObserversStarted();
+		syncing = true;
+	}
+
+	protected void syncSuccessed() {
+		notifyAutoSyncerObserversSuccess();
+		syncing = false;
+		actualSyncTime = START_SYNC_TIME;
+		if (forceSync) {
+			forceSync = false;
+			syncHelper.sync();
+		} else if (newDataThroughSyncing) {
+			scheduleSync();
+		}
+		newDataThroughSyncing = false;
+	}
+
+	private void scheduleSync() {
+		if (waitTime != 0)
+			return;
+		waitTime = actualSyncTime;
+		timer.scheduleRepeating(TIMER_DELAY);
+	}
+
+	public void trySync() {
+		if (syncing) {
+			if (!forceSync)
+				newDataThroughSyncing = true;
+		} else {
+			scheduleSync();
+		}
+	}
+
+	public void syncNow() {
+		if (syncing) {
+			forceSync = true;
+		} else {
+			syncHelper.sync();
+			timer.cancel();
+			waitTime = 0;
+		}
+	}
+}

@@ -8,13 +8,12 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.UserTuple;
-import com.szas.sync.local.SyncObserver;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Label;
 
 public class MainWidget extends Composite {
 
@@ -23,8 +22,9 @@ public class MainWidget extends Composite {
 
 	@UiField SimplePanel simplePanel;
 	@UiField Button refreshButton;
+	@UiField Label syncStatusLabel;
 
-	private SyncObserver syncObserver;
+	private AutoSyncer.AutoSyncerObserver autoSyncerObserver;
 
 	
 
@@ -45,11 +45,6 @@ public class MainWidget extends Composite {
 		};
 		History.addValueChangeHandler(valueChangeHandler);
 		History.fireCurrentHistoryState();
-		StaticGWTSyncer.getSynchelper().sync();
-	}
-
-	protected void deactivateButton() {
-		refreshButton.setEnabled(false);
 	}
 
 	protected void switchWidget(Widget newWidget) {
@@ -58,32 +53,34 @@ public class MainWidget extends Composite {
 		widget = newWidget;
 		simplePanel.add(widget);
 	}
-
-	protected void activateButton() {
-		refreshButton.setEnabled(true);
-	}
+	
 	@Override
 	protected void onAttach() {
 		super.onAttach();
-		syncObserver = new SyncObserver() {
+		autoSyncerObserver = new AutoSyncer.AutoSyncerObserver() {
 
 			@Override
-			public void onSucces() {
-				activateButton();
+			public void onStarted() {
+				syncStatusLabel.setText("Syncing...");
 			}
 
 			@Override
-			public void onStart() {
-				deactivateButton();
+			public void onSuccess() {
+				syncStatusLabel.setText("");
 			}
 
 			@Override
-			public void onFail(Throwable caught) {
-				Window.alert("Error while getting data: " + caught.getMessage());
-				activateButton();
+			public void onFail() {
+				syncStatusLabel.setText("FAIL");
 			}
+
+			@Override
+			public void onWait(int waitTime) {
+				syncStatusLabel.setText("Waiting: " + waitTime);
+			}
+			
 		};
-		StaticGWTSyncer.getSynchelper().addSyncObserver(syncObserver);
+		StaticGWTSyncer.getAutosyncer().addAutoSyncerObserver(autoSyncerObserver);
 		
 	}
 	protected void parseToken(String historyToken) {
@@ -128,14 +125,14 @@ public class MainWidget extends Composite {
 
 	@Override
 	protected void onDetach() {
-		if (syncObserver != null)
-			StaticGWTSyncer.getSynchelper().removeSyncObserver(syncObserver);
-		syncObserver = null;
+		if (autoSyncerObserver != null)
+			StaticGWTSyncer.getAutosyncer().removeAutoSyncerObserver(autoSyncerObserver);
+		autoSyncerObserver = null;
 		super.onDetach();
 	}
 	@UiHandler("refreshButton")
 	void handleClick(ClickEvent e) {
-		StaticGWTSyncer.getSynchelper().sync();
+		StaticGWTSyncer.getAutosyncer().syncNow();
 	}
 
 }

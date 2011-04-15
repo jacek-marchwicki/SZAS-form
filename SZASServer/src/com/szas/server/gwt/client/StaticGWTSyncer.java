@@ -2,10 +2,6 @@ package com.szas.server.gwt.client;
 
 import java.util.ArrayList;
 
-import no.eirikb.gwtchannelapi.client.Channel;
-import no.eirikb.gwtchannelapi.client.ChannelListener;
-import no.eirikb.gwtchannelapi.client.Message;
-
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.szas.data.UserTuple;
@@ -48,39 +44,25 @@ public final class StaticGWTSyncer {
 	private final static GWTSyncLocalService syncLocalService;
 	private final static LocalSyncHelper syncHelper;
 	private final static LocalDAO<UserTuple> usersDAO;
+	private final static AutoSyncer autoSyncer;
 	private final static SyncingServiceAsync syncingService = GWT
 	.create(SyncingService.class);
+	
 	static {
 		syncLocalService = new GWTSyncLocalService();
 		syncHelper = new LocalSyncHelperImpl(syncLocalService);
 		usersDAO = new LocalDAOImpl<UserTuple>();
-		getSynchelper().append("users", getUsersdao());
-		syncingService.getChannel(new AsyncCallback<String>() {
-			
-			@Override
-			public void onSuccess(String result) {
-				Channel channel = new Channel(result);
-				channel.addChannelListener(new ChannelListener() {
-					
-					@Override
-					public void onReceive(Message message) {
-						StaticGWTSyncer.getSynchelper().sync();
-					}
-				});
-				channel.join();
-			}
-			
-			@Override
-			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+		syncHelper.append("users", getUsersdao());
+		autoSyncer = new AutoSyncer(syncHelper);
+		getAutosyncer().addWatcher(usersDAO);
+		getAutosyncer().syncNow();
 	}
+	
 	public static LocalDAO<UserTuple> getUsersdao() {
 		return usersDAO;
 	}
-	public static LocalSyncHelper getSynchelper() {
-		return syncHelper;
+
+	public static AutoSyncer getAutosyncer() {
+		return autoSyncer;
 	}
 }

@@ -24,8 +24,8 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.widgetideas.client.GlassPanel;
 import com.szas.data.UserTuple;
+import com.szas.server.gwt.client.AutoSyncer.AutoSyncerObserver;
 import com.szas.sync.ContentObserver;
-import com.szas.sync.local.SyncObserver;
 
 public class UsersManager implements EntryPoint {
 
@@ -61,7 +61,7 @@ public class UsersManager implements EntryPoint {
 
 			@Override
 			public void onClick(ClickEvent event) {
-				StaticGWTSyncer.getSynchelper().sync();
+				StaticGWTSyncer.getAutosyncer().syncNow();
 			}
 		});
 		newButton = new Button("New");
@@ -152,28 +152,35 @@ public class UsersManager implements EntryPoint {
 		StaticGWTSyncer.getUsersdao().addContentObserver(new ContentObserver() {
 
 			@Override
-			public void onChange() {
+			public void onChange(boolean whileSync) {
 				usersUpdated();
 			}
 		});
-		StaticGWTSyncer.getSynchelper().addSyncObserver(new SyncObserver() {
-
+		StaticGWTSyncer.getAutosyncer().addAutoSyncerObserver(new AutoSyncerObserver() {
+			
 			@Override
-			public void onSucces() {
-				activateButton();
+			public void onWait(int waitTime) {				
 			}
-
+			
 			@Override
-			public void onStart() {
+			public void onSuccess() {
+				activateButton();
+				
+			}
+			
+			@Override
+			public void onStarted() {
 				deactivateButton();
+				
 			}
-
+			
 			@Override
-			public void onFail(Throwable caught) {
+			public void onFail() {
 				activateButton();
+				
 			}
 		});
-		StaticGWTSyncer.getSynchelper().sync();
+		StaticGWTSyncer.getAutosyncer().syncNow();
 	}
 
 	protected void newUser() {
