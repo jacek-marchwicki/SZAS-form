@@ -2,7 +2,6 @@ package com.szas.server;
 
 import com.szas.data.UserTuple;
 import com.szas.sync.remote.RemoteDAO;
-import com.szas.sync.remote.RemoteDAOImpl;
 import com.szas.sync.remote.RemoteSyncHelper;
 import com.szas.sync.remote.RemoteSyncHelperImpl;
 

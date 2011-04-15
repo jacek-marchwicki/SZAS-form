@@ -1,7 +1,8 @@
 package com.szas.sync.local;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.HashMap;
 
 import com.szas.sync.ContentObserverProviderImpl;
 import com.szas.sync.Tuple;
@@ -10,48 +11,93 @@ import com.szas.sync.remote.RemoteTuple;
 
 public class LocalDAOImpl<T extends Tuple>
 extends ContentObserverProviderImpl implements LocalDAO<T> {
+	
 	private static final long serialVersionUID = 1L;
 
 	private long lastTimestamp = -1;
 	
-	public ArrayList<LocalTuple<T>> elements =
-		new ArrayList<LocalTuple<T>>();
+	private HashMap<Long, T> elements =
+		new HashMap<Long, T>();
 	
+	/**
+	 * if not null means - syncing
+	 */
+	private HashMap<Long, LocalTuple<T>> syncingElements = null;
+	
+	private HashMap<Long, LocalTuple<T>> elementsToSync =
+		new HashMap<Long, LocalTuple<T>>(); 
+	
+	@SuppressWarnings("unchecked")
 	@Override
-	public ArrayList<T> getAll() {
-		ArrayList<T> ret = new ArrayList<T>();
-		for (LocalTuple<T> localTuple : elements) {
-			if (localTuple.getStatus() == LocalTuple.Status.DELETING)
-				continue;
-			T element = localTuple.getElement();
-			ret.add(element);
+	public Collection<T> getAll() {
+		HashMap<Long, T> allElements;
+		allElements = (HashMap<Long, T>) elements.clone();
+		
+		if (syncingElements != null) {
+			for (Long objId : syncingElements.keySet()) {
+				LocalTuple<T> localTuple = syncingElements.get(objId);
+				allElements.remove(objId);
+				if (localTuple.getStatus() != LocalTuple.Status.DELETING) {
+					allElements.put(objId,localTuple.getElement());
+				}
+			}
 		}
-		return ret;
+		for (Long objId : elementsToSync.keySet()) {
+			LocalTuple<T> localTuple = elementsToSync.get(objId);
+			allElements.remove(objId);
+			if (localTuple.getStatus() != LocalTuple.Status.DELETING) {
+				allElements.put(objId,localTuple.getElement());
+			}
+		}
+		return allElements.values();
 	}
 
 	@Override
 	public void insert(T element) {
+		long id = element.getId();
+		Long objId = new Long(id);
+
+		boolean inElements = elements.get(objId) != null;
+		boolean inSyncingElements = syncingElements != null && syncingElements.get(objId) != null;
+		boolean inElementsToSync = elementsToSync.get(objId) != null;
+		
+		if (inElements) {
+			// item already in elements
+			return;
+		}
+		if (inSyncingElements) {
+			// item already in syncing elements
+			return;
+		}
+		if (inElementsToSync) {
+			// item already in elements to sync
+			return;
+		}
 		LocalTuple<T> localTuple = new LocalTuple<T>();
 		localTuple.setStatus(LocalTuple.Status.INSERTING);
 		localTuple.setElement(element);
-		elements.add(localTuple);
+		elementsToSync.put(objId, localTuple);
 		notifyContentObservers();
 	}
 
 	@Override
 	public void delete(T element) {
-		// TODO what if INSERTING element to DELETE
-		for (LocalTuple<T> localTuple : elements) {
-			T listElement = localTuple.getElement();
-			if (! listElement.equals(element)) 
-				continue;
-			if (localTuple.getStatus() == LocalTuple.Status.INSERTING)
-			{
-				elements.remove(localTuple);
-				break;
-			}
+		long id = element.getId();
+		Long objId = new Long(id);
+		boolean inElements = elements.get(objId) != null;
+		boolean inSyncingElements = syncingElements != null && syncingElements.get(objId) != null;
+		boolean inElementsToSync = elementsToSync.get(objId) != null;
+		
+		if (inElements || inSyncingElements) {
+			LocalTuple<T> localTuple = new LocalTuple<T>();
 			localTuple.setStatus(LocalTuple.Status.DELETING);
-			break;
+			localTuple.setElement(element);
+			elementsToSync.put(objId, localTuple);
+		} else if (inElementsToSync) {
+			elementsToSync.remove(objId);
+		} else {
+			// there are no object
+			return;
 		}
 		notifyContentObservers();
 		return;
@@ -59,30 +105,45 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 
 	@Override
 	public void update(T element) {
-		// TODO what if INSERTING element to UPDATE
-		for (LocalTuple<T> localTuple : elements) {
-			T listElement = localTuple.getElement();
-			if (! listElement.equals(element)) 
-				continue;
-			if (localTuple.getStatus() == LocalTuple.Status.INSERTING)
-			{
-				break;
-			}
-			localTuple.setStatus(LocalTuple.Status.UPDATING);
+		long id = element.getId();
+		Long objId = new Long(id);
+		boolean inElements = elements.get(objId) != null;
+		boolean inSyncingElements = syncingElements != null && syncingElements.get(objId) != null;
+		boolean inElementsToSync = elementsToSync.get(objId) != null;
+		
+		if ((! inElements) && (! inSyncingElements) && (! inElementsToSync)) {
+			// theare are no element in database
+			return;
 		}
+		LocalTuple.Status status = LocalTuple.Status.UPDATING;
+		if (inElementsToSync) {
+			LocalTuple<T> before = elementsToSync.get(objId);
+			if (before.getStatus() == LocalTuple.Status.INSERTING) {
+				// not synced before inserting
+				status = LocalTuple.Status.INSERTING;
+			}
+		}
+		LocalTuple<T> localTuple = new LocalTuple<T>();
+		localTuple.setStatus(status);
+		localTuple.setElement(element);
+		elementsToSync.put(objId, localTuple);
 		notifyContentObservers();
 	}
 
 	@Override
 	public ArrayList<LocalTuple<T>> getElementsToSync() {
-		ArrayList<LocalTuple<T>> elementsToSync =
+		ArrayList<LocalTuple<T>> ret =
 			new ArrayList<LocalTuple<T>>();
-		for (LocalTuple<T> localTuple : elements) {
-			if (localTuple.getStatus() == LocalTuple.Status.SYNCED)
-				continue;
-			elementsToSync.add(localTuple);
+		
+		if (syncingElements == null)
+		{
+			syncingElements = elementsToSync;
+			elementsToSync = new HashMap<Long, LocalTuple<T>>();
 		}
-		return elementsToSync;
+		for (LocalTuple<T> localTuple : syncingElements.values()) {
+			ret.add(localTuple);
+		}
+		return ret;
 	}
 
 	@Override
@@ -109,34 +170,15 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 
 	@Override
 	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
-		
+		syncingElements = null;
 		for (RemoteTuple<T> remoteTuple : syncedElements) {
 			T remoteElement = remoteTuple.getElement();
-			LocalTuple<T> found = null;
-			for (LocalTuple<T> localTuple : elements) {
-				T localElement = localTuple.getElement();
-				if (remoteElement.getId() != localElement.getId())
-					continue;
-				found = localTuple;
-				break;
-			}
-			if (remoteTuple.isDeleted()) {
-				if (found != null)
-					elements.remove(found);
-				continue;
-			}
-			if (found == null) {
-				found = new LocalTuple<T>();
-				elements.add(found);
-			}
-			found.setStatus(LocalTuple.Status.SYNCED);
-			found.setElement(remoteElement);
-		}
-		for (Iterator<LocalTuple<T>> iter = elements.iterator(); iter.hasNext();) {
-			LocalTuple<T> localTuple = iter.next();
-			if (localTuple.getStatus() == LocalTuple.Status.SYNCED)
-				continue;
-			iter.remove();
+			long id = remoteElement.getId();
+			Long objId = new Long(id);
+			elements.remove(objId);
+			
+			if (remoteTuple.isDeleted() == false)
+				elements.put(objId, remoteElement);
 		}
 		notifyContentObservers();
 	}

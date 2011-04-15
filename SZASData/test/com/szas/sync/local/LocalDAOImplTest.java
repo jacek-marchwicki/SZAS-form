@@ -3,6 +3,7 @@ package com.szas.sync.local;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,12 +44,16 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		universalDAO.insert(element);
 		ArrayList<LocalTuple<MockElement>> elementsToSync = localDAO.getElementsToSync();
 		assertEquals(1, elementsToSync.size());
-
-		LocalTuple<MockElement> elementToSync = elementsToSync.get(0);
 		
+		ArrayList<RemoteTuple<MockElement>> syncedElements =
+			new ArrayList<RemoteTuple<MockElement>>();
+		RemoteTuple<MockElement> syncedElement = new RemoteTuple<MockElement>();
+		syncedElement.setDeleted(false);
+		syncedElement.setTimestamp(NEW_EXAMPLE_TIMESTAMP);
+		syncedElement.setElement(element);
+		syncedElements.add(syncedElement);
 		
-		elementToSync.setStatus(LocalTuple.Status.SYNCED);
-		// TODO inform LocalDAO about changes state to SYNCED		
+		localDAO.setSyncedElements(syncedElements);	
 		
 		element.setData(NEW_EXAMPLE_DATA);
 		universalDAO.update(element);
@@ -56,7 +61,7 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		elementsToSync = localDAO.getElementsToSync();
 		assertEquals(1, elementsToSync.size());
 		
-		elementToSync = elementsToSync.get(0);
+		LocalTuple<MockElement> elementToSync = elementsToSync.get(0);
 		element.testEuality(elementToSync.getElement());
 		assertEquals(LocalTuple.Status.UPDATING,elementToSync.getStatus());
 	}
@@ -72,8 +77,15 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		LocalTuple<MockElement> elementToSync = elementsToSync.get(0);
 		
 		
-		elementToSync.setStatus(LocalTuple.Status.SYNCED);
-		// TODO inform LocalDAO about changes state to SYNCED
+		ArrayList<RemoteTuple<MockElement>> syncedElements =
+			new ArrayList<RemoteTuple<MockElement>>();
+		RemoteTuple<MockElement> syncedElement = new RemoteTuple<MockElement>();
+		syncedElement.setDeleted(false);
+		syncedElement.setTimestamp(NEW_EXAMPLE_TIMESTAMP);
+		syncedElement.setElement(element);
+		syncedElements.add(syncedElement);
+		
+		localDAO.setSyncedElements(syncedElements);	
 		
 		
 		universalDAO.delete(element);
@@ -119,11 +131,11 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		
 		assertTrue("content obserer schould be notiffied", myContentObserver.notiffied);
 		
-		ArrayList<MockElement> mockElements = 
+		Collection<MockElement> mockElements = 
 			localDAO.getAll();
 		
 		assertEquals(1, mockElements.size());
-		assertEquals(EXAMPLE_DATA, mockElements.get(0).getData());
+		assertEquals(EXAMPLE_DATA, mockElements.iterator().next().getData());
 	}
 	
 	@Test
@@ -146,11 +158,11 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		}
 		localDAO.setSyncedElements(syncedElements);
 		
-		ArrayList<MockElement> elements = 
+		Collection<MockElement> elements = 
 			localDAO.getAll();
 		assertEquals(1, elements.size());
-		assertEquals(element.getId(), elements.get(0).getId());
-		assertEquals(element.getData(), elements.get(0).getData());
+		assertEquals(element.getId(), elements.iterator().next().getId());
+		assertEquals(element.getData(), elements.iterator().next().getData());
 		
 		elementsToSync =
 			localDAO.getElementsToSync();
@@ -177,11 +189,13 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 		element.setData(EXAMPLE_DATA);
 		universalDAO.insert(element);
 		
+		localDAO.getElementsToSync();
+		
 		ArrayList<RemoteTuple<MockElement>> syncedElements = 
 			new ArrayList<RemoteTuple<MockElement>>();
 		localDAO.setSyncedElements(syncedElements);
 		
-		ArrayList<MockElement> elements = 
+		Collection<MockElement> elements = 
 			localDAO.getAll();
 		assertEquals(0, elements.size());
 	}

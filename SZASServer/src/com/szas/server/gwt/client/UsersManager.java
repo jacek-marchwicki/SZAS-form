@@ -1,6 +1,6 @@
 package com.szas.server.gwt.client;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -202,7 +202,7 @@ public class UsersManager implements EntryPoint {
 	}
 
 	private void usersUpdated() {
-		ArrayList<UserTuple> users = StaticGWTSyncer.getUsersdao().getAll();
+		Collection<UserTuple> users = StaticGWTSyncer.getUsersdao().getAll();
 		table.setRowCount(users.size(), true);
 		while (list.size() != 0)
 			list.remove(0);

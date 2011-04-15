@@ -1,6 +1,6 @@
 package com.szas.server.gwt.client;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -31,7 +31,7 @@ public class UserWidget extends Composite {
 		initWidget(uiBinder.createAndBindUi(this));
 	}
 	public static UserTuple findTuple(long id) {
-		ArrayList<UserTuple> users = StaticGWTSyncer.getUsersdao().getAll();
+		Collection<UserTuple> users = StaticGWTSyncer.getUsersdao().getAll();
 		for (UserTuple user : users) {
 			if (user.getId() == id) {
 				return user;

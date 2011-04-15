@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
-import com.szas.sync.ContentObserver;
 import com.szas.sync.ContentObserverProviderImpl;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;

@@ -1,6 +1,6 @@
 package com.szas.server.gwt.client;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.google.gwt.core.client.GWT;
@@ -97,7 +97,7 @@ public class UsersList extends Composite  {
 	}
 	
 	protected void usersUpdated() {
-		ArrayList<UserTuple> users = StaticGWTSyncer.getUsersdao().getAll();
+		Collection<UserTuple> users = StaticGWTSyncer.getUsersdao().getAll();
 		cellTable.setRowCount(users.size(), true);
 		while (list.size() != 0)
 			list.remove(0);
