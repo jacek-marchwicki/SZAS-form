@@ -20,7 +20,9 @@ public class UserWidget extends Composite {
 	.create(UserWidgetUiBinder.class);
 	@UiField Button saveButton;
 	@UiField TextBox nameTextBox;
+	@UiField Button deleteButton;
 	private UserTuple userTuple;
+	private boolean update;
 
 	interface UserWidgetUiBinder extends UiBinder<Widget, UserWidget> {
 	}
@@ -41,16 +43,24 @@ public class UserWidget extends Composite {
 		this.userTuple = userTuple;
 		initWidget(uiBinder.createAndBindUi(this));
 		nameTextBox.setText(userTuple.getName());
+		update = findTuple(userTuple.getId()) != null;
+		deleteButton.setVisible(update);
 	}
 
 	@UiHandler("saveButton")
 	void onSaveButtonClick(ClickEvent event) {
 		userTuple.setName(nameTextBox.getText());
-		boolean update = findTuple(userTuple.getId()) != null;
 		if (update)
 			StaticGWTSyncer.getUsersdao().update(userTuple);
 		else
 			StaticGWTSyncer.getUsersdao().insert(userTuple);
+		History.back();
+	}
+	@UiHandler("deleteButton")
+	void onDeleteButtonClick(ClickEvent event) {
+		if (!update)
+			return;
+		StaticGWTSyncer.getUsersdao().delete(userTuple);
 		History.back();
 	}
 }

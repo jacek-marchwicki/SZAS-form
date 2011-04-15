@@ -23,5 +23,8 @@
 		<g:layer left="236px" width="88px" top="0px" height="25px">
 			<g:Button ui:field="saveButton">Save</g:Button>
 		</g:layer>
+		<g:layer left="148px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="deleteButton">Delete</g:Button>
+		</g:layer>
 	</g:RootLayoutPanel>
 </ui:UiBinder> 
