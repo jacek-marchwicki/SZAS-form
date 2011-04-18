@@ -49,13 +49,33 @@ public class SyncNoAuthXmlServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		ArrayList<ToSyncElementsHolder> toSyncElementsHolders = 
 			new ArrayList<ToSyncElementsHolder>();
-		ToSyncElementsHolder toSyncElementsHolder = 
-			new ToSyncElementsHolder();
-		toSyncElementsHolders.add(toSyncElementsHolder);
-		toSyncElementsHolder.className = "users";
-		toSyncElementsHolder.lastTimestamp = -1;
-		toSyncElementsHolder.elementsToSync =
-			new ArrayList<Object>();
+		{
+			ToSyncElementsHolder toSyncElementsHolder = 
+				new ToSyncElementsHolder();
+			toSyncElementsHolders.add(toSyncElementsHolder);
+			toSyncElementsHolder.className = "users";
+			toSyncElementsHolder.lastTimestamp = -1;
+			toSyncElementsHolder.elementsToSync =
+				new ArrayList<Object>();
+		}
+		{
+			ToSyncElementsHolder toSyncElementsHolder = 
+				new ToSyncElementsHolder();
+			toSyncElementsHolders.add(toSyncElementsHolder);
+			toSyncElementsHolder.className = "filled";
+			toSyncElementsHolder.lastTimestamp = -1;
+			toSyncElementsHolder.elementsToSync =
+				new ArrayList<Object>();
+		}
+		{
+			ToSyncElementsHolder toSyncElementsHolder = 
+				new ToSyncElementsHolder();
+			toSyncElementsHolders.add(toSyncElementsHolder);
+			toSyncElementsHolder.className = "questionnaire";
+			toSyncElementsHolder.lastTimestamp = -1;
+			toSyncElementsHolder.elementsToSync =
+				new ArrayList<Object>();
+		}
 		responseSync(resp, toSyncElementsHolders);
 	}
 }
