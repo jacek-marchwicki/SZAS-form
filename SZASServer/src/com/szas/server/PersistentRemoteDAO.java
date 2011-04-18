@@ -36,7 +36,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 			query.setFilter("className == currentClassName");
 			query.setOrdering("timestamp desc");
 			query.setRange(0,1);
-			query.declareParameters("String lastNameParam");
+			query.declareParameters("String currentClassName");
 			@SuppressWarnings("unchecked")
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName());
@@ -66,9 +66,8 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
-			query.setFilter("className == currentClassName");
-			query.setFilter("deleted == false");
-			query.declareParameters("String lastNameParam");
+			query.setFilter("className == currentClassName && deleted == false");
+			query.declareParameters("String currentClassName");
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName());
 			if (results == null || results.isEmpty())
@@ -113,7 +112,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
 			query.setFilter("className == currentClassName && id == myId");
-			query.declareParameters("String lastNameParam, long myId");
+			query.declareParameters("String currentClassName, long myId");
 			@SuppressWarnings("unchecked")
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),element.getId());
@@ -135,7 +134,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
 			query.setFilter("className == currentClassName && id == myId");
-			query.declareParameters("String lastNameParam, long myId");
+			query.declareParameters("String currentClassName, long myId");
 			@SuppressWarnings("unchecked")
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),element.getId());
@@ -163,7 +162,7 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
 			query.setFilter("className == currentClassName && id == myId");
-			query.declareParameters("String lastNameParam, long myId");
+			query.declareParameters("String currentClassName, long myId");
 			query.setRange(0, 1);
 
 			@SuppressWarnings("unchecked")
@@ -233,9 +232,8 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		PersistenceManager pm = PMF.get().getPersistenceManager();
 		try {
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
-			query.setFilter("className == currentClassName");
-			query.setFilter("timestamp > lastTimestamp");
-			query.declareParameters("String lastNameParam, long lastTimestamp");
+			query.setFilter("className == currentClassName && timestamp > lastTimestamp");
+			query.declareParameters("String currentClassName, long lastTimestamp");
 			List<PersistentRemoteTuple> results =
 				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),lastTimestamp);
 
