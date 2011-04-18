@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.szas.data.FilledQuestionnaireTuple;
+import com.szas.data.QuestionnaireTuple;
 import com.szas.data.UserTuple;
 import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.ToSyncElementsHolder;
@@ -43,7 +45,11 @@ public final class StaticGWTSyncer {
 	}
 	private final static GWTSyncLocalService syncLocalService;
 	private final static LocalSyncHelper syncHelper;
+	
 	private final static LocalDAO<UserTuple> usersDAO;
+	private final static LocalDAO<QuestionnaireTuple> questionnaireDAO;
+	private final static LocalDAO<FilledQuestionnaireTuple> filledQuestionnaireDAO;
+	
 	private final static AutoSyncer autoSyncer;
 	private final static SyncingServiceAsync syncingService = GWT
 	.create(SyncingService.class);
@@ -51,8 +57,15 @@ public final class StaticGWTSyncer {
 	static {
 		syncLocalService = new GWTSyncLocalService();
 		syncHelper = new LocalSyncHelperImpl(syncLocalService);
+		
 		usersDAO = new LocalDAOImpl<UserTuple>();
-		syncHelper.append("users", getUsersdao());
+		questionnaireDAO = new LocalDAOImpl<QuestionnaireTuple>();
+		filledQuestionnaireDAO = new LocalDAOImpl<FilledQuestionnaireTuple>();
+		
+		syncHelper.append("users", usersDAO);
+		syncHelper.append("questionnaire", questionnaireDAO);
+		syncHelper.append("filled", filledQuestionnaireDAO);
+		
 		autoSyncer = new AutoSyncer(syncHelper);
 		getAutosyncer().addWatcher(usersDAO);
 		getAutosyncer().syncNow();
