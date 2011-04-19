@@ -6,13 +6,13 @@ import java.util.Random;
 public abstract class Tuple implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Random random = new Random();
-	protected int id;
+	protected long id;
 	
 	public Tuple() {
-		id = random.nextInt();
+		id = random.nextLong();
 	}
 
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 }

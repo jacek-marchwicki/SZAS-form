@@ -66,6 +66,11 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		MockElement receivedMockElement = mockElements.iterator().next();
 		assertEquals("Received value schould be equals as inserted", 
 				EXAMPLE_DATA, receivedMockElement.getData());
+		
+		long id = mockElement.getId();
+		MockElement elementById = universalDAO.getById(id);
+		assertNotNull(elementById);
+		assertEquals(mockElement.getData(), elementById.getData());
 	}
 	
 	@Test
@@ -88,6 +93,11 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		MockElement receivedMockElement = mockElements.iterator().next();
 		assertEquals("Received value schould be equals as inserted", 
 				EXAMPLE_DATA, receivedMockElement.getData());
+		
+		long id = mockElement.getId();
+		MockElement elementById = universalDAO.getById(id);
+		assertNotNull(elementById);
+		assertEquals(mockElement.getData(), elementById.getData());
 	}
 	
 	@Test
@@ -104,6 +114,10 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		assertTrue("Content observer schould be notiffied", myContentObserver.notiffied);
 		
 		assertEquals("Element schould be deleted", 0, universalDAO.getAll().size());
+		
+		long id = mockElement.getId();
+		MockElement elementById = universalDAO.getById(id);
+		assertNull(elementById);
 	}
 	
 }

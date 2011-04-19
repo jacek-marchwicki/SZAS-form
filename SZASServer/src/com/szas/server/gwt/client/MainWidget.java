@@ -12,6 +12,10 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.UserTuple;
+import com.szas.server.gwt.client.router.LongRouteAction;
+import com.szas.server.gwt.client.router.RouteAction;
+import com.szas.server.gwt.client.router.Router;
+import com.szas.server.gwt.client.router.RouterImpl;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Label;
 
@@ -23,6 +27,7 @@ public class MainWidget extends Composite {
 	@UiField SimplePanel simplePanel;
 	@UiField Button refreshButton;
 	@UiField Label syncStatusLabel;
+	private Router<Widget> router = new RouterImpl<Widget>();
 
 	private AutoSyncer.AutoSyncerObserver autoSyncerObserver;
 
@@ -32,9 +37,45 @@ public class MainWidget extends Composite {
 
 	interface MainWidgetUiBinder extends UiBinder<Widget, MainWidget> {
 	}
+	
+	private void addRoutes() {
+		RouteAction<Widget> usersRouteAction = new RouteAction<Widget>() {
+			@Override
+			public Widget run(String command, String params) {
+				return new UsersList();
+			}
+		};
+		router.addRoute("users", usersRouteAction);
+		router.addRoute("", usersRouteAction);
+		router.addRoute("questionnaries", new RouteAction<Widget>() {
+			@Override
+			public Widget run(String command, String params) {
+				return new QuestionnariesList();
+			}
+		});
+		router.addRoute("user", new LongRouteAction<Widget>() {
+			@Override
+			protected Widget run(String command, long id) {
+				UserTuple userTuple = StaticGWTSyncer.getUsersdao().getById(id);
+				if (userTuple == null)
+					return null;
+				return new UserWidget(userTuple);
+			}
+		});
+		router.addRoute("user", new RouteAction<Widget>() {
+			@Override
+			public Widget run(String command, String params) {
+				UserTuple userTuple = new UserTuple();
+				return new UserWidget(userTuple);
+			}
+		});
+	}
 
 	public MainWidget() {
 		initWidget(uiBinder.createAndBindUi(this));
+		
+		addRoutes();		
+		
 		ValueChangeHandler<String> valueChangeHandler =
 			new ValueChangeHandler<String>() {
 			@Override
@@ -84,43 +125,12 @@ public class MainWidget extends Composite {
 		
 	}
 	protected void parseToken(String historyToken) {
-		String command = null;
-		String params = null;
-		String separator = ",";
-		int separatorPosition = historyToken.indexOf(separator);
-		if (separatorPosition == -1) {
-			command = historyToken;
+		Widget newWidget = router.route(historyToken);
+		if (newWidget != null) {
+			switchWidget(newWidget);
 		} else {
-			command = historyToken.substring(0, separatorPosition);
-			if (historyToken.length() > separatorPosition + 1)
-				params = historyToken.substring(separatorPosition+1);
+			switchWidget(new NotFoundWidget());
 		}
-		System.out.println("command: '"+command+"'");
-		if (params != null) {
-			System.out.println("params: "+params);
-		}
-		if (command.equals("") || command.equals("users")) {
-			System.out.println("Users!!!!");
-			switchWidget(new UsersList());
-		} else if (command.equals("user")) {
-			if (params == null) {
-				UserTuple userTuple = new UserTuple();
-				switchWidget(new UserWidget(userTuple));
-			} else {
-				try {
-					int id = Integer.parseInt(params);
-					UserTuple userTuple = UserWidget.findTuple(id);
-					if (userTuple == null) {
-						// NONE
-					} else {
-						switchWidget(new UserWidget(userTuple));
-					}
-				} catch (NumberFormatException ex) {
-					// NONE
-				}
-			}
-		}
-
 	}
 
 	@Override

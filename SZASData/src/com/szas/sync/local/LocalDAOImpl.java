@@ -199,4 +199,25 @@ extends ContentObserverProviderImpl implements LocalDAO<T> {
 		setSyncedElements(ret);
 	}
 
+	@Override
+	public T getById(long id) {
+		Long idObj = new Long(id);
+		LocalTuple<T> localTuple;
+		localTuple = elementsToSync.get(idObj);
+		if (localTuple != null) {
+			if (localTuple.getStatus() == LocalTuple.Status.DELETING)
+				return null;
+			return localTuple.getElement();
+		}
+		if (syncingElements != null) {
+			localTuple = syncingElements.get(idObj);
+			if (localTuple != null) {
+				if (localTuple.getStatus() == LocalTuple.Status.DELETING)
+					return null;
+				return localTuple.getElement();
+			}
+		}
+		return elements.get(idObj);		
+	}
+
 }

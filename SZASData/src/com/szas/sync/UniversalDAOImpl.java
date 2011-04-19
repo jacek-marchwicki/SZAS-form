@@ -30,4 +30,13 @@ implements UniversalDAO<T> {
 		notifyContentObservers(false);
 	}
 
+	@Override
+	public T getById(long id) {
+		for (T element : elements) {
+			if (element.getId() == id)
+				return element;
+		}
+		return null;
+	}
+
 }

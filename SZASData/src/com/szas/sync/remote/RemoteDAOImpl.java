@@ -136,4 +136,16 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 		return ret;
 	}
 
+	@Override
+	public T getById(long id) {
+		for (RemoteTuple<T> element : elements) {
+			if (element.getElement().getId() == id) {
+				if (element.isDeleted())
+					return null;
+				return element.getElement();
+			}
+		}
+		return null;
+	}
+
 }

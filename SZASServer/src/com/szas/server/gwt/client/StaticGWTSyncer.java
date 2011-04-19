@@ -63,8 +63,8 @@ public final class StaticGWTSyncer {
 		filledQuestionnaireDAO = new LocalDAOImpl<FilledQuestionnaireTuple>();
 		
 		syncHelper.append("users", usersDAO);
-		syncHelper.append("questionnaire", questionnaireDAO);
-		syncHelper.append("filled", filledQuestionnaireDAO);
+		syncHelper.append("questionnaire", getQuestionnairedao());
+		syncHelper.append("filled", getFilledquestionnairedao());
 		
 		autoSyncer = new AutoSyncer(syncHelper);
 		getAutosyncer().addWatcher(usersDAO);
@@ -77,5 +77,13 @@ public final class StaticGWTSyncer {
 
 	public static AutoSyncer getAutosyncer() {
 		return autoSyncer;
+	}
+
+	public static LocalDAO<QuestionnaireTuple> getQuestionnairedao() {
+		return questionnaireDAO;
+	}
+
+	public static LocalDAO<FilledQuestionnaireTuple> getFilledquestionnairedao() {
+		return filledQuestionnaireDAO;
 	}
 }

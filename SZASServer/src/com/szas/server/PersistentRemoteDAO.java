@@ -279,4 +279,32 @@ public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProvide
 		}
 		return ret;
 	}
+
+	@Override
+	public T getById(long id) {
+		PersistenceManager pm = PMF.get().getPersistenceManager();
+		try {
+			Query query = pm.newQuery(PersistentRemoteTuple.class);
+			query.setFilter("className == currentClassName && id == myId && deleted == false");
+			query.declareParameters("String currentClassName, long myId");
+			query.setRange(0, 1);
+
+			@SuppressWarnings("unchecked")
+			List<PersistentRemoteTuple> results =
+				(List<PersistentRemoteTuple>) query.execute(tupleClass.getName(),id);
+
+			if (results == null)
+				return null;
+			if (results.size() == 0)
+				return null;
+			PersistentRemoteTuple persistentRemoteTuple =
+				results.get(0);
+
+			@SuppressWarnings("unchecked")
+			T ret = (T) persistentRemoteTuple.getElement();
+			return ret;
+		} finally {
+			pm.close();
+		}
+	}
 }

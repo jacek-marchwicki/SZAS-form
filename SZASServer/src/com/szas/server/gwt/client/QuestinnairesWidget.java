@@ -8,23 +8,25 @@ import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import com.szas.data.UserTuple;
+import com.szas.data.QuestionnaireTuple;
 import com.szas.sync.local.LocalDAO;
 
-public class UserWidget extends UniversalWidget<UserTuple> {
+public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
-	private static UserWidgetUiBinder uiBinder = 
-		GWT.create(UserWidgetUiBinder.class);
-	
+	private static QuestinnairesWidgetUiBinder uiBinder = GWT
+			.create(QuestinnairesWidgetUiBinder.class);
+
+	interface QuestinnairesWidgetUiBinder extends
+			UiBinder<Widget, QuestinnairesWidget> {
+	}
+
 	@UiField Button saveButton;
 	@UiField TextBox nameTextBox;
 	@UiField Button deleteButton;
-
-	interface UserWidgetUiBinder extends UiBinder<Widget, UserWidget> {
-	}
 	
-	public UserWidget(UserTuple userTuple) {
-		super(userTuple);
+	
+	public QuestinnairesWidget(QuestionnaireTuple questionnaireTuple) {
+		super(questionnaireTuple);
 	}
 
 	@UiHandler("saveButton")
@@ -38,8 +40,8 @@ public class UserWidget extends UniversalWidget<UserTuple> {
 	}
 
 	@Override
-	protected LocalDAO<UserTuple> getLocalDAO() {
-		return StaticGWTSyncer.getUsersdao();
+	protected LocalDAO<QuestionnaireTuple> getLocalDAO() {
+		return StaticGWTSyncer.getQuestionnairedao();
 	}
 
 	@Override
@@ -59,6 +61,7 @@ public class UserWidget extends UniversalWidget<UserTuple> {
 
 	@Override
 	protected void setDeleteable(boolean deletable) {
-		deleteButton.setVisible(deletable);
+		deleteButton.setVisible(update);
 	}
+
 }
