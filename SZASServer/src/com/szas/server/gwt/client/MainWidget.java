@@ -11,6 +11,7 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.szas.data.QuestionnaireTuple;
 import com.szas.data.UserTuple;
 import com.szas.server.gwt.client.router.LongRouteAction;
 import com.szas.server.gwt.client.router.RouteAction;
@@ -47,12 +48,6 @@ public class MainWidget extends Composite {
 		};
 		router.addRoute("users", usersRouteAction);
 		router.addRoute("", usersRouteAction);
-		router.addRoute("questionnaries", new RouteAction<Widget>() {
-			@Override
-			public Widget run(String command, String params) {
-				return new QuestionnariesList();
-			}
-		});
 		router.addRoute("user", new LongRouteAction<Widget>() {
 			@Override
 			protected Widget run(String command, long id) {
@@ -67,6 +62,32 @@ public class MainWidget extends Composite {
 			public Widget run(String command, String params) {
 				UserTuple userTuple = new UserTuple();
 				return new UserWidget(userTuple);
+			}
+		});
+		router.addRoute("questionnaries", new RouteAction<Widget>() {
+			@Override
+			public Widget run(String command, String params) {
+				return new QuestionnariesList();
+			}
+		});
+		router.addRoute("questionnarie", new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				QuestionnaireTuple questionnaireTuple =
+					StaticGWTSyncer.getQuestionnairedao().getById(param);
+				if (questionnaireTuple == null)
+					return null;
+				return new QuestinnairesWidget(questionnaireTuple);
+			}
+		});
+		router.addRoute("questionnarie", new RouteAction<Widget>() {
+
+			@Override
+			public Widget run(String command, String params) {
+				QuestionnaireTuple questionnaireTuple =
+					new QuestionnaireTuple();
+				return new QuestinnairesWidget(questionnaireTuple);
 			}
 		});
 	}

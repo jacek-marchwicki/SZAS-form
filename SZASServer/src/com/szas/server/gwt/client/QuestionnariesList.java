@@ -31,6 +31,7 @@ public class QuestionnariesList extends UniversalList<QuestionnaireTuple> {
 
 	public QuestionnariesList() {
 		initWidget(uiBinder.createAndBindUi(this));
+		daoUpdated();
 	}
 
 	@Override
