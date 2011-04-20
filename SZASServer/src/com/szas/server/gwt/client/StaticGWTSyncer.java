@@ -67,8 +67,10 @@ public final class StaticGWTSyncer {
 		syncHelper.append("filled", getFilledquestionnairedao());
 		
 		autoSyncer = new AutoSyncer(syncHelper);
-		getAutosyncer().addWatcher(usersDAO);
-		getAutosyncer().syncNow();
+		autoSyncer.addWatcher(usersDAO);
+		autoSyncer.addWatcher(questionnaireDAO);
+		autoSyncer.addWatcher(filledQuestionnaireDAO);
+		autoSyncer.syncNow();
 	}
 	
 	public static LocalDAO<UserTuple> getUsersdao() {

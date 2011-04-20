@@ -129,6 +129,16 @@ public class AutoSyncer {
 			}
 		});
 	}
+	
+	public boolean isSynced() {
+		if (syncing)
+			return false;
+		if (waitTime != 0)
+			return false;
+		if (newDataThroughSyncing)
+			return false;
+		return true;
+	}
 
 	protected void calculateIncrementedTime() {
 		actualSyncTime = actualSyncTime * 2;

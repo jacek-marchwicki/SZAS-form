@@ -8,6 +8,8 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -107,6 +109,15 @@ public class MainWidget extends Composite {
 		};
 		History.addValueChangeHandler(valueChangeHandler);
 		History.fireCurrentHistoryState();
+		
+		Window.addWindowClosingHandler(new Window.ClosingHandler() {		
+			@Override
+			public void onWindowClosing(ClosingEvent event) {
+				if (StaticGWTSyncer.getAutosyncer().isSynced())
+					return;
+				event.setMessage("Tere are sync in progress - are you sure to exit?");
+			}
+		});
 	}
 
 	protected void switchWidget(Widget newWidget) {
