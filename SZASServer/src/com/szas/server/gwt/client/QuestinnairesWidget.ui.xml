@@ -1,0 +1,30 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		
+	</ui:style>
+	<g:RootLayoutPanel width="" height="">
+		<g:layer left="0px" top="35px" height="40px" right="0px">
+			<g:Grid>
+				<g:row>
+					<g:customCell>
+						<g:InlineLabel text="Nazwa Ankiety:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:TextBox ui:field="nameTextBox"/>
+					</g:customCell>
+				</g:row>
+			</g:Grid>
+		</g:layer>
+		<g:layer left="0px" width="68px" top="0px" height="17px">
+			<g:Label text="Edit User"/>
+		</g:layer>
+		<g:layer left="236px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="saveButton">Save</g:Button>
+		</g:layer>
+		<g:layer left="148px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="deleteButton">Delete</g:Button>
+		</g:layer>
+	</g:RootLayoutPanel>
+</ui:UiBinder> 

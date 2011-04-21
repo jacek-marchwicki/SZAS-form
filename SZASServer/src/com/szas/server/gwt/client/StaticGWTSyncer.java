@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.szas.data.FilledQuestionnaireTuple;
+import com.szas.data.QuestionnaireTuple;
 import com.szas.data.UserTuple;
 import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.ToSyncElementsHolder;
@@ -43,19 +45,47 @@ public final class StaticGWTSyncer {
 	}
 	private final static GWTSyncLocalService syncLocalService;
 	private final static LocalSyncHelper syncHelper;
+	
 	private final static LocalDAO<UserTuple> usersDAO;
+	private final static LocalDAO<QuestionnaireTuple> questionnaireDAO;
+	private final static LocalDAO<FilledQuestionnaireTuple> filledQuestionnaireDAO;
+	
+	private final static AutoSyncer autoSyncer;
 	private final static SyncingServiceAsync syncingService = GWT
 	.create(SyncingService.class);
+	
 	static {
 		syncLocalService = new GWTSyncLocalService();
 		syncHelper = new LocalSyncHelperImpl(syncLocalService);
+		
 		usersDAO = new LocalDAOImpl<UserTuple>();
-		getSynchelper().append("users", getUsersdao());
+		questionnaireDAO = new LocalDAOImpl<QuestionnaireTuple>();
+		filledQuestionnaireDAO = new LocalDAOImpl<FilledQuestionnaireTuple>();
+		
+		syncHelper.append("users", usersDAO);
+		syncHelper.append("questionnaire", getQuestionnairedao());
+		syncHelper.append("filled", getFilledquestionnairedao());
+		
+		autoSyncer = new AutoSyncer(syncHelper);
+		autoSyncer.addWatcher(usersDAO);
+		autoSyncer.addWatcher(questionnaireDAO);
+		autoSyncer.addWatcher(filledQuestionnaireDAO);
+		autoSyncer.syncNow();
 	}
+	
 	public static LocalDAO<UserTuple> getUsersdao() {
 		return usersDAO;
 	}
-	public static LocalSyncHelper getSynchelper() {
-		return syncHelper;
+
+	public static AutoSyncer getAutosyncer() {
+		return autoSyncer;
+	}
+
+	public static LocalDAO<QuestionnaireTuple> getQuestionnairedao() {
+		return questionnaireDAO;
+	}
+
+	public static LocalDAO<FilledQuestionnaireTuple> getFilledquestionnairedao() {
+		return filledQuestionnaireDAO;
 	}
 }

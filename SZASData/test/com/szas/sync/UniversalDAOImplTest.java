@@ -1,6 +1,6 @@
 package com.szas.sync;
 
-import java.util.ArrayList;
+import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 
 public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
-	protected class MockElement extends Tuple {
+	protected static class MockElement extends Tuple {
 		private static final long serialVersionUID = 1L;
 		private int data = 0;
 		public MockElement() {
@@ -61,11 +61,16 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		
 		int size = universalDAO.getAll().size();
 		assertEquals("Size of list after insertion schould be 1",size,1);
-		ArrayList<MockElement> mockElements = 
+		Collection<MockElement> mockElements = 
 			universalDAO.getAll();
-		MockElement receivedMockElement = mockElements.get(0);
+		MockElement receivedMockElement = mockElements.iterator().next();
 		assertEquals("Received value schould be equals as inserted", 
 				EXAMPLE_DATA, receivedMockElement.getData());
+		
+		long id = mockElement.getId();
+		MockElement elementById = universalDAO.getById(id);
+		assertNotNull(elementById);
+		assertEquals(mockElement.getData(), elementById.getData());
 	}
 	
 	@Test
@@ -82,11 +87,17 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		
 		assertTrue("Content observer schould be notiffied", myContentObserver.notiffied);
 		
-		ArrayList<MockElement> mockElements = 
+		Collection<MockElement> mockElements = 
 			universalDAO.getAll();
-		MockElement receivedMockElement = mockElements.get(0);
+		assertEquals("Size of list after insertion schould be 1",mockElements.size(),1);
+		MockElement receivedMockElement = mockElements.iterator().next();
 		assertEquals("Received value schould be equals as inserted", 
-				receivedMockElement.getData(), EXAMPLE_DATA);
+				EXAMPLE_DATA, receivedMockElement.getData());
+		
+		long id = mockElement.getId();
+		MockElement elementById = universalDAO.getById(id);
+		assertNotNull(elementById);
+		assertEquals(mockElement.getData(), elementById.getData());
 	}
 	
 	@Test
@@ -103,6 +114,10 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 		assertTrue("Content observer schould be notiffied", myContentObserver.notiffied);
 		
 		assertEquals("Element schould be deleted", 0, universalDAO.getAll().size());
+		
+		long id = mockElement.getId();
+		MockElement elementById = universalDAO.getById(id);
+		assertNull(elementById);
 	}
 	
 }

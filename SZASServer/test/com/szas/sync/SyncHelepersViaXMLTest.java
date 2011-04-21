@@ -25,10 +25,10 @@ public class SyncHelepersViaXMLTest extends SyncHelpersTest {
 					String toServer;
 					XStream xStream = new XStream();
 					toServer = xStream.toXML(toSyncElementsHolders);
-					
-					
+System.out.println(toServer);					
 					// Server side
 					String toClient = serverSide(toServer);	
+System.out.println(toClient);
 					
 					
 					// Client side

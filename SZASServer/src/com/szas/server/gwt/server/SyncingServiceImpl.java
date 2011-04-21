@@ -14,10 +14,16 @@ import com.szas.sync.WrongObjectThrowable;
 public class SyncingServiceImpl extends RemoteServiceServlet implements
 		SyncingService {
 
+	public SyncingServiceImpl() {
+		
+	}
+
 	@Override
 	public ArrayList<SyncedElementsHolder> sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders) {
+		
 		try {
-			return StaticSyncer.getSyncHelper().sync(toSyncElementsHolders);
+			ArrayList<SyncedElementsHolder> value = StaticSyncer.getSyncHelper().sync(toSyncElementsHolders);
+			return value;
 		} catch (WrongObjectThrowable e) {
 			return null;
 		}

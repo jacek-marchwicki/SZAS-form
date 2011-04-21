@@ -1,7 +1,9 @@
 *~
 */war/usersmanager/
+*/war/questionnaries/
 */war/WEB-INF/deploy/
 */war/WEB-INF/appengine-generated/**
 */war/WEB-INF/classes/**
 */bin/**
 SZASAndroid/gen/**
+SZASServer/.gwt/**

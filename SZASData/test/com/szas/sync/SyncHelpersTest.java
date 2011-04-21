@@ -1,7 +1,8 @@
 package com.szas.sync;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import com.szas.sync.local.LocalSyncHelper;
 import com.szas.sync.local.LocalSyncHelperImpl;
 import com.szas.sync.local.SyncLocalService;
 import com.szas.sync.local.SyncLocalServiceResult;
+import com.szas.sync.local.SyncObserver;
 import com.szas.sync.remote.RemoteDAO;
 import com.szas.sync.remote.RemoteDAOImpl;
 import com.szas.sync.remote.RemoteSyncHelper;
@@ -34,10 +36,11 @@ public class SyncHelpersTest {
 	}
 	private static final int EXAMPLE_DATA = 10;
 	private static final int NEW_EXAMPLE_DATA = 12;
-	LocalSyncHelper localSyncHelper;
-	RemoteSyncHelper remoteSyncHelper;
-	RemoteDAO<MockSubTuple> remoteMockTuples;
+	private LocalSyncHelper localSyncHelper;
+	protected RemoteSyncHelper remoteSyncHelper;
+	private RemoteDAO<MockSubTuple> remoteMockTuples;
 	private LocalDAO<MockSubTuple> localMockTuples;
+	private MockSyncObserver mockSyncObserver;
 	protected SyncLocalService getSyncLocalService() {
 		return new SyncLocalService() {
 			
@@ -54,10 +57,39 @@ public class SyncHelpersTest {
 			}
 		};
 	}
+	protected static class MockSyncObserver implements SyncObserver {
+		public boolean sucess = false;
+		public boolean fail = false;
+		public boolean start = false;
+		@Override
+		public void onSucces() {
+			sucess = true;
+		}
+
+		@Override
+		public void onFail(Throwable throwable) {
+			fail = true;
+		}
+		
+		@Override
+		public void onStart() {
+			start = true;
+		}
+		
+		public void reset() {
+			sucess = false;
+			fail = false;
+			start = false;
+		}
+	}
+	
 	@Before
 	public void setUp() {
+		mockSyncObserver = new MockSyncObserver();
+		
 		remoteSyncHelper = new RemoteSyncHelperImpl();
 		localSyncHelper = new LocalSyncHelperImpl(getSyncLocalService());
+		localSyncHelper.addSyncObserver(mockSyncObserver);
 		
 		localMockTuples = new LocalDAOImpl<MockSubTuple>();
 		remoteMockTuples = new RemoteDAOImpl<MockSubTuple>();
@@ -71,7 +103,10 @@ public class SyncHelpersTest {
 		localMockTuples.insert(localTuple);
 		assertEquals("Size after insertion schould be 1",1,localMockTuples.getAll().size());
 		
+		mockSyncObserver.reset();
 		localSyncHelper.sync();
+		assertTrue("start Sync Observer schould be notiffied", mockSyncObserver.start);
+		assertTrue("succes Sync Observer schould be notiffied", mockSyncObserver.sucess);
 		
 		assertEquals("Size after sync schould be same" ,1,localMockTuples.getAll().size());
 		
@@ -79,8 +114,8 @@ public class SyncHelpersTest {
 				localMockTuples.getAll().size(),
 				remoteMockTuples.getAll().size());
 		
-		ArrayList<MockSubTuple> remoteTuples = remoteMockTuples.getAll();
-		MockSubTuple remoteTuple = remoteTuples.get(0);
+		Collection<MockSubTuple> remoteTuples = remoteMockTuples.getAll();
+		MockSubTuple remoteTuple = remoteTuples.iterator().next();
 		localTuple.assertSame(remoteTuple);	
 		
 		remoteTuple.setData(NEW_EXAMPLE_DATA);
@@ -88,9 +123,9 @@ public class SyncHelpersTest {
 		
 		localSyncHelper.sync();
 		
-		ArrayList<MockSubTuple> localTuples = localMockTuples.getAll();
+		Collection<MockSubTuple> localTuples = localMockTuples.getAll();
 		assertEquals("(sync after update schould not lead to create new rows)",1,localTuples.size());
-		localTuple = localTuples.get(0);
+		localTuple = localTuples.iterator().next();
 		remoteTuple.assertSame(localTuple);
 		
 	}
@@ -110,15 +145,15 @@ public class SyncHelpersTest {
 				remoteMockTuples.getAll().size(),
 				localMockTuples.getAll().size());
 		
-		ArrayList<MockSubTuple> localTuples = remoteMockTuples.getAll();
-		MockSubTuple localTuple = localTuples.get(0);
+		Collection<MockSubTuple> localTuples = remoteMockTuples.getAll();
+		MockSubTuple localTuple = localTuples.iterator().next();
 		
 		localTuple.setData(NEW_EXAMPLE_DATA);
 		remoteMockTuples.update(localTuple);
 		
 		localSyncHelper.sync();
 		
-		ArrayList<MockSubTuple> remoteTuples = localMockTuples.getAll();
+		Collection<MockSubTuple> remoteTuples = localMockTuples.getAll();
 		assertEquals("(sync after update schould not lead to create new rows)",1,remoteTuples.size());
 		localTuple.assertSame(remoteTuple);
 	}

@@ -9,7 +9,7 @@ import com.szas.sync.local.LocalTuple;
 
 public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl implements RemoteDAO<T> {
 	private static final long serialVersionUID = 1L;
-	int timestamp = 0;
+	int timestamp = -1;
 	
 	@Override
 	public long getTimestamp() {
@@ -18,7 +18,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 	
 	private int getNextTimestamp() {
 		timestamp +=1;
-		return timestamp -1;
+		return timestamp;
 	}
 
 	ArrayList<RemoteTuple<T>> elements = 
@@ -43,7 +43,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 		remoteTuple.setDeleted(false);
 		remoteTuple.setElement(element);
 		elements.add(remoteTuple);
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -56,7 +56,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 			remoteTuple.setDeleted(true);
 			break;
 		}
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 			remoteTuple.setTimestamp(getNextTimestamp());
 			break;
 		}
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 				continue;
 			ret.add(remoteTuple);
 		}
-		notifyContentObservers();
+		notifyContentObservers(true);
 		return ret;
 	}
 
@@ -134,6 +134,18 @@ public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl 
 			ret.add((Object)element);
 		}
 		return ret;
+	}
+
+	@Override
+	public T getById(long id) {
+		for (RemoteTuple<T> element : elements) {
+			if (element.getElement().getId() == id) {
+				if (element.isDeleted())
+					return null;
+				return element.getElement();
+			}
+		}
+		return null;
 	}
 
 }

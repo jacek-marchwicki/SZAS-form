@@ -16,18 +16,27 @@ implements UniversalDAO<T> {
 	@Override
 	public void insert(T element) {
 		elements.add(element);
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
 	public void delete(T element) {
 		elements.remove(element);
-		notifyContentObservers();
+		notifyContentObservers(false);
 	}
 
 	@Override
 	public void update(T element) {
-		notifyContentObservers();
+		notifyContentObservers(false);
+	}
+
+	@Override
+	public T getById(long id) {
+		for (T element : elements) {
+			if (element.getId() == id)
+				return element;
+		}
+		return null;
 	}
 
 }

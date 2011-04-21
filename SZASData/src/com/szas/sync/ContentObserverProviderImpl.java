@@ -18,9 +18,9 @@ public class ContentObserverProviderImpl implements ContentObserverProvider {
 		return contentObservers.remove(contentObserver);
 	}
 	
-	protected void notifyContentObservers() {
+	protected void notifyContentObservers(boolean whileSync) {
 		for (ContentObserver contentObserver : contentObservers) {
-			contentObserver.onChange();
+			contentObserver.onChange(whileSync);
 		}
 	}
 }

@@ -15,7 +15,7 @@ public class ContentObserverProviderImplTest {
 		}
 
 		@Override
-		public void onChange() {
+		public void onChange(boolean whileSync) {
 			notiffied = true;
 		}
 		
@@ -31,7 +31,7 @@ public class ContentObserverProviderImplTest {
 		MyContentObserver contentObserver2 = new MyContentObserver();
 		contentObserverProviderImpl.addContentObserver(contentObserver1);
 		contentObserverProviderImpl.addContentObserver(contentObserver2);
-		contentObserverProviderImpl.notifyContentObservers();
+		contentObserverProviderImpl.notifyContentObservers(false);
 		assertTrue("Content obserer schould be notified", contentObserver1.notiffied);
 		assertTrue("Content obserer schould be notified", contentObserver2.notiffied);
 	}
@@ -44,7 +44,7 @@ public class ContentObserverProviderImplTest {
 		contentObserverProviderImpl.addContentObserver(contentObserver2);
 		boolean removed = contentObserverProviderImpl.removeContentObserver(contentObserver1);
 		assertTrue("return value schould be true", removed);
-		contentObserverProviderImpl.notifyContentObservers();
+		contentObserverProviderImpl.notifyContentObservers(false);
 		assertFalse("Removed content obserer schould not be notified", contentObserver1.notiffied);
 		assertTrue("Content obserer schould be notified", contentObserver2.notiffied);
 	}
@@ -55,7 +55,7 @@ public class ContentObserverProviderImplTest {
 		contentObserverProviderImpl.addContentObserver(contentObserver1);
 		boolean removed = contentObserverProviderImpl.removeContentObserver(contentObserver2);
 		assertFalse("Removing not added content observer schould not succesed", removed);
-		contentObserverProviderImpl.notifyContentObservers();
+		contentObserverProviderImpl.notifyContentObservers(false);
 		assertTrue("Content obserer schould be notified", contentObserver1.notiffied);
 	}
 }
