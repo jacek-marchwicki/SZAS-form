@@ -13,13 +13,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.CursorJoiner.Result;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 
-import com.szas.data.UserTuple;
 import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.Tuple;
 import com.szas.sync.remote.RemoteTuple;

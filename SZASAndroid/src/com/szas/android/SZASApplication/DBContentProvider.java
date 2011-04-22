@@ -48,10 +48,10 @@ public class DBContentProvider extends ContentProvider {
 	private static HashMap<String, String> szasProjectionMap;
 
 	private static final String DBCREATE = "create table " + DBTABLE + " ("
-			+ DBCOL_ID + " TEXT NOT NULL primary key," + DBCOL_syncTimestamp
-			+ " TEXT not null," + // --sqlite nie ma long'ow
+			+ DBCOL_ID + " TEXT NOT NULL primary key," + 
+			DBCOL_syncTimestamp + " TEXT not null," + // --sqlite nie ma long'ow
 			DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
-			DBCOL_form + " TEXT not null)";
+			DBCOL_form + " TEXT not null )";
 
 	@Override
 	public int delete(Uri arg0, String where, String[] whereArgs) {
