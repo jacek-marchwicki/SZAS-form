@@ -4,10 +4,24 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public final class ToSyncElementsHolder implements Serializable {
-	private static final long serialVersionUID = 1L;
 	public ToSyncElementsHolder() {
 	}
+	
+	private static final long serialVersionUID = 1L;
+	
+	/**
+	 * className name of remote DAO's sync service
+	 */
 	public String className;
-	public ArrayList<Object> elementsToSync; // ArrayList<LocalTuple<T>>
+	
+	/**
+	 * elements to by stored on remote DAO
+	 * casted from ArrayList<LocalTuple<T>> to ArrayList<Object>
+	 */
+	public ArrayList<Object> elementsToSync;
+	
+	/**
+	 * Last sync timestamp, -1 if no sync was performed
+	 */
 	public long lastTimestamp;
 }
