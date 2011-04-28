@@ -3,13 +3,23 @@
  */
 package com.szas.android.SZASApplication;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+
+import com.szas.sync.ContentObserver;
+import com.szas.sync.Tuple;
+import com.szas.sync.WrongObjectThrowable;
+import com.szas.sync.local.LocalDAO;
+import com.szas.sync.local.LocalTuple;
+import com.szas.sync.remote.RemoteTuple;
 
 import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SyncContext;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -22,10 +32,19 @@ import android.net.Uri;
 /**
  * @author Pawel Szafer email pszafer@gmail.com
  * 
- * no comments because based on ContentProvider
+ *         no comments because based on ContentProvider
  */
-public class DBContentProvider extends ContentProvider {
+
+public class SQLLocalDAO implements LocalDAO<Tuple>{ 
 	
+/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+private static class DBContentProvider extends ContentProvider {
+
+	public static final String AUTHORITY = "com.szas.android.SZASApplication";
 	private static final String DBNAME = "szas";
 	private static final int DBVERSION = 2;
 	private static final String DBTABLE = "szas_table";
@@ -48,10 +67,12 @@ public class DBContentProvider extends ContentProvider {
 	private static HashMap<String, String> szasProjectionMap;
 
 	private static final String DBCREATE = "create table " + DBTABLE + " ("
-			+ DBCOL_ID + " TEXT NOT NULL primary key," + 
-			DBCOL_syncTimestamp + " TEXT not null," + // --sqlite nie ma long'ow
+			+ DBCOL_ID + " TEXT NOT NULL primary key," + DBCOL_syncTimestamp
+			+ " TEXT not null," + // --sqlite nie ma long'ow
 			DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
 			DBCOL_form + " TEXT not null )";
+	
+	private SyncContext syncContext = null;
 
 	@Override
 	public int delete(Uri arg0, String where, String[] whereArgs) {
@@ -99,7 +120,7 @@ public class DBContentProvider extends ContentProvider {
 			getContext().getContentResolver().notifyChange(noteUri, null);
 			return noteUri;
 		}
-		throw new SQLException("Unknown URI");
+		throw new SQLException("Failed to insert ROW into " + arg0);
 	}
 
 	@Override
@@ -147,7 +168,7 @@ public class DBContentProvider extends ContentProvider {
 		getContext().getContentResolver().notifyChange(uri, null);
 		return count;
 	}
-
+	
 	/**
 	 * Projection map to create Urimatcher
 	 */
@@ -186,4 +207,123 @@ public class DBContentProvider extends ContentProvider {
 		}
 	}
 
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.UniversalDAO#getAll()
+ */
+@Override
+public Collection<Tuple> getAll() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.UniversalDAO#getById(long)
+ */
+@Override
+public Tuple getById(long id) {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.UniversalDAO#insert(com.szas.sync.Tuple)
+ */
+@Override
+public void insert(Tuple element) {
+	// TODO Auto-generated method stub
+	
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.UniversalDAO#delete(com.szas.sync.Tuple)
+ */
+@Override
+public void delete(Tuple element) {
+	// TODO Auto-generated method stub
+	
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.UniversalDAO#update(com.szas.sync.Tuple)
+ */
+@Override
+public void update(Tuple element) {
+	// TODO Auto-generated method stub
+	
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.ContentObserverProvider#addContentObserver(com.szas.sync.ContentObserver)
+ */
+@Override
+public void addContentObserver(ContentObserver contentObserver) {
+	// TODO Auto-generated method stub
+	
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.ContentObserverProvider#removeContentObserver(com.szas.sync.ContentObserver)
+ */
+@Override
+public boolean removeContentObserver(ContentObserver contentObserver) {
+	// TODO Auto-generated method stub
+	return false;
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.local.LocalDAO#getElementsToSync()
+ */
+@Override
+public ArrayList<LocalTuple<Tuple>> getElementsToSync() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.local.LocalDAO#getUnknownElementsToSync()
+ */
+@Override
+public ArrayList<Object> getUnknownElementsToSync() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.local.LocalDAO#getLastTimestamp()
+ */
+@Override
+public long getLastTimestamp() {
+	// TODO Auto-generated method stub
+	return 0;
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.local.LocalDAO#setLastTimestamp(long)
+ */
+@Override
+public void setLastTimestamp(long lastTimestamp) {
+	// TODO Auto-generated method stub
+	
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.local.LocalDAO#setSyncedElements(java.util.ArrayList)
+ */
+@Override
+public void setSyncedElements(ArrayList<RemoteTuple<Tuple>> syncedElements) {
+	// TODO Auto-generated method stub
+	
+}
+
+/* (non-Javadoc)
+ * @see com.szas.sync.local.LocalDAO#setSyncedUnknownElements(java.util.ArrayList)
+ */
+@Override
+public void setSyncedUnknownElements(ArrayList<Object> syncedElements)
+		throws WrongObjectThrowable {
+	// TODO Auto-generated method stub
+	
+}
 }
