@@ -4,26 +4,34 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import com.szas.sync.ContentObserverProviderImpl;
+import com.szas.sync.DAOObserverProviderImpl;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.remote.RemoteTuple;
 
 public class LocalDAOImpl<T extends Tuple>
-extends ContentObserverProviderImpl implements LocalDAO<T> {
+extends DAOObserverProviderImpl implements LocalDAO<T> {
 	
 	private static final long serialVersionUID = 1L;
 
 	private long lastTimestamp = -1;
 	
+	/**
+	 * elements received from remote DAO
+	 */
 	private HashMap<Long, T> elements =
 		new HashMap<Long, T>();
 	
 	/**
+	 * elements inserted by user while syncing
 	 * if not null means - syncing
 	 */
 	private HashMap<Long, LocalTuple<T>> syncingElements = null;
 	
+	
+	/**
+	 * elements inserted by user before sync
+	 */
 	private HashMap<Long, LocalTuple<T>> elementsToSync =
 		new HashMap<Long, LocalTuple<T>>(); 
 	

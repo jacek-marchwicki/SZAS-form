@@ -25,7 +25,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.widgetideas.client.GlassPanel;
 import com.szas.data.UserTuple;
 import com.szas.server.gwt.client.AutoSyncer.AutoSyncerObserver;
-import com.szas.sync.ContentObserver;
+import com.szas.sync.DAOObserver;
 
 public class UsersManager implements EntryPoint {
 
@@ -149,7 +149,7 @@ public class UsersManager implements EntryPoint {
 		table.addColumnSortHandler(columnSortHandler);
 
 
-		StaticGWTSyncer.getUsersdao().addContentObserver(new ContentObserver() {
+		StaticGWTSyncer.getUsersdao().addDAOObserver(new DAOObserver() {
 
 			@Override
 			public void onChange(boolean whileSync) {

@@ -51,7 +51,7 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 	@Test
 	public void testInsertElement() {
 		MyContentObserver myContentObserver = new MyContentObserver();
-		contentObserverProviderImpl.addContentObserver(myContentObserver);
+		contentObserverProviderImpl.addDAOObserver(myContentObserver);
 		
 		MockElement mockElement = new MockElement();
 		mockElement.setData(EXAMPLE_DATA);
@@ -76,7 +76,7 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 	@Test
 	public void testUpdateElement() {
 		MyContentObserver myContentObserver = new MyContentObserver();
-		contentObserverProviderImpl.addContentObserver(myContentObserver);
+		contentObserverProviderImpl.addDAOObserver(myContentObserver);
 		
 		MockElement mockElement = new MockElement();
 		universalDAO.insert(mockElement);
@@ -103,7 +103,7 @@ public class UniversalDAOImplTest extends ContentObserverProviderImplTest {
 	@Test
 	public void testDeleteElement() {
 		MyContentObserver myContentObserver = new MyContentObserver();
-		contentObserverProviderImpl.addContentObserver(myContentObserver);
+		contentObserverProviderImpl.addDAOObserver(myContentObserver);
 		
 		MockElement mockElement = new MockElement();
 		universalDAO.insert(mockElement);

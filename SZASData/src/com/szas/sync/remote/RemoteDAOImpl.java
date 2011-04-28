@@ -2,12 +2,12 @@ package com.szas.sync.remote;
 
 import java.util.ArrayList;
 
-import com.szas.sync.ContentObserverProviderImpl;
+import com.szas.sync.DAOObserverProviderImpl;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.local.LocalTuple;
 
-public class RemoteDAOImpl<T extends Tuple> extends ContentObserverProviderImpl implements RemoteDAO<T> {
+public class RemoteDAOImpl<T extends Tuple> extends DAOObserverProviderImpl implements RemoteDAO<T> {
 	private static final long serialVersionUID = 1L;
 	int timestamp = -1;
 	

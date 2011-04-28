@@ -1,5 +1,5 @@
 package com.szas.sync;
 
-public interface ContentObserver {
+public interface DAOObserver {
 	public void onChange(boolean whileSync);
 }

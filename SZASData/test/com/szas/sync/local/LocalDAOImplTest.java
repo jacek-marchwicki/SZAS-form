@@ -113,7 +113,7 @@ public class LocalDAOImplTest extends UniversalDAOImplTest {
 	public void testGetSyncedData() {
 		MyContentObserver myContentObserver = 
 			new MyContentObserver();
-		localDAO.addContentObserver(myContentObserver);
+		localDAO.addDAOObserver(myContentObserver);
 		
 		ArrayList<RemoteTuple<MockElement>> syncedElements =
 			new ArrayList<RemoteTuple<MockElement>>();

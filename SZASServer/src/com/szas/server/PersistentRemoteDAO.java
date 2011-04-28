@@ -8,14 +8,14 @@ import java.util.logging.Logger;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
-import com.szas.sync.ContentObserverProviderImpl;
+import com.szas.sync.DAOObserverProviderImpl;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.local.LocalTuple;
 import com.szas.sync.remote.RemoteDAO;
 import com.szas.sync.remote.RemoteTuple;
 
-public class PersistentRemoteDAO<T extends Tuple> extends ContentObserverProviderImpl implements RemoteDAO<T> {
+public class PersistentRemoteDAO<T extends Tuple> extends DAOObserverProviderImpl implements RemoteDAO<T> {
 
 	private static final Logger log =
 		Logger.getLogger(PersistentRemoteDAO.class.getName());

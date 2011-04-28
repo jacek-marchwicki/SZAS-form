@@ -3,7 +3,7 @@ package com.szas.server.gwt.client;
 import java.util.ArrayList;
 
 import com.google.gwt.user.client.Timer;
-import com.szas.sync.ContentObserver;
+import com.szas.sync.DAOObserver;
 import com.szas.sync.local.LocalDAO;
 import com.szas.sync.local.LocalSyncHelper;
 import com.szas.sync.local.SyncObserver;
@@ -119,7 +119,7 @@ public class AutoSyncer {
 	 * @param dao
 	 */
 	public void addWatcher(LocalDAO<?> dao) {
-		dao.addContentObserver(new ContentObserver() {
+		dao.addDAOObserver(new DAOObserver() {
 
 			@Override
 			public void onChange(boolean whileSync) {

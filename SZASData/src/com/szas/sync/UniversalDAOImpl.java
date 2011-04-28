@@ -3,7 +3,7 @@ package com.szas.sync;
 import java.util.ArrayList;
 
 
-public class UniversalDAOImpl<T extends Tuple> extends ContentObserverProviderImpl
+public class UniversalDAOImpl<T extends Tuple> extends DAOObserverProviderImpl
 implements UniversalDAO<T> {
 	private static final long serialVersionUID = 1L;
 	private ArrayList<T> elements = new ArrayList<T>();

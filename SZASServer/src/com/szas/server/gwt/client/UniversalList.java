@@ -11,7 +11,7 @@ import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
-import com.szas.sync.ContentObserver;
+import com.szas.sync.DAOObserver;
 import com.szas.sync.Tuple;
 import com.szas.sync.local.LocalDAO;
 
@@ -28,7 +28,7 @@ public abstract class UniversalList<T extends Tuple> extends Composite {
 	private SingleSelectionModel<T> selectionModel;
 	private ProvidesKey<T> providesKey;
 	private List<T> list;
-	private ContentObserver contentObserver;
+	private DAOObserver contentObserver;
 	private CellTable<T> cellTable;
 
 	protected SingleSelectionModel<T> createSelectionModel() {
@@ -76,14 +76,14 @@ public abstract class UniversalList<T extends Tuple> extends Composite {
 	@Override
 	protected void onAttach() {
 		super.onAttach();
-		contentObserver = new ContentObserver() {
+		contentObserver = new DAOObserver() {
 
 			@Override
 			public void onChange(boolean whileSync) {
 				daoUpdated();
 			}
 		};
-		getLocalDAO().addContentObserver(contentObserver);
+		getLocalDAO().addDAOObserver(contentObserver);
 	}
 	
 	protected abstract LocalDAO<T> getLocalDAO();
@@ -103,7 +103,7 @@ public abstract class UniversalList<T extends Tuple> extends Composite {
 	@Override
 	protected void onDetach() {
 		if (contentObserver != null)
-			StaticGWTSyncer.getUsersdao().removeContentObserver(contentObserver);
+			StaticGWTSyncer.getUsersdao().removeDAOObserver(contentObserver);
 		contentObserver = null;
 		super.onDetach();
 	}

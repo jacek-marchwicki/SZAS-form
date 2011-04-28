@@ -17,7 +17,12 @@ import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
 
 public class SyncNoAuthServlet extends HttpServlet {
+	
+	
 	private static final long serialVersionUID = 1L;
+	
+	
+	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -30,6 +35,8 @@ public class SyncNoAuthServlet extends HttpServlet {
 		
 		responseSync(resp, toSyncElementsHolders);
 	}
+	
+	
 	private void responseSync(HttpServletResponse resp,
 			ArrayList<ToSyncElementsHolder> toSyncElementsHolders)
 			throws IOException{
@@ -44,6 +51,8 @@ public class SyncNoAuthServlet extends HttpServlet {
             	"Error while syncing data.");
 		}
 	}
+	
+	
 	public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		ArrayList<ToSyncElementsHolder> toSyncElementsHolders = 
 			new ArrayList<ToSyncElementsHolder>();
