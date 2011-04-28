@@ -155,11 +155,6 @@ public class PersistentRemoteDAO<T extends Tuple> extends DAOObserverProviderImp
 		try {
 			T localElement = localTuple.getElement();
 
-			if (localTuple.getStatus() ==  LocalTuple.Status.SYNCED) {
-				log.severe("Client should not send synced elements");
-				return;
-			}
-
 			Query query = pm.newQuery(PersistentRemoteTuple.class);
 			query.setFilter("className == currentClassName && id == myId");
 			query.declareParameters("String currentClassName, long myId");
