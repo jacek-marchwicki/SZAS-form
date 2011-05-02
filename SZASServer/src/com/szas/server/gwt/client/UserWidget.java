@@ -12,6 +12,8 @@ import com.szas.data.UserTuple;
 import com.szas.sync.local.LocalDAO;
 
 public class UserWidget extends UniversalWidget<UserTuple> {
+	
+	public static String NAME = "user";
 
 	private static UserWidgetUiBinder uiBinder = 
 		GWT.create(UserWidgetUiBinder.class);

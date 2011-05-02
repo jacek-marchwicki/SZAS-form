@@ -48,9 +48,9 @@ public class MainWidget extends Composite {
 				return new UsersList();
 			}
 		};
-		router.addRoute("users", usersRouteAction);
+		router.addRoute(UsersList.NAME, usersRouteAction);
 		router.addRoute("", usersRouteAction);
-		router.addRoute("user", new LongRouteAction<Widget>() {
+		router.addRoute(UserWidget.NAME, new LongRouteAction<Widget>() {
 			@Override
 			protected Widget run(String command, long id) {
 				UserTuple userTuple = StaticGWTSyncer.getUsersdao().getById(id);
@@ -59,20 +59,20 @@ public class MainWidget extends Composite {
 				return new UserWidget(userTuple);
 			}
 		});
-		router.addRoute("user", new RouteAction<Widget>() {
+		router.addRoute(UserWidget.NAME, new RouteAction<Widget>() {
 			@Override
 			public Widget run(String command, String params) {
 				UserTuple userTuple = new UserTuple();
 				return new UserWidget(userTuple);
 			}
 		});
-		router.addRoute("questionnaries", new RouteAction<Widget>() {
+		router.addRoute(QuestionnariesList.NAME, new RouteAction<Widget>() {
 			@Override
 			public Widget run(String command, String params) {
 				return new QuestionnariesList();
 			}
 		});
-		router.addRoute("questionnarie", new LongRouteAction<Widget>() {
+		router.addRoute(QuestinnairesWidget.NAME, new LongRouteAction<Widget>() {
 
 			@Override
 			protected Widget run(String command, long param) {
@@ -83,13 +83,24 @@ public class MainWidget extends Composite {
 				return new QuestinnairesWidget(questionnaireTuple);
 			}
 		});
-		router.addRoute("questionnarie", new RouteAction<Widget>() {
+		router.addRoute(EditQuesionnaireWidget.NAME, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				QuestionnaireTuple questionnaireTuple =
+					StaticGWTSyncer.getQuestionnairedao().getById(param);
+				if (questionnaireTuple == null)
+					return null;
+				return new EditQuesionnaireWidget(questionnaireTuple);
+			}
+		});
+		router.addRoute(EditQuesionnaireWidget.NAME, new RouteAction<Widget>() {
 
 			@Override
 			public Widget run(String command, String params) {
 				QuestionnaireTuple questionnaireTuple =
 					new QuestionnaireTuple();
-				return new QuestinnairesWidget(questionnaireTuple);
+				return new EditQuesionnaireWidget(questionnaireTuple);
 			}
 		});
 	}

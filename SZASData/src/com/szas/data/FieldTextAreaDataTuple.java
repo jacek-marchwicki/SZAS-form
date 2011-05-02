@@ -1,6 +1,6 @@
 package com.szas.data;
 
-public class TextAreaDataTuple extends TextAreaTuple implements FieldDataTuple {
+public class FieldTextAreaDataTuple extends FieldTextAreaTuple implements FieldDataTuple {
 
 	/**
 	 * 

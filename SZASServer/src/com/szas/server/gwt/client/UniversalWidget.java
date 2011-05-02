@@ -9,9 +9,9 @@ public abstract class UniversalWidget<T extends Tuple> extends Composite {
 	protected T tuple;
 	protected boolean update;
 	
+	protected abstract void initWidget();
 	protected abstract LocalDAO<T> getLocalDAO();
 	protected abstract void updateWidgets();
-	protected abstract void initWidget();
 	protected abstract void updateTuple();
 	protected abstract void setDeleteable(boolean deletable);
 	

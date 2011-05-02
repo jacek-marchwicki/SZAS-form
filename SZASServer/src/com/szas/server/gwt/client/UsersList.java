@@ -13,6 +13,8 @@ import com.szas.data.UserTuple;
 import com.szas.sync.local.LocalDAO;
 
 public class UsersList extends UniversalList<UserTuple>  {
+	
+	public static String NAME = "users";
 
 	private static UsersListUiBinder uiBinder =
 		GWT.create(UsersListUiBinder.class);
@@ -40,7 +42,7 @@ public class UsersList extends UniversalList<UserTuple>  {
 
 	@Override
 	protected String getListName() {
-		return "user";
+		return UserWidget.NAME;
 	}
 
 	@Override

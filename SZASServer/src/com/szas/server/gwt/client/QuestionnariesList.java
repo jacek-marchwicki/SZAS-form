@@ -7,19 +7,51 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.TextColumn;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.sync.local.LocalDAO;
 
-public class QuestionnariesList extends UniversalList<QuestionnaireTuple> {
+public class QuestionnariesList extends Composite {
 	
-	@UiField(provided=true) CellTable<QuestionnaireTuple> cellTable = createTable();
+	public static String NAME = "questionnaires";
+	
+	SimpleTupleList<QuestionnaireTuple> simpleTupleList= new SimpleTupleList<QuestionnaireTuple>() {
+
+		@Override
+		protected void addColumns(CellTable<QuestionnaireTuple> cellTable) {
+			TextColumn<QuestionnaireTuple> nameColumn;
+			nameColumn = new TextColumn<QuestionnaireTuple>() {
+				@Override
+				public String getValue(QuestionnaireTuple object) {
+					return object.getName();
+				}
+			};
+			nameColumn.setSortable(true);
+			cellTable.addColumn(nameColumn, "Questionnaire");
+		}
+
+		@Override
+		protected LocalDAO<QuestionnaireTuple> getLocalDAO() {
+			return StaticGWTSyncer.getQuestionnairedao();
+		}
+
+		@Override
+		protected String getListName() {
+			return QuestinnairesWidget.NAME;
+		}
+	};
+	
+	@UiField(provided=true)
+	CellTable<QuestionnaireTuple> cellTable = simpleTupleList;
+	
 	@UiField Button addButton;
 	
 	@UiHandler("addButton")
 	void onAddButtonClick(ClickEvent event) {
-		addButtonClicked();
+		History.newItem(EditQuesionnaireWidget.NAME,true);
 	}
 
 	private static QuestionnariesListUiBinder uiBinder = GWT
@@ -31,30 +63,7 @@ public class QuestionnariesList extends UniversalList<QuestionnaireTuple> {
 
 	public QuestionnariesList() {
 		initWidget(uiBinder.createAndBindUi(this));
-		daoUpdated();
-	}
-
-	@Override
-	protected LocalDAO<QuestionnaireTuple> getLocalDAO() {
-		return StaticGWTSyncer.getQuestionnairedao();
-	}
-
-	@Override
-	protected String getListName() {
-		return "questionnarie";
-	}
-
-	@Override
-	protected void addColumns(CellTable<QuestionnaireTuple> cellTable2) {
-		TextColumn<QuestionnaireTuple> nameColumn;
-		nameColumn = new TextColumn<QuestionnaireTuple>() {
-			@Override
-			public String getValue(QuestionnaireTuple object) {
-				return object.getName();
-			}
-		};
-		nameColumn.setSortable(true);
-		cellTable2.addColumn(nameColumn, "Questionnaire");
+		simpleTupleList.daoUpdated();
 	}
 
 }

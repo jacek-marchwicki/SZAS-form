@@ -1,6 +1,6 @@
 package com.szas.data;
 
-public class FiledTextBoxDataTuple extends FieldTextBoxTuple implements FieldDataTuple {
+public class FieldTextBoxDataTuple extends FieldTextBoxTuple implements FieldDataTuple {
 
 	/**
 	 * 

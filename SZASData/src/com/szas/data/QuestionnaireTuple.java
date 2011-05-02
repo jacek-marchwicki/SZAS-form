@@ -13,6 +13,11 @@ public class QuestionnaireTuple extends Tuple  {
 	
 	private String name;
 	private ArrayList<FieldDataTuple> fields;
+	
+	public QuestionnaireTuple() {
+		fields = new ArrayList<FieldDataTuple>();
+		name = "";
+	}
 	public void setName(String name) {
 		this.name = name;
 	}
