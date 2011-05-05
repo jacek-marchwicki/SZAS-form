@@ -32,7 +32,7 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 			
 			@Override
 			protected String getListName() {
-				return "filledquestionnaire";
+				return FilledQuestionnaireWidget.NAME;
 			}
 			
 			@Override
@@ -58,6 +58,7 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 	@UiField Button deleteButton;
 	@UiField Label questionnaireName;
 	@UiField Button editButton;
+	@UiField Button fillButton;
 	
 	
 	public QuestinnairesWidget(QuestionnaireTuple questionnaireTuple) {
@@ -97,5 +98,10 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 	@UiHandler("editButton")
 	void onEditButtonClick(ClickEvent event) {
 		History.newItem(EditQuesionnaireWidget.NAME+"," + tuple.getId(),true);
+	}
+	
+	@UiHandler("fillButton")
+	void onFillButtonClick(ClickEvent event) {
+		History.newItem(FilledQuestionnaireWidget.NAME_NEW + "," + tuple.getId(),true);
 	}
 }

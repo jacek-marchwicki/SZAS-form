@@ -6,7 +6,7 @@ public class FieldTextBoxTuple extends FieldTuple {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String value;
+	protected String value;
 	public void setValue(String value) {
 		this.value = value;
 	}

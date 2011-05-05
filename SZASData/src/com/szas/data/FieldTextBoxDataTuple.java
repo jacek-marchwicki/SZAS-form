@@ -13,4 +13,12 @@ public class FieldTextBoxDataTuple extends FieldTextBoxTuple implements FieldDat
 	public boolean isNullable() {
 		return nullable;
 	}
+	@Override
+	public FieldTuple getTuple() {
+		FieldTextBoxTuple tuple = 
+			new FieldTextBoxTuple();
+		tuple.setName(name);
+		tuple.setValue(value);
+		return tuple;
+	}
 }

@@ -13,6 +13,7 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.data.UserTuple;
 import com.szas.server.gwt.client.router.LongRouteAction;
@@ -103,6 +104,30 @@ public class MainWidget extends Composite {
 				QuestionnaireTuple questionnaireTuple =
 					new QuestionnaireTuple();
 				return new EditQuesionnaireWidget(questionnaireTuple);
+			}
+		});
+		router.addRoute(FilledQuestionnaireWidget.NAME, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				FilledQuestionnaireTuple filledQuestionnaireTuple =
+					StaticGWTSyncer.getFilledquestionnairedao().getById(param);
+				if (filledQuestionnaireTuple == null)
+					return null;
+				return new FilledQuestionnaireWidget(filledQuestionnaireTuple);
+			}
+		});
+		router.addRoute(FilledQuestionnaireWidget.NAME_NEW, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				QuestionnaireTuple questionnaireTuple =
+					StaticGWTSyncer.getQuestionnairedao().getById(param);
+				if (questionnaireTuple == null)
+					return null;
+				FilledQuestionnaireTuple filledQuestionnaireTuple = 
+					questionnaireTuple.getFilled();
+				return new FilledQuestionnaireWidget(filledQuestionnaireTuple);
 			}
 		});
 	}

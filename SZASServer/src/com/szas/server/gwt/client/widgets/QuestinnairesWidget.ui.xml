@@ -27,5 +27,8 @@
 					width="100%" height="" />
 			</g:ScrollPanel>
 		</g:layer>
+		<g:layer left="324px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="fillButton" text="Fill"/>
+		</g:layer>
 	</g:RootLayoutPanel>
 </ui:UiBinder> 

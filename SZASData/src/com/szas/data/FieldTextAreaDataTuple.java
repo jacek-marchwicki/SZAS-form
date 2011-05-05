@@ -13,4 +13,13 @@ public class FieldTextAreaDataTuple extends FieldTextAreaTuple implements FieldD
 	public boolean isNullable() {
 		return nullable;
 	}
+	
+	@Override
+	public FieldTuple getTuple() {
+		FieldTextAreaTuple tuple = 
+			new FieldTextAreaTuple();
+		tuple.setName(name);
+		tuple.setValue(value);
+		return tuple;
+	}
 }

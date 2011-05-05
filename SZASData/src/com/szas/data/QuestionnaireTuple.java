@@ -30,4 +30,18 @@ public class QuestionnaireTuple extends Tuple  {
 	public ArrayList<FieldDataTuple> getFields() {
 		return fields;
 	}
+	public FilledQuestionnaireTuple getFilled() {
+		FilledQuestionnaireTuple tuple = 
+			new FilledQuestionnaireTuple();
+		tuple.setName(name);
+		ArrayList<FieldTuple> fieldTuples = 
+			new ArrayList<FieldTuple>();
+		for (FieldDataTuple fieldDataTuple : fields) {
+			FieldTuple fieldTuple;
+			fieldTuple = fieldDataTuple.getTuple();
+			fieldTuples.add(fieldTuple);
+		}
+		tuple.setFilledFields(fieldTuples);
+		return tuple;
+	}
 }
