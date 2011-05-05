@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -19,6 +19,8 @@ import com.szas.server.gwt.client.router.LongRouteAction;
 import com.szas.server.gwt.client.router.RouteAction;
 import com.szas.server.gwt.client.router.Router;
 import com.szas.server.gwt.client.router.RouterImpl;
+import com.szas.server.gwt.client.sync.AutoSyncer;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Label;
 

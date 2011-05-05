@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;

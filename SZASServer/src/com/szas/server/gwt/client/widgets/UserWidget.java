@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -9,6 +9,8 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.UserTuple;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
+import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 
 public class UserWidget extends UniversalWidget<UserTuple> {

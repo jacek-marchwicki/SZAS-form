@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -12,6 +12,9 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
+import com.szas.server.gwt.client.universalwidgets.SimpleTupleList;
+import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 import com.google.gwt.user.client.ui.Label;
 

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.szas.server.StaticSyncer;
 import com.szas.server.gwt.client.SerializableWhiteSpace;
-import com.szas.server.gwt.client.SyncingService;
+import com.szas.server.gwt.client.sync.SyncingService;
 import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.ToSyncElementsHolder;
 import com.szas.sync.WrongObjectThrowable;

@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.universalwidgets;
 
 import com.google.gwt.user.client.ui.Composite;
 

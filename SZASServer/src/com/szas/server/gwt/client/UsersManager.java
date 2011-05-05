@@ -24,7 +24,8 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.gwt.widgetideas.client.GlassPanel;
 import com.szas.data.UserTuple;
-import com.szas.server.gwt.client.AutoSyncer.AutoSyncerObserver;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
+import com.szas.server.gwt.client.sync.AutoSyncer.AutoSyncerObserver;
 import com.szas.sync.DAOObserver;
 
 public class UsersManager implements EntryPoint {

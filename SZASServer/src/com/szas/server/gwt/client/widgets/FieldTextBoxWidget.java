@@ -1,9 +1,10 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.FieldTextBoxDataTuple;
+import com.szas.server.gwt.client.universalwidgets.FieldWidget;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.SimpleCheckBox;

@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import java.util.ArrayList;
 
@@ -16,6 +16,9 @@ import com.szas.data.FieldDataTuple;
 import com.szas.data.FieldTextBoxDataTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.data.FieldTextAreaDataTuple;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
+import com.szas.server.gwt.client.universalwidgets.FieldWidget;
+import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 
 public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> {

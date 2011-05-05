@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.sync;
 
 import no.eirikb.gwtchannelapi.client.Message;
 

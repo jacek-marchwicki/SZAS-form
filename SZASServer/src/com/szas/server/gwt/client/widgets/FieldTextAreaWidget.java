@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -8,6 +8,7 @@ import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.FieldTextAreaDataTuple;
+import com.szas.server.gwt.client.universalwidgets.FieldWidget;
 
 public class FieldTextAreaWidget extends FieldWidget {
 
