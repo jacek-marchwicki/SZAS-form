@@ -9,6 +9,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.Text;
 import com.szas.sync.SyncedElementsHolder;
 
 import flexjson.JSONDeserializer;
@@ -25,7 +26,7 @@ public class PersistentRemoteTuple implements Serializable{
 	private boolean deleted;
 	
 	@Persistent
-	private String element;
+	private Text element;
 	
 	@Persistent
 	private long timestamp;
@@ -50,10 +51,12 @@ public class PersistentRemoteTuple implements Serializable{
 	}
 	
 	public void setElement(Object element) {
-		this.element = new JSONSerializer().include("*").serialize(element);
+		String value = new JSONSerializer().include("*").serialize(element);
+		this.element = new Text(value);
 	}
 	public Object getElement() {
-		return new JSONDeserializer<ArrayList<SyncedElementsHolder>>().deserialize(element);
+		String value = this.element.getValue();
+		return new JSONDeserializer<ArrayList<SyncedElementsHolder>>().deserialize(value);
 	}
 
 	public void setTimestamp(long timestamp) {
