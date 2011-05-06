@@ -19,22 +19,21 @@ import com.szas.sync.local.LocalDAO;
 import com.google.gwt.user.client.ui.Label;
 
 public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
-	
+
 	public static String NAME = "questionnaire";
-	
-	SimpleTupleList<FilledQuestionnaireTuple> simpleTupleList = 
-		new SimpleTupleList<FilledQuestionnaireTuple>() {
-			
+
+	static class MyTupleList extends SimpleTupleList<FilledQuestionnaireTuple> {
+
 			@Override
 			protected LocalDAO<FilledQuestionnaireTuple> getLocalDAO() {
 				return StaticGWTSyncer.getFilledquestionnairedao();
 			}
-			
+
 			@Override
 			protected String getListName() {
 				return FilledQuestionnaireWidget.NAME;
 			}
-			
+
 			@Override
 			protected void addColumns(CellTable<FilledQuestionnaireTuple> cellTable) {
 				TextColumn<FilledQuestionnaireTuple> nameColumn;
@@ -45,26 +44,30 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 					}
 				};
 				nameColumn.setSortable(true);
-				cellTable.addColumn(nameColumn, "Questionnaire");
+				cellTable.addColumn(nameColumn, "Filled");
 			}
 		};
 
-	private static QuestinnairesWidgetUiBinder uiBinder = GWT
-			.create(QuestinnairesWidgetUiBinder.class);
 
-	interface QuestinnairesWidgetUiBinder extends
-			UiBinder<Widget, QuestinnairesWidget> {
-	}
+	@UiField(provided=true)
+	CellTable<FilledQuestionnaireTuple> cellTable;
 	@UiField Button deleteButton;
 	@UiField Label questionnaireName;
 	@UiField Button editButton;
 	@UiField Button fillButton;
-	
-	
+
+	private static QuestinnairesWidgetUiBinder uiBinder = GWT
+	.create(QuestinnairesWidgetUiBinder.class);
+
+	interface QuestinnairesWidgetUiBinder extends
+	UiBinder<Widget, QuestinnairesWidget> {
+	}
+
+
 	public QuestinnairesWidget(QuestionnaireTuple questionnaireTuple) {
 		super(questionnaireTuple);
 	}
-	
+
 	@UiHandler("deleteButton")
 	void onDeleteButtonClick(ClickEvent event) {
 		onDelete();
@@ -82,6 +85,7 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	@Override
 	protected void initWidget() {
+		cellTable = new MyTupleList();
 		initWidget(uiBinder.createAndBindUi(this));
 	}
 
@@ -99,7 +103,7 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 	void onEditButtonClick(ClickEvent event) {
 		History.newItem(EditQuesionnaireWidget.NAME+"," + tuple.getId(),true);
 	}
-	
+
 	@UiHandler("fillButton")
 	void onFillButtonClick(ClickEvent event) {
 		History.newItem(FilledQuestionnaireWidget.NAME_NEW + "," + tuple.getId(),true);

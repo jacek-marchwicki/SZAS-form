@@ -17,7 +17,7 @@ import com.szas.data.FieldTextBoxDataTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.data.FieldTextAreaDataTuple;
 import com.szas.server.gwt.client.sync.StaticGWTSyncer;
-import com.szas.server.gwt.client.universalwidgets.FieldWidget;
+import com.szas.server.gwt.client.universalwidgets.FieldDataWidget;
 import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 
@@ -43,7 +43,7 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 
 	private ArrayList<FieldDataTuple> fields;
 
-	private ArrayList<FieldWidget> fieldWidgets;
+	private ArrayList<FieldDataWidget> fieldWidgets;
 
 	@Override
 	protected LocalDAO<QuestionnaireTuple> getLocalDAO() {
@@ -68,12 +68,12 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 	protected void updateWidgets() {
 		nameTextBox.setText(tuple.getName());
 		fields = tuple.getFields();
-		fieldWidgets = new ArrayList<FieldWidget>();
+		fieldWidgets = new ArrayList<FieldDataWidget>();
 		updateList();
 	}
 	
 	private void updateFields() {
-		for (FieldWidget widget : fieldWidgets) {
+		for (FieldDataWidget widget : fieldWidgets) {
 			widget.updateField();
 		}
 	}
@@ -81,13 +81,13 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 	private void updateList() {
 		updateFields();
 		verticalPanel.clear();
-		fieldWidgets = new ArrayList<FieldWidget>();
+		fieldWidgets = new ArrayList<FieldDataWidget>();
 		for (FieldDataTuple field : fields) {
-			FieldWidget widget;
+			FieldDataWidget widget;
 			if (field instanceof FieldTextBoxDataTuple) {
-				widget = new FieldTextBoxWidget((FieldTextBoxDataTuple) field);
+				widget = new FieldTextBoxDataWidget((FieldTextBoxDataTuple) field);
 			} else if (field instanceof FieldTextAreaDataTuple) {
-				widget = new FieldTextAreaWidget((FieldTextAreaDataTuple) field);
+				widget = new FieldTextAreaDataWidget((FieldTextAreaDataTuple) field);
 			} else {
 				continue;
 			}

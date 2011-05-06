@@ -70,6 +70,8 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 		this.setSelectionModel(selectionModel);
 
 		createDataProvider(this);
+		
+		daoUpdated();
 	}
 	
 	public void daoUpdated() {

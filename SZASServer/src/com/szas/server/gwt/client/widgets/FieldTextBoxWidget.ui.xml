@@ -5,31 +5,10 @@
 		
 	</ui:style>
 	<g:AbsolutePanel>
-			<g:Grid>
-				<g:row>
-					<g:customCell>
-						<g:Label text="Name"/>
-					</g:customCell>
-					<g:customCell>
-						<g:TextBox ui:field="nameTextBox"/>
-					</g:customCell>
-				</g:row>
-				<g:row>
-					<g:customCell>
-						<g:Label text="Default value:"/>
-					</g:customCell>
-					<g:customCell>
-						<g:TextBox ui:field="valueTextBox"/>
-					</g:customCell>
-				</g:row>
-				<g:row>
-					<g:customCell>
-						<g:Label text="Could be empty:"/>
-					</g:customCell>
-					<g:customCell>
-						<g:SimpleCheckBox ui:field="nullableCheckBox"/>
-					</g:customCell>
-				</g:row>
-			</g:Grid>
+		<g:VerticalPanel>
+			<g:Label text="New Label" ui:field="nameLabel" />
+
+			<g:TextBox ui:field="valueTextBox" />
+		</g:VerticalPanel>
 	</g:AbsolutePanel>
 </ui:UiBinder> 

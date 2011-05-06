@@ -4,30 +4,10 @@
 	<ui:style>
 		
 	</ui:style>
-	<g:HTMLPanel>
-		<table>
-			<tr>
-				<td>
-					<g:Label text="Name" width="120px" />
-				</td>
-				<td>
-					<g:TextBox ui:field="nameTextBox" width="200px" />
-				</td>
-			</tr>
-			<tr>
-				<td colspan="2">
-					<g:Label text="Default value:" /> <br/>
-					<g:TextArea ui:field="valueTextArea" width="320px" height=""></g:TextArea>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<g:Label text="Could be empty:" />
-				</td>
-				<td>
-					<g:SimpleCheckBox ui:field="nullableCheckBox" />
-				</td>
-			</tr>
-		</table>
-	</g:HTMLPanel>
+	<g:AbsolutePanel>
+		<g:VerticalPanel>
+			<g:Label text="New Label" ui:field="nameLabel" />
+			<g:TextArea ui:field="valueTextArea" />
+		</g:VerticalPanel>
+	</g:AbsolutePanel>
 </ui:UiBinder> 
