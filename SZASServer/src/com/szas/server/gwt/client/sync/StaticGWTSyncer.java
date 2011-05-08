@@ -54,6 +54,14 @@ public final class StaticGWTSyncer {
 	private final static SyncingServiceAsync syncingService = GWT
 	.create(SyncingService.class);
 	
+	public static native String getEmail() /*-{
+	  return $wnd.email;
+	}-*/;
+	
+	public static native String getLogoutUrl() /*-{
+		return $wnd.logoutUrl;
+	}-*/;
+	
 	static {
 		syncLocalService = new GWTSyncLocalService();
 		syncHelper = new LocalSyncHelperImpl(syncLocalService);

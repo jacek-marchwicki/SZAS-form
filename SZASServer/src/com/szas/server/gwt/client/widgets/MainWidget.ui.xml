@@ -6,6 +6,9 @@
 			font-size: 23px;
 			text-align:center;
 		}
+		.signOut {
+			text-align: right;
+		}
 	</ui:style>
 	<g:RootLayoutPanel>
 		<g:layer left="10px" width="145px" top="60px" bottom="10px">
@@ -29,8 +32,11 @@
 		<g:layer left="0px" top="10px" height="25px" right="0px">
 			<g:Label styleName="{style.header}" text="SZAS-form" />
 		</g:layer>
-		<g:layer left="0px" width="155px" top="0px" height="17px">
+		<g:layer left="10px" width="145px" top="0px" height="17px">
 			<g:Label ui:field="syncStatusLabel"/>
+		</g:layer>
+		<g:layer width="285px" top="0px" height="17px" right="10px">
+			<g:HTML wordWrap="true" ui:field="loginField"  styleName="{style.signOut}"></g:HTML>
 		</g:layer>
 	</g:RootLayoutPanel>
 </ui:UiBinder> 

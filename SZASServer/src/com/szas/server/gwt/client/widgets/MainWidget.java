@@ -4,6 +4,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -24,6 +25,7 @@ import com.szas.server.gwt.client.sync.AutoSyncer;
 import com.szas.server.gwt.client.sync.StaticGWTSyncer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.HTML;
 
 public class MainWidget extends Composite {
 
@@ -33,6 +35,13 @@ public class MainWidget extends Composite {
 	@UiField SimplePanel simplePanel;
 	@UiField Button refreshButton;
 	@UiField Label syncStatusLabel;
+	@UiField(provided=true) HTML loginField = 
+		new HTML("Logged as: " +
+				SafeHtmlUtils.htmlEscape(StaticGWTSyncer.getEmail()) +
+				", <a href=\"" +
+				StaticGWTSyncer.getLogoutUrl()
+				+ "\">sign out</a>"
+				);
 	private Router<Widget> router = new RouterImpl<Widget>();
 
 	private AutoSyncer.AutoSyncerObserver autoSyncerObserver;

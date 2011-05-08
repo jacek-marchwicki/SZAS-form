@@ -29,6 +29,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<servlet-class>com.szas.server.SyncServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+		<servlet-name>questionnairesServlet</servlet-name>
+		<servlet-class>com.szas.server.QuestionnairesServlet</servlet-class>
+	</servlet>
+
 
 	<servlet-mapping>
 		<servlet-name>syncingService</servlet-name>
@@ -55,6 +60,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 		<url-pattern>/appstats/*</url-pattern>
 	</servlet-mapping>
 
+	<servlet-mapping>
+		<servlet-name>questionnairesServlet</servlet-name>
+		<url-pattern>/questionnaires</url-pattern>
+	</servlet-mapping>
+
 
 	<filter>
 		<filter-name>appstats</filter-name>
@@ -72,11 +82,9 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 
 	<security-constraint>
 		<web-resource-collection>
-			<url-pattern>/Questionnaries.jsp</url-pattern>
+			<web-resource-name>All JSP Pages</web-resource-name>
+			<url-pattern>/jsp/*</url-pattern>
 		</web-resource-collection>
-		<auth-constraint>
-			<role-name>*</role-name>
-		</auth-constraint>
 	</security-constraint>
 
 

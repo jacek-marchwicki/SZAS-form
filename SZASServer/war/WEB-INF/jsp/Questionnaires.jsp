@@ -10,6 +10,12 @@
 <meta name="Author" content="Jacek Marchwicki - jacek@3made.pl" />
 <meta name="Robots" content="index,follow" />
 <link rel="stylesheet" href="/stylesheets/main.css" type="text/css" />
+<script type="text/javascript">
+ <!--
+ var email = "${email}";
+	var logoutUrl = "${logoutUrl}";
+ //-->
+ </script>
 <script src="/_ah/channel/jsapi"></script>
 <script type="text/javascript" language="javascript"
 	src="questionnaries/questionnaries.nocache.js"></script>
