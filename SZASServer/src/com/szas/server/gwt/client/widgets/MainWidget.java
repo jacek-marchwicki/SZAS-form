@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -13,12 +13,15 @@ import com.google.gwt.user.client.Window.ClosingEvent;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
+import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.data.UserTuple;
 import com.szas.server.gwt.client.router.LongRouteAction;
 import com.szas.server.gwt.client.router.RouteAction;
 import com.szas.server.gwt.client.router.Router;
 import com.szas.server.gwt.client.router.RouterImpl;
+import com.szas.server.gwt.client.sync.AutoSyncer;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Label;
 
@@ -48,9 +51,9 @@ public class MainWidget extends Composite {
 				return new UsersList();
 			}
 		};
-		router.addRoute("users", usersRouteAction);
+		router.addRoute(UsersList.NAME, usersRouteAction);
 		router.addRoute("", usersRouteAction);
-		router.addRoute("user", new LongRouteAction<Widget>() {
+		router.addRoute(UserWidget.NAME, new LongRouteAction<Widget>() {
 			@Override
 			protected Widget run(String command, long id) {
 				UserTuple userTuple = StaticGWTSyncer.getUsersdao().getById(id);
@@ -59,20 +62,20 @@ public class MainWidget extends Composite {
 				return new UserWidget(userTuple);
 			}
 		});
-		router.addRoute("user", new RouteAction<Widget>() {
+		router.addRoute(UserWidget.NAME, new RouteAction<Widget>() {
 			@Override
 			public Widget run(String command, String params) {
 				UserTuple userTuple = new UserTuple();
 				return new UserWidget(userTuple);
 			}
 		});
-		router.addRoute("questionnaries", new RouteAction<Widget>() {
+		router.addRoute(QuestionnariesList.NAME, new RouteAction<Widget>() {
 			@Override
 			public Widget run(String command, String params) {
 				return new QuestionnariesList();
 			}
 		});
-		router.addRoute("questionnarie", new LongRouteAction<Widget>() {
+		router.addRoute(QuestinnairesWidget.NAME, new LongRouteAction<Widget>() {
 
 			@Override
 			protected Widget run(String command, long param) {
@@ -83,13 +86,48 @@ public class MainWidget extends Composite {
 				return new QuestinnairesWidget(questionnaireTuple);
 			}
 		});
-		router.addRoute("questionnarie", new RouteAction<Widget>() {
+		router.addRoute(EditQuesionnaireWidget.NAME, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				QuestionnaireTuple questionnaireTuple =
+					StaticGWTSyncer.getQuestionnairedao().getById(param);
+				if (questionnaireTuple == null)
+					return null;
+				return new EditQuesionnaireWidget(questionnaireTuple);
+			}
+		});
+		router.addRoute(EditQuesionnaireWidget.NAME, new RouteAction<Widget>() {
 
 			@Override
 			public Widget run(String command, String params) {
 				QuestionnaireTuple questionnaireTuple =
 					new QuestionnaireTuple();
-				return new QuestinnairesWidget(questionnaireTuple);
+				return new EditQuesionnaireWidget(questionnaireTuple);
+			}
+		});
+		router.addRoute(FilledQuestionnaireWidget.NAME, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				FilledQuestionnaireTuple filledQuestionnaireTuple =
+					StaticGWTSyncer.getFilledquestionnairedao().getById(param);
+				if (filledQuestionnaireTuple == null)
+					return null;
+				return new FilledQuestionnaireWidget(filledQuestionnaireTuple);
+			}
+		});
+		router.addRoute(FilledQuestionnaireWidget.NAME_NEW, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				QuestionnaireTuple questionnaireTuple =
+					StaticGWTSyncer.getQuestionnairedao().getById(param);
+				if (questionnaireTuple == null)
+					return null;
+				FilledQuestionnaireTuple filledQuestionnaireTuple = 
+					questionnaireTuple.getFilled();
+				return new FilledQuestionnaireWidget(filledQuestionnaireTuple);
 			}
 		});
 	}

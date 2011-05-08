@@ -1,9 +1,10 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.sync;
 
 import java.util.ArrayList;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
+import com.szas.server.gwt.client.SerializableWhiteSpace;
 import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.ToSyncElementsHolder;
 

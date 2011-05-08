@@ -6,7 +6,7 @@ public class FieldIntegerBoxTuple extends FieldTuple {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private int value;
+	protected int value;
 	public void setValue(int value) {
 		this.value = value;
 	}

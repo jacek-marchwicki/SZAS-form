@@ -197,7 +197,6 @@ extends DAOObserverProviderImpl implements LocalDAO<T> {
 		ArrayList<RemoteTuple<T>> ret = 
 			new ArrayList<RemoteTuple<T>>();
 		for (Object element: syncedElements) {
-			// TODO - WrongObjectThrowable if casting not work
 			try {
 				ret.add((RemoteTuple<T>)element);
 			} catch (ClassCastException exception) {

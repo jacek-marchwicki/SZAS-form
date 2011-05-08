@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -10,9 +10,13 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.UserTuple;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
+import com.szas.server.gwt.client.universalwidgets.UniversalList;
 import com.szas.sync.local.LocalDAO;
 
 public class UsersList extends UniversalList<UserTuple>  {
+	
+	public static String NAME = "users";
 
 	private static UsersListUiBinder uiBinder =
 		GWT.create(UsersListUiBinder.class);
@@ -40,7 +44,7 @@ public class UsersList extends UniversalList<UserTuple>  {
 
 	@Override
 	protected String getListName() {
-		return "user";
+		return UserWidget.NAME;
 	}
 
 	@Override

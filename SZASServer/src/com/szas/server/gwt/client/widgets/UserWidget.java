@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.widgets;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -8,25 +8,27 @@ import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
-import com.szas.data.QuestionnaireTuple;
+import com.szas.data.UserTuple;
+import com.szas.server.gwt.client.sync.StaticGWTSyncer;
+import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 
-public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
+public class UserWidget extends UniversalWidget<UserTuple> {
+	
+	public static String NAME = "user";
 
-	private static QuestinnairesWidgetUiBinder uiBinder = GWT
-			.create(QuestinnairesWidgetUiBinder.class);
-
-	interface QuestinnairesWidgetUiBinder extends
-			UiBinder<Widget, QuestinnairesWidget> {
-	}
-
+	private static UserWidgetUiBinder uiBinder = 
+		GWT.create(UserWidgetUiBinder.class);
+	
 	@UiField Button saveButton;
 	@UiField TextBox nameTextBox;
 	@UiField Button deleteButton;
+
+	interface UserWidgetUiBinder extends UiBinder<Widget, UserWidget> {
+	}
 	
-	
-	public QuestinnairesWidget(QuestionnaireTuple questionnaireTuple) {
-		super(questionnaireTuple);
+	public UserWidget(UserTuple userTuple) {
+		super(userTuple);
 	}
 
 	@UiHandler("saveButton")
@@ -40,8 +42,8 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 	}
 
 	@Override
-	protected LocalDAO<QuestionnaireTuple> getLocalDAO() {
-		return StaticGWTSyncer.getQuestionnairedao();
+	protected LocalDAO<UserTuple> getLocalDAO() {
+		return StaticGWTSyncer.getUsersdao();
 	}
 
 	@Override
@@ -61,7 +63,6 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	@Override
 	protected void setDeleteable(boolean deletable) {
-		deleteButton.setVisible(update);
+		deleteButton.setVisible(deletable);
 	}
-
 }

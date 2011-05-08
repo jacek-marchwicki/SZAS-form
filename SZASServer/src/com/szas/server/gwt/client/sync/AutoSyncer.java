@@ -1,4 +1,4 @@
-package com.szas.server.gwt.client;
+package com.szas.server.gwt.client.sync;
 
 import java.util.ArrayList;
 

@@ -22,4 +22,12 @@ public class FieldIntegerBoxDataTuple extends FieldIntegerBoxTuple implements
 	public int getMax() {
 		return max;
 	}
+	@Override
+	public FieldTuple getTuple() {
+		FieldIntegerBoxTuple tuple = 
+			new FieldIntegerBoxTuple();
+		tuple.setName(name);
+		tuple.setValue(value);
+		return tuple;
+	}
 }
