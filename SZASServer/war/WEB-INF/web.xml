@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+	version="2.5">
+	<servlet>
+		<servlet-name>appstats</servlet-name>
+		<servlet-class>com.google.appengine.tools.appstats.AppstatsServlet</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>syncingService</servlet-name>
+		<servlet-class>com.szas.server.gwt.server.SyncingServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet>
+		<servlet-name>syncNoAuthServlet</servlet-name>
+		<servlet-class>com.szas.server.SyncNoAuthServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>syncNoAuthXmlServlet</servlet-name>
+		<servlet-class>com.szas.server.SyncNoAuthXmlServlet</servlet-class>
+	</servlet>
+	
+	<servlet>
+		<servlet-name>syncServlet</servlet-name>
+		<servlet-class>com.szas.server.SyncServlet</servlet-class>
+	</servlet>
+	
+	
+	<servlet-mapping>
+		<servlet-name>syncingService</servlet-name>
+		<url-pattern>/questionnaries/syncing</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>syncNoAuthServlet</servlet-name>
+		<url-pattern>/syncnoauth</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>syncNoAuthXmlServlet</servlet-name>
+		<url-pattern>/syncnoauthxml</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>syncServlet</servlet-name>
+		<url-pattern>/sync</url-pattern>
+	</servlet-mapping>
+	
+	<servlet-mapping>
+		<servlet-name>appstats</servlet-name>
+		<url-pattern>/appstats/*</url-pattern>
+	</servlet-mapping>
+	
+	
+	<filter>
+		<filter-name>appstats</filter-name>
+		<filter-class>com.google.appengine.tools.appstats.AppstatsFilter</filter-class>
+		<init-param>
+			<param-name>logMessage</param-name>
+			<param-value>Appstats available: /appstats/details?time={ID}</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>appstats</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+<!-- 	<security-constraint> -->
+<!-- 		<web-resource-collection> -->
+<!-- 			<url-pattern>/Questionnaries.jsp</url-pattern> -->
+<!-- 		</web-resource-collection> -->
+<!-- 		<auth-constraint> -->
+<!-- 			<role-name>*</role-name> -->
+<!-- 		</auth-constraint> -->
+<!-- 	</security-constraint> -->
+
+
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+</web-app>
