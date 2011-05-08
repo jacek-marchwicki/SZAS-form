@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.szas.android.SZASApplication.AccountCredentials;
+import com.szas.android.SZASApplication.DBContentProvider;
 import com.szas.android.SZASApplication.SQLLocalDAO;
 import com.szas.android.SZASApplication.SyncAdapter;
 
@@ -59,8 +60,8 @@ public class SyncService extends Service{
 		extras.putInt(KEY_TYPE, type);
 		extras.putLong(KEY_ID, id);
 		for(Account account : accounts){
-			if(ContentResolver.getSyncAutomatically(account, SQLLocalDAO.DBContentProvider.AUTHORITY))
-				ContentResolver.requestSync(account, SQLLocalDAO.DBContentProvider.AUTHORITY, null);
+			if(ContentResolver.getSyncAutomatically(account, DBContentProvider.AUTHORITY))
+				ContentResolver.requestSync(account, DBContentProvider.AUTHORITY, null);
 		}
 	}
 	

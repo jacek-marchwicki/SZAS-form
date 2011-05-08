@@ -8,14 +8,19 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import com.szas.sync.DAOObserver;
+import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.local.LocalDAO;
 import com.szas.sync.local.LocalTuple;
 import com.szas.sync.remote.RemoteTuple;
 
+import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
+
 import android.app.Application;
 import android.content.ContentProvider;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
@@ -30,200 +35,282 @@ import android.database.SQLException;
 import android.net.Uri;
 
 /**
- * @author Pawel Szafer email pszafer@gmail.com
+ * @author pszafer@gmail.com
  * 
  *         no comments because based on ContentProvider
  */
 
-public class SQLLocalDAO implements LocalDAO<Tuple>{ 
+public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{ 
 
+	ContentResolver contentResolver = null;
+	Context context = null;
+	/**
+	 * 
+	 */
+	public SQLLocalDAO(Context context, ContentResolver contentResolver) {
+		this.contentResolver = contentResolver;
+		this.context = context;
+		
+	}
+	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static class DBContentProvider extends ContentProvider {
+	private static class SyncedContentProvider extends DBContentProvider{
 
-		public static final String AUTHORITY = "com.szas.android.SZASApplication";
-		private static final String DBNAME = "szas";
-		private static final int DBVERSION = 2;
-		private static final String DBTABLE = "szas_table";
-		private static final String DBMIME = "vnd.android.cursor.dir/stroringdata.szas";
-
-		private static final String LOGTAG = "SZAS_ANDROID_PROJECT_DB";
-		private static final UriMatcher sUriMatcher;
-		private static final int DB_TABLE_ID = 1;
-		private static final int DB_TABLE_ITEM_ID = 2;
-		private static final String appName = "SZASApplication";
-
-		public static final Uri CONTENT_URI = Uri.parse("content://" + appName
-				+ "/" + DBTABLE);
+		/**
+		 * Name of table
+		 */
+		private static final String DBTABLE1 = "szas_table1";
+		
+		/**
+		 * Table URI
+		 */
+		public static final Uri ContentUri = Uri.parse("content://" + AUTHORITY+ "/" + DBTABLE1);
+		
+		/**
+		 * Columns of table
+		 */
 		public static final String DBCOL_ID = "_id";
-		public static final String DBCOL_syncTimestamp = "syncTimestamp";
+		public static final String DBCOL_T = "T";
+		
+		/**
+		 * Column indexes
+		 */
+		public static final int DBCOL_ID_INDEX = 0;
+		public static final int DBCOL_T_INDEX = 1;
+		
+		/**
+		 * String to create table
+		 */
+		private static final String DBCREATE1 = "create table " + DBTABLE1 + " ("
+		+ DBCOL_ID + " TEXT NOT NULL primary key,"+
+		DBCOL_T + " TEXT not null )";
+		
+		/**
+		 * Hashmap of table
+		 */
+		private static HashMap<String, String> projectionMap = null;
+		static{
+			projectionMap = new HashMap<String, String>();
+			projectionMap.put(DBCOL_ID, DBCOL_ID);
+			projectionMap.put(DBCOL_T, DBCOL_T);
+		}
+		
+		public SyncedContentProvider() {
+			super(DBTABLE1, DBCREATE1,  ContentUri, projectionMap);
+		}
+	}
+
+	private static class InProgressContentProvider extends DBContentProvider{
+
+		/**
+		 * Name of table
+		 */
+		private static final String DBTABLE2 = "szas_table2";
+		
+		/**
+		 * Table URI
+		 */
+		public static final Uri ContentUri = Uri.parse("content://" + AUTHORITY+ "/" + DBTABLE2);
+		
+		/**
+		 * Columns of table
+		 */
+		public static final String DBCOL_ID = "_id";
 		public static final String DBCOL_status = "status";
-		public static final String DBCOL_form = "form";
-
-		private DatabaseHelper databaseHelper;
-		private static HashMap<String, String> szasProjectionMap;
-
-		private static final String DBCREATE = "create table " + DBTABLE + " ("
-		+ DBCOL_ID + " TEXT NOT NULL primary key," + DBCOL_syncTimestamp
-		+ " TEXT not null," + // --sqlite nie ma long'ow
+		public static final String DBCOL_T = "T";
+		
+		/**
+		 * Column indexes
+		 */
+		public static final int DBCOL_ID_INDEX = 0;
+		public static final int DBCOL_status_INDEX = 1;
+		public static final int DBCOL_T_INDEX = 2;
+		
+		/**
+		 * String to create table
+		 */
+		private static final String DBCREATE2 = "create table " + DBTABLE2 + " ("
+		+ DBCOL_ID + " TEXT NOT NULL primary key,"+
 		DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
-		DBCOL_form + " TEXT not null )";
-
-		private SyncContext syncContext = null;
-
-		@Override
-		public int delete(Uri arg0, String where, String[] whereArgs) {
-			SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
-			int count;
-			switch (sUriMatcher.match(arg0)) {
-			case DB_TABLE_ID:
-				count = sqLiteDatabase.delete(DBTABLE, where, whereArgs);
-				break;
-			case DB_TABLE_ITEM_ID:
-				long itemId = Long.parseLong(arg0.getLastPathSegment());
-				count = sqLiteDatabase.delete(DBTABLE, DBCOL_ID + " = ? ",
-						new String[] { String.valueOf(itemId) });
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown URI");
-			}
-			getContext().getContentResolver().notifyChange(arg0, null);
-			return count;
+		DBCOL_T + " TEXT not null )";
+		
+		/**
+		 * Hashmap of table
+		 */
+		private static HashMap<String, String> projectionMap = null;
+		static{
+			projectionMap = new HashMap<String, String>();
+			projectionMap.put(DBCOL_ID, DBCOL_ID);
+			projectionMap.put(DBCOL_status, DBCOL_status);
+			projectionMap.put(DBCOL_T, DBCOL_T);
 		}
-
-		@Override
-		public String getType(Uri arg0) {
-			switch (sUriMatcher.match(arg0)) {
-			case DB_TABLE_ID:
-				return DBMIME;
-			default:
-				throw new IllegalArgumentException("Wrong/Unknown URI");
-			}
+		
+		public InProgressContentProvider() {
+			super(DBTABLE2, DBCREATE2, ContentUri, projectionMap);
 		}
-
-		@Override
-		public Uri insert(Uri arg0, ContentValues arg1) {
-			if (sUriMatcher.match(arg0) != DB_TABLE_ID)
-				throw new IllegalArgumentException("Unknown URI" + arg0);
-			ContentValues contentValues;
-			if (arg1 != null)
-				contentValues = new ContentValues(arg1);
-			else
-				contentValues = new ContentValues();
-			SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
-			long rowID = sqLiteDatabase.insert(DBTABLE, null, contentValues);
-			if (rowID > 0) {
-				Uri noteUri = ContentUris.withAppendedId(CONTENT_URI, rowID);
-				getContext().getContentResolver().notifyChange(noteUri, null);
-				return noteUri;
-			}
-			throw new SQLException("Failed to insert ROW into " + arg0);
-		}
-
-		@Override
-		public boolean onCreate() {
-			databaseHelper = new DatabaseHelper(getContext());
-			return true;
-		}
-
-		@Override
-		public Cursor query(Uri uri, String[] projection, String selection,
-				String[] selectionArgs, String sortOrder) {
-			SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
-			switch (sUriMatcher.match(uri)) {
-			case DB_TABLE_ID:
-				sqLiteQueryBuilder.setTables(DBTABLE);
-				sqLiteQueryBuilder.setProjectionMap(szasProjectionMap);
-				break;
-			default:
-				throw new IllegalArgumentException("Unknown URI");
-			}
-			SQLiteDatabase sqLiteDatabase = databaseHelper.getReadableDatabase();
-			Cursor cursor = sqLiteQueryBuilder.query(sqLiteDatabase, projection,
-					selection, selectionArgs, null, null, sortOrder);
-			cursor.setNotificationUri(getContext().getContentResolver(), uri);
-			return cursor;
-		}
-
-		@Override
-		public int update(Uri uri, ContentValues values, String where,
-				String[] whereArgs) {
-			SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
-			int count;
-			switch (sUriMatcher.match(uri)) {
-			case DB_TABLE_ID:
-				count = sqLiteDatabase.update(DBTABLE, values, where, whereArgs);
-				break;
-			case DB_TABLE_ITEM_ID:
-				long itemId = Long.parseLong(uri.getLastPathSegment());
-				count = sqLiteDatabase.update(DBTABLE, values, DBCOL_ID + " = ? ",
-						new String[] { String.valueOf(itemId) });
-				break;
-			default:
-				throw new IllegalArgumentException("Unkown URI");
-			}
-			getContext().getContentResolver().notifyChange(uri, null);
-			return count;
-		}
+	}
+	
+	private static class NotSyncedContentProvider extends DBContentProvider{
 
 		/**
-		 * Projection map to create Urimatcher
+		 * Name of table
 		 */
-		static {
-			sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-			sUriMatcher.addURI(appName, DBTABLE, DB_TABLE_ID);
-			sUriMatcher.addURI(appName, DBTABLE + "/#", DB_TABLE_ITEM_ID);
-
-			szasProjectionMap = new HashMap<String, String>();
-
-			szasProjectionMap.put(DBCOL_ID, DBCOL_ID);
-			szasProjectionMap.put(DBCOL_syncTimestamp, DBCOL_syncTimestamp);
-			szasProjectionMap.put(DBCOL_status, DBCOL_status);
-			szasProjectionMap.put(DBCOL_form, DBCOL_form);
-		}
-
+		private static final String DBTABLE3 = "szas_table3";
+		
 		/**
-		 * Class to create and update sqlite database
-		 * 
+		 * Table URI
 		 */
-		private static class DatabaseHelper extends SQLiteOpenHelper {
-
-			public DatabaseHelper(Context context) {
-				super(context, DBNAME, null, DBVERSION);
-			}
-
-			@Override
-			public void onCreate(SQLiteDatabase db) {
-				db.execSQL(DBCREATE);
-			}
-
-			@Override
-			public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-				db.execSQL("DROP TABLE IF EXISTS " + DBTABLE);
-				onCreate(db);
-			}
+		public static final Uri ContentUri = Uri.parse("content://" + AUTHORITY+ "/" + DBTABLE3);
+		/**
+		 * Columns of table
+		 */
+		public static final String DBCOL_ID = "_id";
+		//public static final String DBCOL_syncTimestamp = "syncTimestamp";
+		public static final String DBCOL_status = "status";
+		public static final String DBCOL_T = "T";
+		
+		/**
+		 * Column indexes
+		 */
+		public static final int DBCOL_ID_INDEX = 0;
+		public static final int DBCOL_status_INDEX = 1;
+		public static final int DBCOL_T_INDEX = 2;
+		
+		
+		private static final String DBCREATE3 = "create table " + DBTABLE3 + " ("
+		+ DBCOL_ID + " TEXT NOT NULL primary key,"+
+		DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
+		DBCOL_T + " TEXT not null )";
+		
+		/**
+		 * Hashmap of table
+		 */
+		private static HashMap<String, String> projectionMap = null;
+		static{
+			projectionMap = new HashMap<String, String>();
+			projectionMap.put(DBCOL_ID, DBCOL_ID);
+			projectionMap.put(DBCOL_status, DBCOL_status);
+			projectionMap.put(DBCOL_T, DBCOL_T);
+		}
+		
+		public NotSyncedContentProvider() {
+			super(DBTABLE3, DBCREATE3,  ContentUri,  projectionMap);
 		}
 
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.szas.sync.UniversalDAO#getAll()
 	 */
 	@Override
-	public Collection<Tuple> getAll() {
-		// TODO Auto-generated method stub
-		return null;
+	public Collection<T> getAll() {
+		HashMap<Long, T> allElements = new HashMap<Long, T>();
+		Cursor c1 = contentResolver.query(SyncedContentProvider.ContentUri, 
+				new String[] {SyncedContentProvider.DBCOL_ID, 
+				SyncedContentProvider.DBCOL_T}, 
+				null, null, null);
+		Cursor c2 = contentResolver.query(InProgressContentProvider.ContentUri, 
+				new String[] {InProgressContentProvider.DBCOL_ID, 
+					InProgressContentProvider.DBCOL_status,
+					InProgressContentProvider.DBCOL_T}, 
+				null, null, null);
+		Cursor c3 = contentResolver.query(NotSyncedContentProvider.ContentUri, 
+				new String[] {NotSyncedContentProvider.DBCOL_ID, 
+				NotSyncedContentProvider.DBCOL_status, 
+				NotSyncedContentProvider.DBCOL_T}, 
+				null, null, null);
+		try{
+		if(c1.getCount() > 0)
+		{
+			c1.moveToFirst();
+			do{
+				allElements.put(c1.getLong(SyncedContentProvider.DBCOL_ID_INDEX), 
+						new JSONDeserializer<T>().deserialize(c1.getString(SyncedContentProvider.DBCOL_T_INDEX)));
+			}while (c1.moveToNext());
+		}
+		
+		if(c2.getCount() > 0)
+		{
+			c2.moveToFirst();
+			do{
+				long objId = c2.getLong(InProgressContentProvider.DBCOL_ID_INDEX);
+				allElements.remove(objId);
+				LocalTuple.Status status = LocalTuple.Status.values()[c2.getInt(InProgressContentProvider.DBCOL_status_INDEX)];
+				if(!status.equals(LocalTuple.Status.DELETING))
+					allElements.put(objId,
+						new JSONDeserializer<T>().deserialize(c2.getString(InProgressContentProvider.DBCOL_T_INDEX)));
+			}while (c2.moveToNext());
+		}
+		
+		if(c3.getCount() > 0)
+		{
+			c3.moveToFirst();
+			do{
+				long objId = c3.getLong(NotSyncedContentProvider.DBCOL_ID_INDEX);
+				allElements.remove(objId);
+				LocalTuple.Status status = LocalTuple.Status.values()[c3.getInt(NotSyncedContentProvider.DBCOL_status_INDEX)];
+				if(!status.equals(LocalTuple.Status.DELETING))
+					allElements.put(objId, 
+						new JSONDeserializer<T>().deserialize(c3.getString(NotSyncedContentProvider.DBCOL_T_INDEX)));
+			}while (c3.moveToNext());
+		}
+		
+		}
+		finally {
+			c1.close();
+			c2.close();
+			c3.close();
+		}
+		return allElements.values();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.szas.sync.UniversalDAO#getById(long)
 	 */
 	@Override
-	public Tuple getById(long id) {
-		// TODO Auto-generated method stub
+	public T getById(long id) {
+		//notsynced
+		
+		Cursor c1 = contentResolver.query(NotSyncedContentProvider.ContentUri, new String[] { NotSyncedContentProvider.DBCOL_status, 
+				NotSyncedContentProvider.DBCOL_T}, NotSyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor c2 = contentResolver.query(InProgressContentProvider.ContentUri, new String[] { InProgressContentProvider.DBCOL_status, 
+				InProgressContentProvider.DBCOL_T}, InProgressContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor c3 = contentResolver.query(SyncedContentProvider.ContentUri, new String[] { 
+				SyncedContentProvider.DBCOL_T}, SyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		try{
+		if(c1.getCount()>0){
+			c1.moveToFirst();
+			LocalTuple.Status status = LocalTuple.Status.values()[c1.getInt(NotSyncedContentProvider.DBCOL_status_INDEX)];
+			if(status.equals(LocalTuple.Status.DELETING))
+				return null;
+			return new JSONDeserializer<T>().deserialize(c1.getString(NotSyncedContentProvider.DBCOL_T_INDEX));
+		}
+		
+		//inprogress
+		if(c2.getCount()>0){
+			c2.moveToFirst();
+			LocalTuple.Status status = LocalTuple.Status.values()[c2.getInt(InProgressContentProvider.DBCOL_status_INDEX)];
+			if(status.equals(LocalTuple.Status.DELETING))
+				return null;
+			return new JSONDeserializer<T>().deserialize(c2.getString(InProgressContentProvider.DBCOL_T_INDEX));
+		}
+			
+		//synced
+		if(c3.getCount()>0){
+			c3.moveToFirst();
+			return new JSONDeserializer<T>().deserialize(c3.getString(SyncedContentProvider.DBCOL_T_INDEX));
+		}
+		}
+		finally{
+			c1.close();
+			c2.close();
+			c3.close();
+		}
+		//contentResolver.query(uri, projection, selection, selectionArgs, sortOrder)
 		return null;
 	}
 
@@ -231,82 +318,84 @@ public class SQLLocalDAO implements LocalDAO<Tuple>{
 	 * @see com.szas.sync.UniversalDAO#insert(com.szas.sync.Tuple)
 	 */
 	@Override
-	public void insert(Tuple element) {
-		// TODO Auto-generated method stub
-
+	public void insert(T element) {
+		long id = element.getId();
+		Cursor c1 = contentResolver.query(SyncedContentProvider.ContentUri, 
+				new String[] {SyncedContentProvider.DBCOL_ID}, 
+				SyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor c2 = contentResolver.query(InProgressContentProvider.ContentUri, 
+				new String[] {InProgressContentProvider.DBCOL_ID},
+				InProgressContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor c3 = contentResolver.query(NotSyncedContentProvider.ContentUri, 
+				new String[] {NotSyncedContentProvider.DBCOL_ID},
+				NotSyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		if(c1.getCount()>0 || c2.getCount() > 0 || c3.getCount() > 0)
+			//object already in some table
+			return;
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(NotSyncedContentProvider.DBCOL_ID, Long.toString(id));
+		contentValues.put(NotSyncedContentProvider.DBCOL_status, LocalTuple.Status.INSERTING.ordinal());
+		contentValues.put(NotSyncedContentProvider.DBCOL_T, new JSONSerializer().include("*").serialize(element));
+		contentResolver.insert(NotSyncedContentProvider.ContentUri, contentValues);
+		
 	}
 
 	/* (non-Javadoc)
 	 * @see com.szas.sync.UniversalDAO#delete(com.szas.sync.Tuple)
 	 */
 	@Override
-	public void delete(Tuple element) {
-		// TODO Auto-generated method stub
-
+	public void delete(T element) {
+		long id = element.getId();
+		Cursor inElementsCursor = contentResolver.query(SyncedContentProvider.ContentUri, 
+				new String[] {SyncedContentProvider.DBCOL_ID}, 
+				SyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor inSyncingElementsCursor = contentResolver.query(InProgressContentProvider.ContentUri, 
+				new String[] {InProgressContentProvider.DBCOL_ID},
+				InProgressContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor inElementsToSyncCursor = contentResolver.query(NotSyncedContentProvider.ContentUri, 
+				new String[] {NotSyncedContentProvider.DBCOL_ID},
+				NotSyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		if(inElementsCursor.getCount()>0 || inSyncingElementsCursor.getCount() > 0){
+			ContentValues contentValues = new ContentValues();
+			contentValues.put(NotSyncedContentProvider.DBCOL_ID, Long.toString(id));
+			contentValues.put(NotSyncedContentProvider.DBCOL_status, LocalTuple.Status.DELETING.ordinal());
+			contentValues.put(NotSyncedContentProvider.DBCOL_T, new JSONSerializer().include("*").serialize(element));
+			contentResolver.insert(NotSyncedContentProvider.ContentUri, contentValues);
+		}
+		else if (inElementsToSyncCursor.getCount()>0){
+			contentResolver.delete(NotSyncedContentProvider.ContentUri, NotSyncedContentProvider.DBCOL_ID + " =? ", new String[]{Long.toString(id)});
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see com.szas.sync.UniversalDAO#update(com.szas.sync.Tuple)
 	 */
 	@Override
-	public void update(Tuple element) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.szas.sync.local.LocalDAO#getElementsToSync()
-	 */
-	@Override
-	public ArrayList<LocalTuple<Tuple>> getElementsToSync() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.szas.sync.local.LocalDAO#getUnknownElementsToSync()
-	 */
-	@Override
-	public ArrayList<Object> getUnknownElementsToSync() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.szas.sync.local.LocalDAO#getLastTimestamp()
-	 */
-	@Override
-	public long getLastTimestamp() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.szas.sync.local.LocalDAO#setLastTimestamp(long)
-	 */
-	@Override
-	public void setLastTimestamp(long lastTimestamp) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.szas.sync.local.LocalDAO#setSyncedElements(java.util.ArrayList)
-	 */
-	@Override
-	public void setSyncedElements(ArrayList<RemoteTuple<Tuple>> syncedElements) {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see com.szas.sync.local.LocalDAO#setSyncedUnknownElements(java.util.ArrayList)
-	 */
-	@Override
-	public void setSyncedUnknownElements(ArrayList<Object> syncedElements)
-	throws WrongObjectThrowable {
-		// TODO Auto-generated method stub
-
+	public void update(T element) {
+		long id = element.getId();
+		Cursor inElementsCursor = contentResolver.query(SyncedContentProvider.ContentUri, 
+				new String[] {SyncedContentProvider.DBCOL_ID}, 
+				SyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor inSyncingElementsCursor = contentResolver.query(InProgressContentProvider.ContentUri, 
+				new String[] {InProgressContentProvider.DBCOL_ID},
+				InProgressContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		Cursor inElementsToSyncCursor = contentResolver.query(NotSyncedContentProvider.ContentUri, 
+				new String[] {NotSyncedContentProvider.DBCOL_ID, NotSyncedContentProvider.DBCOL_status},
+				NotSyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)}, null);
+		if(!(inElementsCursor.getCount()>0)
+				&& !(inSyncingElementsCursor.getCount()>0)
+				&& !(inElementsToSyncCursor.getCount()>0))
+			//no elements to update in database
+			return;
+		LocalTuple.Status status = LocalTuple.Status.UPDATING;
+		if(inElementsToSyncCursor.getCount()>0 &&
+				inElementsToSyncCursor.getInt(NotSyncedContentProvider.DBCOL_status_INDEX)==LocalTuple.Status.INSERTING.ordinal()){
+			status = LocalTuple.Status.INSERTING;
+		}
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(NotSyncedContentProvider.DBCOL_ID, id);
+		contentValues.put(NotSyncedContentProvider.DBCOL_status, status.ordinal());
+		contentValues.put(NotSyncedContentProvider.DBCOL_T, new JSONSerializer().include("*").serialize(element));
 	}
 
 	/* (non-Javadoc)
@@ -326,4 +415,59 @@ public class SQLLocalDAO implements LocalDAO<Tuple>{
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	/* (non-Javadoc)
+	 * @see com.szas.sync.local.LocalDAO#getElementsToSync()
+	 */
+	@Override
+	public ArrayList<LocalTuple<T>> getElementsToSync() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.szas.sync.local.LocalDAO#getUnknownElementsToSync()
+	 */
+	@Override
+	public ArrayList<Object> getUnknownElementsToSync() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.szas.sync.local.LocalDAO#getLastTimestamp()
+	 */
+	@Override
+	public long getLastTimestamp() {
+		return context.getSharedPreferences("TimeStamp", 0).getInt("timestamp", 0); //XXX do poprawy
+	}
+
+	/* (non-Javadoc)
+	 * @see com.szas.sync.local.LocalDAO#setLastTimestamp(long)
+	 */
+	@Override
+	public void setLastTimestamp(long lastTimestamp) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.szas.sync.local.LocalDAO#setSyncedElements(java.util.ArrayList)
+	 */
+	@Override
+	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see com.szas.sync.local.LocalDAO#setSyncedUnknownElements(java.util.ArrayList)
+	 */
+	@Override
+	public void setSyncedUnknownElements(ArrayList<Object> syncedElements)
+			throws WrongObjectThrowable {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

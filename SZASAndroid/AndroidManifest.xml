@@ -18,8 +18,8 @@
 			</intent-filter>
 		</activity>
 		<provider android:authorities="com.szas.android.SZASApplication"
-			android:name="DBContentProvider" android:enabled="true"
-			android:syncable="true"></provider>
+			android:enabled="true"
+			android:syncable="true" android:name="SQLLocalDAO$DBContentProvider"></provider>
 		<service android:enabled="true" android:name="deprecated.SyncService" android:permission="android.permission.GET_ACCOUNTS"></service>
 
 
