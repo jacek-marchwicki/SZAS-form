@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="libs/appengine-api-stubs.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-channel-api-0.1.jar"/>
 	<classpathentry kind="lib" path="libs/gwt-incubator-2.2.0.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/objectify-3.0.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

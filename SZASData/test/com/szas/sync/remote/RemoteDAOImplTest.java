@@ -30,7 +30,14 @@ public class RemoteDAOImplTest extends UniversalDAOImplTest {
 	
 	@Test
 	public void testGetTimestamp() {
-		assertTrue("not implemented test", false);
+		long timestamp = remoteDAO.getTimestamp();
+		assertEquals(-1, timestamp);
+		
+		MockElement mockElement = new MockElement();
+		mockElement.setData(EXAMPLE_DATA);
+		universalDAO.insert(mockElement);
+		timestamp = remoteDAO.getTimestamp();
+		assertEquals(0, timestamp);
 	}
 	private class WrongClass {
 	};
