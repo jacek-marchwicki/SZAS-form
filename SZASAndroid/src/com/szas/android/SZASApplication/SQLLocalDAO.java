@@ -24,6 +24,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.SyncContext;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -37,13 +38,15 @@ import android.net.Uri;
 /**
  * @author pszafer@gmail.com
  * 
- *         no comments because based on ContentProvider
  */
 
 public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{ 
 
 	ContentResolver contentResolver = null;
 	Context context = null;
+	
+	Collection<DAOObserver> daoObservers = new ArrayList<DAOObserver>();
+	
 	/**
 	 * 
 	 */
@@ -58,6 +61,10 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Elements
+	 *
+	 */
 	private static class SyncedContentProvider extends DBContentProvider{
 
 		/**
@@ -100,10 +107,14 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 		}
 		
 		public SyncedContentProvider() {
-			super(DBTABLE1, DBCREATE1,  ContentUri, projectionMap);
+			super(DBTABLE1, DBCREATE1, DBCOL_ID,  ContentUri, projectionMap);
 		}
 	}
 
+	/**
+	 * SyncingElements
+	 *
+	 */
 	private static class InProgressContentProvider extends DBContentProvider{
 
 		/**
@@ -150,10 +161,14 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 		}
 		
 		public InProgressContentProvider() {
-			super(DBTABLE2, DBCREATE2, ContentUri, projectionMap);
+			super(DBTABLE2, DBCREATE2, DBCOL_ID, ContentUri, projectionMap);
 		}
 	}
 	
+	/**
+	 * ElementsToSync
+	 *
+	 */
 	private static class NotSyncedContentProvider extends DBContentProvider{
 
 		/**
@@ -198,7 +213,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 		}
 		
 		public NotSyncedContentProvider() {
-			super(DBTABLE3, DBCREATE3,  ContentUri,  projectionMap);
+			super(DBTABLE3, DBCREATE3, DBCOL_ID, ContentUri,  projectionMap);
 		}
 
 	}
@@ -403,8 +418,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public void addDAOObserver(DAOObserver daoObserver) {
-		// TODO Auto-generated method stub
-		
+		daoObservers.add(daoObserver);
 	}
 
 	/* (non-Javadoc)
@@ -412,8 +426,13 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public boolean removeDAOObserver(DAOObserver daoObserver) {
-		// TODO Auto-generated method stub
-		return false;
+		return daoObservers.remove(daoObserver);
+	}
+	
+	protected void notifyContentObservers(boolean whileSync) {
+		for (DAOObserver daoObserver : daoObservers) {
+			daoObserver.onChange(whileSync);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -421,8 +440,23 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public ArrayList<LocalTuple<T>> getElementsToSync() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<LocalTuple<T>> ret =
+			new ArrayList<LocalTuple<T>>();
+		Cursor syncingElements = contentResolver.query(InProgressContentProvider.ContentUri, 
+				new String[] {InProgressContentProvider.DBCOL_ID, InProgressContentProvider.DBCOL_T}, 
+				null, null, null);
+		if(syncingElements.getCount() <= 0){
+			DBContentProvider.moveFromOneTableToAnother(InProgressContentProvider.DBTABLE2, NotSyncedContentProvider.DBTABLE3, true);
+		}
+		syncingElements.requery();
+		if(syncingElements.getCount()>0){
+			syncingElements.moveToFirst();
+			do{
+				ret.add(new JSONDeserializer<LocalTuple<T>>().deserialize(
+						syncingElements.getString(InProgressContentProvider.DBCOL_T_INDEX)));
+			}while(syncingElements.moveToNext());
+		}
+		return ret;
 	}
 
 	/* (non-Javadoc)
@@ -430,8 +464,14 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public ArrayList<Object> getUnknownElementsToSync() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<Object> objects =
+			new ArrayList<Object>();
+		ArrayList<LocalTuple<T>> elementsToSync =
+			getElementsToSync();
+		for (LocalTuple<T> elementToSync : elementsToSync) {
+			objects.add(elementToSync);
+		}
+		return objects;
 	}
 
 	/* (non-Javadoc)
@@ -439,7 +479,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public long getLastTimestamp() {
-		return context.getSharedPreferences("TimeStamp", 0).getInt("timestamp", 0); //XXX do poprawy
+		return context.getSharedPreferences("TimeStamp", 0).getLong("timestamp", Context.MODE_PRIVATE);
 	}
 
 	/* (non-Javadoc)
@@ -447,7 +487,9 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public void setLastTimestamp(long lastTimestamp) {
-		// TODO Auto-generated method stub
+		SharedPreferences.Editor editor = context.getSharedPreferences("timestamp", Context.MODE_PRIVATE).edit();
+		editor.putLong("timestampe", lastTimestamp);
+		editor.commit();
 		
 	}
 
@@ -456,17 +498,38 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 */
 	@Override
 	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
-		// TODO Auto-generated method stub
-		
+		DBContentProvider.cleanTable(InProgressContentProvider.DBTABLE2);
+		for (RemoteTuple<T> remoteTuple : syncedElements) {
+			T remoteElement = remoteTuple.getElement();
+			long id = remoteElement.getId();
+			contentResolver.delete(SyncedContentProvider.ContentUri, SyncedContentProvider.DBCOL_ID + " = ?", new String[]{Long.toString(id)});
+			if (remoteTuple.isDeleted() == false){
+				ContentValues contentValues = new ContentValues();
+				contentValues.put(SyncedContentProvider.DBCOL_ID, id);
+				contentValues.put(SyncedContentProvider.DBCOL_T, new JSONSerializer().include("*").serialize(remoteTuple));
+				contentResolver.insert(SyncedContentProvider.ContentUri, contentValues);
+			}
+		}
+		notifyContentObservers(true);
 	}
 
 	/* (non-Javadoc)
 	 * @see com.szas.sync.local.LocalDAO#setSyncedUnknownElements(java.util.ArrayList)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setSyncedUnknownElements(ArrayList<Object> syncedElements)
 			throws WrongObjectThrowable {
-		// TODO Auto-generated method stub
+		ArrayList<RemoteTuple<T>> ret = 
+			new ArrayList<RemoteTuple<T>>();
+		for (Object element: syncedElements) {
+			try {
+				ret.add((RemoteTuple<T>)element);
+			} catch (ClassCastException exception) {
+				throw new WrongObjectThrowable();
+			}
+		}
+		setSyncedElements(ret);
 		
 	}
 
