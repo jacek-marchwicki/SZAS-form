@@ -15,8 +15,9 @@ public abstract class RightsTuple extends Tuple {
 			this.email = email;
 			this.rightType = rightType;
 		}
-		String email;
-		RightType rightType;
+		public String email;
+		public RightType rightType;
+		public long id;
 	}
 	
 	private ArrayList<Right> rights =

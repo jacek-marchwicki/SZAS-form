@@ -1,10 +1,14 @@
 package com.szas.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
+import javax.persistence.Id;
+
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
+import com.googlecode.objectify.annotation.Serialized;
 import com.googlecode.objectify.util.DAOBase;
 import com.szas.sync.DAOObserverProviderImpl;
 import com.szas.sync.Tuple;
@@ -14,7 +18,18 @@ import com.szas.sync.remote.RemoteDAO;
 import com.szas.sync.remote.RemoteTuple;
 
 public class PersistentRemoteDAO<T extends Tuple> extends DAOObserverProviderImpl implements RemoteDAO<T> {
-	public static class DAO extends DAOBase {
+	private static class PersistentRemoteTuple {
+		@SuppressWarnings("unused")
+		@Id Long id;
+		long timestamp;
+		boolean deleted;
+		@Serialized
+		Serializable element;
+		public long insertionTimestamp;
+		@SuppressWarnings("unused")
+		public String className;
+	}
+	private static class DAO extends DAOBase {
 		static {
 			ObjectifyService.register(PersistentRemoteTuple.class);
 		}
