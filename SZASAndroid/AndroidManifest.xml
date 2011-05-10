@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.szas.android.SZASApplication" android:versionCode="1"
-	android:versionName="1.0">
+	package="com.szas.android.SZASApplication" android:versionCode="1" android:versionName="0.1">
 
 	<uses-sdk android:minSdkVersion="9" android:targetSdkVersion="9" />
 
@@ -11,7 +10,7 @@
 	<uses-permission android:name="android.permission.USE_CREDENTIALS"></uses-permission>
 
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
-		<activity android:label="@string/app_name" android:name="MainActivity">
+		<activity android:label="@string/app_name" android:name="com.szas.android.SZASApplication.UI.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -19,8 +18,8 @@
 		</activity>
 		<provider android:authorities="com.szas.android.SZASApplication"
 			android:enabled="true"
-			android:syncable="true" android:name="SQLLocalDAO$DBContentProvider"></provider>
-		<service android:enabled="true" android:name="deprecated.SyncService" android:permission="android.permission.GET_ACCOUNTS"></service>
+			android:syncable="true" android:name="SQLLocalDAO$SyncedContentProvider"></provider>
+		<activity android:name="com.szas.android.SZASApplication.UI.SecondActivity" android:label="@string/second_window_title"></activity>
 
 
 	</application>

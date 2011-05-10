@@ -3,6 +3,9 @@
  */
 package com.szas.android.SZASApplication;
 
+import com.szas.data.UserTuple;
+import com.szas.sync.local.LocalDAO;
+
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -12,8 +15,8 @@ import android.os.IBinder;
  *
  */
 public class SyncService extends Service{
-	private static final Object syncAdapterLock = new Object();
 	private static SyncAdapter syncAdapter = null;
+	 
 	
 	/* (non-Javadoc)
 	 * @see android.app.Service#onCreate()
@@ -21,8 +24,10 @@ public class SyncService extends Service{
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		usersSqlDAO = new SQLLocalDAO<UserTuple>(getApplicationContext(), getContentResolver());
 		if(syncAdapter == null)
 			syncAdapter = new SyncAdapter(getApplicationContext(), true);
+		
 	}
 	
 	/* (non-Javadoc)
@@ -33,8 +38,10 @@ public class SyncService extends Service{
 		return syncAdapter.getSyncAdapterBinder();
 	}
 	
+	private static SQLLocalDAO<UserTuple> usersSqlDAO;
 	
-	 
-	
+	public static LocalDAO<UserTuple> getUsersdao() {
+		return usersSqlDAO;
+	}
 	
 }

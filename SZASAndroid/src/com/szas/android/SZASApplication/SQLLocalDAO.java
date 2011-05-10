@@ -7,8 +7,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
+
 import com.szas.sync.DAOObserver;
-import com.szas.sync.SyncedElementsHolder;
 import com.szas.sync.Tuple;
 import com.szas.sync.WrongObjectThrowable;
 import com.szas.sync.local.LocalDAO;
@@ -17,23 +23,6 @@ import com.szas.sync.remote.RemoteTuple;
 
 import flexjson.JSONDeserializer;
 import flexjson.JSONSerializer;
-
-import android.app.Application;
-import android.content.ContentProvider;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SyncContext;
-import android.content.UriMatcher;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.SQLException;
-import android.net.Uri;
 
 /**
  * @author pszafer@gmail.com
@@ -65,7 +54,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 * Elements
 	 *
 	 */
-	private static class SyncedContentProvider extends DBContentProvider{
+	public static class SyncedContentProvider extends DBContentProvider{
 
 		/**
 		 * Name of table
@@ -115,7 +104,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 * SyncingElements
 	 *
 	 */
-	private static class InProgressContentProvider extends DBContentProvider{
+	public static class InProgressContentProvider extends DBContentProvider{
 
 		/**
 		 * Name of table
@@ -169,7 +158,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 	 * ElementsToSync
 	 *
 	 */
-	private static class NotSyncedContentProvider extends DBContentProvider{
+	public static class NotSyncedContentProvider extends DBContentProvider{
 
 		/**
 		 * Name of table
@@ -532,5 +521,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T>{
 		setSyncedElements(ret);
 		
 	}
+	
+	
 
 }

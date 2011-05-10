@@ -5,12 +5,10 @@ package com.szas.android.SZASApplication;
 
 import java.util.HashMap;
 
-
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SyncContext;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -20,7 +18,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 
 /**
- * @author xps
+ * @author pszafer@gmail.com
  *
  */
 public class DBContentProvider extends ContentProvider{
@@ -45,19 +43,17 @@ public class DBContentProvider extends ContentProvider{
 	
 	
 
-	private SyncContext syncContext = null;
-
 	private static String DBCREATE = null;
 	private static String DBTABLE = null;
-	public Uri CONTENT_URI = null;
+	public static Uri CONTENT_URI = null;
 	/**
 	 * 
 	 */
 	public DBContentProvider(String DBTABLE, String DBCREATE, String DBCOL_ID, Uri ContentUri, HashMap<String, String> projectionMap) {
-		this.DBCREATE = DBCREATE;
-		this.DBTABLE = DBTABLE;
-		this.CONTENT_URI = ContentUri;
-		this.DBCOL_ID  = DBCOL_ID;
+		DBContentProvider.DBCREATE = DBCREATE;
+		DBContentProvider.DBTABLE = DBTABLE;
+		DBContentProvider.CONTENT_URI = ContentUri;
+		DBContentProvider.DBCOL_ID  = DBCOL_ID;
 		createProjectionMap(projectionMap);
 	}
 	

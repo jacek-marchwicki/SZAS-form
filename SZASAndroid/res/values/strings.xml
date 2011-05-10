@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, MainActivity!</string>
-    <string name="app_name">SZAS-form</string>
+    <string name="app_name">Hospital Management System surveys</string>
+    <string name="second_window_title">Department name:</string>
+    <string name="exit">Exit</string>
+    <string name="exit_prompt">Really exit?</string>
+    <string name="yes">YES</string>
+    <string name="no">NO</string>
+    <string name="version">0.1</string>
+    <string name="about">About</string>
+    
 </resources>
