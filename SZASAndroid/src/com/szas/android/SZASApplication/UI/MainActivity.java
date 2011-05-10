@@ -19,59 +19,68 @@ import android.widget.TextView;
 import com.szas.android.SZASApplication.R;
 
 //"http://szas-form.appspot.com/syncnoauth"
+/**
+ * @author pszafer@gmail.com LEGEND: XXX - adnotation FIXME - something wrong
+ *         TODO - not implemented yet
+ */
 public class MainActivity extends ListActivity {
-	
+
 	@Override
-	public void onCreate(Bundle savedInstanceState){
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.main, getItemForList()));
+
+		setListAdapter(new ArrayAdapter<String>(this, R.layout.main,
+				getItemForList()));
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
 		lv.setOnItemClickListener(onItemClickListener);
+
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-	    MenuInflater inflater = getMenuInflater();
-	    inflater.inflate(R.menu.main_menu, menu);
-	    return true;
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main_menu, menu);
+		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-	    // Handle item selection
-	    switch (item.getItemId()) {
-	    case R.id.exit_item:
-			 new AlertDialog.Builder(this)
-		        .setIcon(android.R.drawable.ic_dialog_alert)
-		        .setTitle(R.string.exit)
-		        .setMessage(R.string.exit_prompt)
-		        .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+		// Handle item selection
+		switch (item.getItemId()) {
+		case R.id.exit_item:
+			new AlertDialog.Builder(this)
+					.setIcon(android.R.drawable.ic_dialog_alert)
+					.setTitle(R.string.exit)
+					.setMessage(R.string.exit_prompt)
+					.setPositiveButton(R.string.yes,
+							new DialogInterface.OnClickListener() {
 
-		            @Override
-		            public void onClick(DialogInterface dialog, int which) {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
 
-		                //Stop the activity
-		                MainActivity.this.finish();    
-		            }
-		        })
-		        .setNegativeButton(R.string.no, null)
-		        .show();
-	        return true;
-	    case R.id.about_item:
-	        try {
+									// Stop the activity
+									MainActivity.this.finish();
+								}
+							}).setNegativeButton(R.string.no, null).show();
+			return true;
+		case R.id.about_item:
+			try {
 				AboutDialog.AboutDialogBuilder.createAboutWindow(this).show();
 			} catch (NameNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	        return true;
-	    default:
-	        return super.onOptionsItemSelected(item);
-	    }
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
-	
+
+	/**
+	 * Click on item in the list
+	 */
 	OnItemClickListener onItemClickListener = new OnItemClickListener() {
 
 		@Override
@@ -82,13 +91,15 @@ public class MainActivity extends ListActivity {
 			startActivity(i);
 		}
 	};
-	
-	private String[] getItemForList(){
-		//XXX somehow download or get from db lists of departments
-		return new String[]{ "oddzial1", "oddzial2", "oddzial3"};
+
+	/**
+	 * Get elements which should be displayed in the listView
+	 * @return
+	 */
+	private String[] getItemForList() {
+		// XXX somehow download or get from db lists of departments
+
+		return new String[] { "oddzial1", "oddzial2", "oddzial3" };
 	}
-	
-	
-	
-	
+
 }

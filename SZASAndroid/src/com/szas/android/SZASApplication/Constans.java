@@ -4,8 +4,10 @@
 package com.szas.android.SZASApplication;
 
 /**
- * @author pszafer@gmail.com
- *
+ * @author pszafer@gmail.com XXX not used
+ * 
+ *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
+ *         implemented yet
  */
 public class Constans {
 
@@ -13,10 +15,10 @@ public class Constans {
 	 * Account type to get credentials
 	 */
 	private static final String ACCOUNT_TYPE = "com.google";
-	
+
 	/**
 	 * Authtoken type
 	 */
 	private static final String AUTHTOKEN_TYPE = "com.google";
-	
+
 }

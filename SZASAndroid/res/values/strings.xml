@@ -9,4 +9,8 @@
     <string name="version">0.1</string>
     <string name="about">About</string>
     
+    <string name="form_item1">Empty form</string>
+    <string name="form_item2">Filled form</string>
+    <string name="form_item3">Cancel</string>
+    
 </resources>

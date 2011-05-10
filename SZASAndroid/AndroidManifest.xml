@@ -19,8 +19,13 @@
 		<provider android:authorities="com.szas.android.SZASApplication"
 			android:enabled="true"
 			android:syncable="true" android:name="SQLLocalDAO$SyncedContentProvider"></provider>
+		<provider android:authorities="com.szas.android.SZASApplication"
+			android:enabled="true"
+			android:syncable="true" android:name="SQLLocalDAO$InProgressContentProvider"></provider>	
+		<provider android:authorities="com.szas.android.SZASApplication"
+			android:enabled="true"
+			android:syncable="true" android:name="SQLLocalDAO$NotSyncedContentProvider"></provider>	
 		<activity android:name="com.szas.android.SZASApplication.UI.SecondActivity" android:label="@string/second_window_title"></activity>
-
-
+		<service android:name="SyncService"></service>
 	</application>
 </manifest>

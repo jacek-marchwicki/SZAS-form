@@ -8,4 +8,10 @@
     <string name="no">NIE</string>
     <string name="version">0.1</string>
     <string name="about">O programie</string>
+    
+       
+    <string name="form_item1">Pusta ankieta</string>
+    <string name="form_item2">Wypełniona ankieta</string>
+    <string name="form_item3">Anuluj</string>
+    
 </resources>

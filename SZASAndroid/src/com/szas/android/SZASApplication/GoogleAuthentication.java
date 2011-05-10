@@ -21,70 +21,110 @@ import android.accounts.OperationCanceledException;
 import android.os.Bundle;
 
 /**
- * @author pszafer@gmail.com
- *	class to login into google account | oauth | etc
+ * @author pszafer@gmail.com class to login into google account | oauth | etc
+ *         based on
+ *         https://code.google.com/p/nimbits/source/browse/trunk/Java/Nimbits
+ *         +Data+Logging/src/com/nimbits/google/
+ * 
+ *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
+ *         implemented yet
  */
-//XXX FINISH ACCOUNT MANAGER LOADING
+// XXX FINISH ACCOUNT MANAGER LOADING
 public class GoogleAuthentication {
-	private final String gaeAppBaseUrl = "http://szas-form.appspot.com/";
-//	private final String sGaeAppBaseUrl = "http://szas-form.appspot.com/";
-	
-	private final String gaeAppLoginUrl = gaeAppBaseUrl + "_ah/login";
-	private static final String AUTH_TOKEN_TYPE = "ah";
-	private static AccountManager accountManager = null;
-	private static String authtoken = null;
-	
-	private Cookie authCookie = null;
-	
-	private static GoogleAuthentication googleAuthentication;
+
 	/**
-	 * Get cookie which allow you to have access to gae
-	 * @return
+	 * Http URL to GAE Service
+	 */
+	private final String gaeAppBaseUrl = "http://szas-form.appspot.com/";
+
+	/**
+	 * Https URL to GAE Service XXX commented because not used
+	 */
+	// private final String sGaeAppBaseUrl = "http://szas-form.appspot.com/";
+
+	/**
+	 * Login to GAE Service used with authCookie
+	 */
+	private final String gaeAppLoginUrl = gaeAppBaseUrl + "_ah/login";
+
+	/**
+	 * Type of token in Android AccountManager to get from android
+	 * accountmanager which allows to login into GAE
+	 */
+	private static final String AUTH_TOKEN_TYPE = "ah";
+
+	private static AccountManager accountManager = null;
+
+	private static String authtoken = null;
+
+	private Cookie authCookie = null;
+
+	private static GoogleAuthentication googleAuthentication;
+
+	/**
+	 * Get cookie which allow you to have access to GAE
+	 * 
+	 * @return authCookie
 	 */
 	public Cookie getAuthCookie() {
 		return authCookie;
 	}
-	
-	public void setAuthCookie(Cookie authCookie){
+
+	/**
+	 * Set authentication cookie
+	 * 
+	 * @param authCookie
+	 *            cookie from google service
+	 */
+	public void setAuthCookie(Cookie authCookie) {
 		this.authCookie = authCookie;
 	}
-	
+
 	/**
 	 * Creates new instance of class to reload authCookie
+	 * 
 	 * @return
 	 */
-	public static GoogleAuthentication getNewGoogleAuthentication(){
+	public static GoogleAuthentication getNewGoogleAuthentication() {
 		googleAuthentication = new GoogleAuthentication();
 		return googleAuthentication;
 	}
-	
+
 	/**
 	 * Gives actual state of GoogleAuthentication class
+	 * 
 	 * @return
 	 */
-	public static GoogleAuthentication getGoogleAuthentication(){
-		if(googleAuthentication == null)
+	public static GoogleAuthentication getGoogleAuthentication() {
+		if (googleAuthentication == null)
 			getNewGoogleAuthentication();
 		return googleAuthentication;
 	}
-	
+
 	/**
 	 * Do nothing
 	 */
 	private GoogleAuthentication() {
 	}
-	
+
 	/**
-	 * Don't wanna to create more cookie than one because google could ban our service
+	 * Don't wanna to create more cookie than one because google could ban our
+	 * service not used
 	 */
-	public Object clone() throws CloneNotSupportedException{
+	public Object clone() throws CloneNotSupportedException {
 		throw new CloneNotSupportedException();
 	}
-	
-	public boolean Connect(AccountManager accountManager){
+
+	/**
+	 * Connect to google service and authCookie
+	 * 
+	 * @param accountManager
+	 * @return true if connected, false if error
+	 */
+	public boolean Connect(AccountManager accountManager) {
 		GoogleAuthentication.accountManager = accountManager;
 		boolean retVal = true;
-		if(authCookie == null){
+		if (authCookie == null) {
 			String authtoken;
 			try {
 				authtoken = getToken();
@@ -99,31 +139,53 @@ public class GoogleAuthentication {
 		}
 		return retVal;
 	}
-	
-	private String getToken() throws OperationCanceledException, AuthenticatorException, IOException{
+
+	/**
+	 * Get token from accountManager
+	 * 
+	 * @return String authentication token
+	 * @throws OperationCanceledException
+	 * @throws AuthenticatorException
+	 * @throws IOException
+	 */
+	private String getToken() throws OperationCanceledException,
+			AuthenticatorException, IOException {
 		Account[] accounts = accountManager.getAccounts();
 		accountManager.invalidateAuthToken("com.google", authtoken);
-		final AccountManagerFuture<Bundle> accountManagerFuture = accountManager.getAuthToken(accounts[0], AUTH_TOKEN_TYPE, null, null, null, null);
+		final AccountManagerFuture<Bundle> accountManagerFuture = accountManager
+				.getAuthToken(accounts[0], AUTH_TOKEN_TYPE, null, null, null,
+						null);
 		Bundle authTokenBundle = accountManagerFuture.getResult();
-		authtoken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN).toString();
+		authtoken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN)
+				.toString();
 		return authtoken;
-		
+
 	}
-	
-	private Cookie getAuthCookie(String authtoken) throws ClientProtocolException, IOException{
+
+	/**
+	 * Download cookie from GAE, using authToken
+	 * 
+	 * @param authtoken
+	 *            authentication token
+	 * @return cookie
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 */
+	private Cookie getAuthCookie(String authtoken)
+			throws ClientProtocolException, IOException {
 		DefaultHttpClient httpClient = new DefaultHttpClient();
-        Cookie retObj = null;
-        String cookieUrl = gaeAppLoginUrl + "?continue=" 
-                + URLEncoder.encode(gaeAppBaseUrl,"UTF-8") + "&auth=" + URLEncoder.encode 
-                (authtoken,"UTF-8"); 
-        HttpGet httpget = new HttpGet(cookieUrl);
-        HttpResponse response = httpClient.execute(httpget);
-        if (response.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK ||
-                        response.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
-                if (httpClient.getCookieStore().getCookies().size() > 0) {
-                        retObj=   httpClient.getCookieStore().getCookies().get(0);
-                }
-        }
-        return retObj;
+		Cookie retObj = null;
+		String cookieUrl = gaeAppLoginUrl + "?continue="
+				+ URLEncoder.encode(gaeAppBaseUrl, "UTF-8") + "&auth="
+				+ URLEncoder.encode(authtoken, "UTF-8");
+		HttpGet httpget = new HttpGet(cookieUrl);
+		HttpResponse response = httpClient.execute(httpget);
+		if (response.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK
+				|| response.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
+			if (httpClient.getCookieStore().getCookies().size() > 0) {
+				retObj = httpClient.getCookieStore().getCookies().get(0);
+			}
+		}
+		return retObj;
 	}
 }

@@ -19,44 +19,66 @@ import android.net.Uri;
 
 /**
  * @author pszafer@gmail.com
- *
+ * 
+ *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
+ *         implemented yet
  */
-public class DBContentProvider extends ContentProvider{
-	public static final String AUTHORITY = "com.szas.android.SZASApplication";
-	private static final String DBNAME = "szas";
-	private static final int DBVERSION = 2;
+public class DBContentProvider extends ContentProvider {
 
+	/**
+	 * Authority name for ContentResolver
+	 */
+	public static final String AUTHORITY = "com.szas.android.SZASApplication";
+
+	/**
+	 * Database name
+	 */
+	private static final String DBNAME = "szas";
+
+	/**
+	 * Database version
+	 */
+	private static final int DBVERSION = 3;
+
+	/**
+	 * Mime address
+	 */
 	private static final String DBMIME = "vnd.android.cursor.dir/stroringdata.szas";
 
-	private static final String LOGTAG = "SZAS_ANDROID_PROJECT_DB";
-	private static UriMatcher sUriMatcher;
-	private static final int DB_TABLE_ID = 1;		//not sure if need to be different in each table
-	private static final int DB_TABLE_ITEM_ID = 2;	//like above
-	private static String DBCOL_ID = null;
-	
+	/**
+	 * Log tag XXX commented because not used
+	 */
+	// private static final String LOGTAG = "SZAS_ANDROID_PROJECT_DB";
 
-	
+	private static UriMatcher sUriMatcher;
+
+	private static final int DB_TABLE_ID = 1; // not sure if need to be
+												// different in each table
+
+	private static final int DB_TABLE_ITEM_ID = 2; // like above
+
+	private static String DBCOL_ID = null;
 
 	private static DatabaseHelper databaseHelper;
 	private static HashMap<String, String> szasProjectionMap;
 
-	
-	
-
 	private static String DBCREATE = null;
 	private static String DBTABLE = null;
 	public static Uri CONTENT_URI = null;
+
 	/**
-	 * 
+	 * Every content provider (SQLLocalDAO) extends DBContentProvider with
+	 * another data, but structure of tables are the same
 	 */
-	public DBContentProvider(String DBTABLE, String DBCREATE, String DBCOL_ID, Uri ContentUri, HashMap<String, String> projectionMap) {
+	public DBContentProvider(String DBTABLE, String DBCREATE, String DBCOL_ID,
+			Uri ContentUri, HashMap<String, String> projectionMap) {
 		DBContentProvider.DBCREATE = DBCREATE;
 		DBContentProvider.DBTABLE = DBTABLE;
 		DBContentProvider.CONTENT_URI = ContentUri;
-		DBContentProvider.DBCOL_ID  = DBCOL_ID;
+		DBContentProvider.DBCOL_ID = DBCOL_ID;
 		createProjectionMap(projectionMap);
 	}
-	
+
 	/**
 	 * Projection map to create Urimatcher
 	 */
@@ -65,10 +87,9 @@ public class DBContentProvider extends ContentProvider{
 		sUriMatcher.addURI(AUTHORITY, DBTABLE, DB_TABLE_ID);
 		sUriMatcher.addURI(AUTHORITY, DBTABLE + "/#", DB_TABLE_ITEM_ID);
 		szasProjectionMap = projectionMap;
-		
-		
+
 	}
-	
+
 	@Override
 	public int delete(Uri arg0, String where, String[] whereArgs) {
 		SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
@@ -166,20 +187,28 @@ public class DBContentProvider extends ContentProvider{
 
 	/**
 	 * Move fromTable to insertTable
+	 * 
 	 * @param insertTable
 	 * @param fromTable
-	 * @param cleanInsertTable set true if you want clean insert table first
+	 * @param cleanInsertTable
+	 *            set true if you want clean insert table first
 	 */
-	public static void moveFromOneTableToAnother(String insertTable, String fromTable, boolean cleanInsertTable){
-		databaseHelper.moveFromOneTableToAnother(databaseHelper.getWritableDatabase(), insertTable, fromTable, cleanInsertTable);
+	public static void moveFromOneTableToAnother(String insertTable,
+			String fromTable, boolean cleanInsertTable) {
+		databaseHelper.moveFromOneTableToAnother(
+				databaseHelper.getWritableDatabase(), insertTable, fromTable,
+				cleanInsertTable);
 	}
-	
+
 	/**
 	 * Clean table
-	 * @param dbTable table name
+	 * 
+	 * @param dbTable
+	 *            table name
 	 */
-	public static void cleanTable(String dbTable){
-		databaseHelper.cleanTable(databaseHelper.getWritableDatabase(), dbTable);
+	public static void cleanTable(String dbTable) {
+		databaseHelper
+				.cleanTable(databaseHelper.getWritableDatabase(), dbTable);
 	}
 
 	/**
@@ -202,26 +231,36 @@ public class DBContentProvider extends ContentProvider{
 			db.execSQL("DROP TABLE IF EXISTS " + DBTABLE);
 			onCreate(db);
 		}
-		
+
 		/**
 		 * Move content from fromTable to insetrtTable
-		 * @param db database
-		 * @param insertTable table to insert content
-		 * @param fromTable source of content
-		 * @param cleanInsertTable clean insert table first
+		 * 
+		 * @param db
+		 *            database
+		 * @param insertTable
+		 *            table to insert content
+		 * @param fromTable
+		 *            source of content
+		 * @param cleanInsertTable
+		 *            clean insert table first
 		 */
-		public void moveFromOneTableToAnother(SQLiteDatabase db,String insertTable, String fromTable, boolean cleanInsertTable){
-			if(cleanInsertTable)
+		public void moveFromOneTableToAnother(SQLiteDatabase db,
+				String insertTable, String fromTable, boolean cleanInsertTable) {
+			if (cleanInsertTable)
 				db.execSQL("DELETE FROM " + insertTable);
-			db.execSQL("INSERT INTO " + insertTable + " SELECT * FROM " + fromTable);
+			db.execSQL("INSERT INTO " + insertTable + " SELECT * FROM "
+					+ fromTable);
 		}
-		
+
 		/**
 		 * Clean table
-		 * @param db database
-		 * @param dbTable table name
+		 * 
+		 * @param db
+		 *            database
+		 * @param dbTable
+		 *            table name
 		 */
-		public void cleanTable(SQLiteDatabase db, String dbTable){
+		public void cleanTable(SQLiteDatabase db, String dbTable) {
 			db.execSQL("DELETE FROM " + dbTable);
 		}
 	}

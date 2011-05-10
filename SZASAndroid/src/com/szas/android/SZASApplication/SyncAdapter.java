@@ -31,20 +31,38 @@ import flexjson.JSONDeserializer;
 /**
  * @author pszafer@gmail.com
  * 
+ * 
+ *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
+ *         implemented yet
  */
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 	private final AccountManager accountManager;
 	private final Context context;
+
+	/**
+	 * Last updated time XXX NOT USED
+	 */
 	private Date mLastUpdated;
 
-	String authToken;
-	public static final String AUTH_TOKEN_TYPE = "ah";
+	/**
+	 * GAE URL
+	 */
 	String gaeUrl = "http://szas-form.appspot.com/";
+
+	/**
+	 * GAE sync URL
+	 */
 	String gaeSyncUrl = gaeUrl + "sync?oauth_token=";
 	GoogleAuthentication googleAuthentication;
+
 	/**
+	 * Constructor to load needed parameters
 	 * 
+	 * @param context
+	 *            context
+	 * @param autoInitialize
+	 *            needed by syncAdapter
 	 */
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
@@ -67,8 +85,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		googleAuthentication = GoogleAuthentication.getGoogleAuthentication();
 		try {
 			remoteTuples = fetchFromNetwork(googleAuthentication);
-			for(RemoteTuple<Tuple> remoteTuple : remoteTuples)
-				SyncService.getUsersdao().insert((UserTuple)remoteTuple.getElement());
+			for (RemoteTuple<Tuple> remoteTuple : remoteTuples)
+				SyncService.getUsersdao().insert(
+						(UserTuple) remoteTuple.getElement());
 		} catch (ClientProtocolException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -76,25 +95,31 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		
+
 		mLastUpdated = new Date();
 	}
 
 	/**
 	 * Method to download syncing elements from network
-	 *
-	 * @param googleAuthentication - googleAuth class
+	 * 
+	 * @param googleAuthentication
+	 *            - googleAuth class
 	 * @return
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 */
-	//FIXME dunno how to know if needed to do get
-	private ArrayList<RemoteTuple<Tuple>> fetchFromNetwork(GoogleAuthentication googleAuthentication) throws ClientProtocolException, IOException {
-		URL url =new URL(gaeUrl+"sync");
+	// TODO dunno how to know if needed to do get
+	private ArrayList<RemoteTuple<Tuple>> fetchFromNetwork(
+			GoogleAuthentication googleAuthentication)
+			throws ClientProtocolException, IOException {
+		URL url = new URL(gaeUrl + "sync");
 		URLConnection conn = url.openConnection();
-		conn.addRequestProperty("Cookie",googleAuthentication.getAuthCookie().getName() + "=" + googleAuthentication.getAuthCookie().getValue());
+		conn.addRequestProperty("Cookie", googleAuthentication.getAuthCookie()
+				.getName()
+				+ "="
+				+ googleAuthentication.getAuthCookie().getValue());
 		conn.setDoOutput(true);
-		//conn.setRequestMethod("POST");
+		// conn.setRequestMethod("POST");
 		InputStream inputStream = null;
 		inputStream = conn.getInputStream();
 		if (inputStream != null) {
@@ -104,5 +129,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			return result;
 		}
 		return null;
+	}
+
+	/**
+	 * Method to authenticate user and connect to GAE
+	 * 
+	 * @return TODO don't know how use it
+	 */
+	private boolean isUserAuthenticated() {
+		boolean retVal;
+		String result = null;
+		googleAuthentication = GoogleAuthentication
+				.getNewGoogleAuthentication();
+		googleAuthentication.Connect(accountManager);
+		result = "error"; // FIXME here fetchFromNetwork or try login, something
+		retVal = result.equals("true");
+		return retVal;
 	}
 }

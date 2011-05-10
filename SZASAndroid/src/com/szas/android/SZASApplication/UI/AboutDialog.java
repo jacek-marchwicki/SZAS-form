@@ -15,17 +15,22 @@ import android.widget.TextView;
 import com.szas.android.SZASApplication.R;
 
 /**
- * @author pszafer@gmail.com
- *	Create about dialog in SZAS program
+ * @author pszafer@gmail.com Create about dialog in SZAS program
+ * 
+ *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
+ *         implemented yet
  */
 public class AboutDialog {
 	public static class AboutDialogBuilder {
-		public static AlertDialog createAboutWindow( Context context ) throws NameNotFoundException {
+		public static AlertDialog createAboutWindow(Context context)
+				throws NameNotFoundException {
 			// Try to load the a package matching the name of our own package
-			PackageInfo pInfo = context.getPackageManager().getPackageInfo(context.getPackageName(), PackageManager.GET_META_DATA);
+			PackageInfo pInfo = context.getPackageManager().getPackageInfo(
+					context.getPackageName(), PackageManager.GET_META_DATA);
 			String versionInfo = pInfo.versionName;
 
-			String aboutTitle = String.format("About %s", context.getString(R.string.app_name));
+			String aboutTitle = String.format("About %s",
+					context.getString(R.string.app_name));
 			String versionString = String.format("Version: %s", versionInfo);
 			String aboutText = "Autorzy:\nJacek Marchwicki,\nTomasz Merda,\nPaweł Szafer";
 
@@ -41,10 +46,13 @@ public class AboutDialog {
 			// Now linkify the text
 			Linkify.addLinks(message, Linkify.ALL);
 
-			return new AlertDialog.Builder(context).setTitle(aboutTitle).setCancelable(true).setIcon(R.drawable.icon).setPositiveButton(
-				 context.getString(android.R.string.ok), null).setView(message).create();
+			return new AlertDialog.Builder(context)
+					.setTitle(aboutTitle)
+					.setCancelable(true)
+					.setIcon(R.drawable.icon)
+					.setPositiveButton(context.getString(android.R.string.ok),
+							null).setView(message).create();
 		}
-		
 
-	}	
+	}
 }
