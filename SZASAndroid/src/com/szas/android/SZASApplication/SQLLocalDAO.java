@@ -45,8 +45,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	/**
 	 * Constructor to load context and contentResolver
 	 */
-	public SQLLocalDAO(Context context, ContentResolver contentResolver) {
-		this.contentResolver = contentResolver;
+	public SQLLocalDAO(Context context) {
+		this.contentResolver = context.getContentResolver();
 		this.context = context;
 
 	}
@@ -62,6 +62,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	 */
 	public static class SyncedContentProvider extends DBContentProvider {
 
+		private static String authority = "SZASApplication1";
+		
 		/**
 		 * Name of table
 		 */
@@ -70,7 +72,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		/**
 		 * Table URI
 		 */
-		public static final Uri ContentUri = Uri.parse("content://" + AUTHORITY
+		public static final Uri ContentUri = Uri.parse("content://" + authority
 				+ "/" + DBTABLE1);
 
 		/**
@@ -96,6 +98,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		 * Hashmap of table
 		 */
 		private static HashMap<String, String> projectionMap = null;
+
+		
 		static {
 			projectionMap = new HashMap<String, String>();
 			projectionMap.put(DBCOL_ID, DBCOL_ID);
@@ -103,7 +107,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		}
 
 		public SyncedContentProvider() {
-			super(DBTABLE1, DBCREATE1, DBCOL_ID, ContentUri, projectionMap);
+			super(authority , DBTABLE1, DBCREATE1, DBCOL_ID, ContentUri, projectionMap);
 		}
 	}
 
@@ -113,6 +117,9 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	 */
 	public static class InProgressContentProvider extends DBContentProvider {
 
+		
+		private static String authority = "SZASApplication2";
+		
 		/**
 		 * Name of table
 		 */
@@ -121,7 +128,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		/**
 		 * Table URI
 		 */
-		public static final Uri ContentUri = Uri.parse("content://" + AUTHORITY
+		public static final Uri ContentUri = Uri.parse("content://" + authority
 				+ "/" + DBTABLE2);
 
 		/**
@@ -158,7 +165,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		}
 
 		public InProgressContentProvider() {
-			super(DBTABLE2, DBCREATE2, DBCOL_ID, ContentUri, projectionMap);
+			super(authority, DBTABLE2, DBCREATE2, DBCOL_ID, ContentUri, projectionMap);
 		}
 	}
 
@@ -168,6 +175,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	 */
 	public static class NotSyncedContentProvider extends DBContentProvider {
 
+		private static String authority = "SZASApplication3";
+		
 		/**
 		 * Name of table
 		 */
@@ -176,7 +185,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		/**
 		 * Table URI
 		 */
-		public static final Uri ContentUri = Uri.parse("content://" + AUTHORITY
+		public static final Uri ContentUri = Uri.parse("content://" + authority
 				+ "/" + DBTABLE3);
 		/**
 		 * Columns of table
@@ -210,7 +219,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		}
 
 		public NotSyncedContentProvider() {
-			super(DBTABLE3, DBCREATE3, DBCOL_ID, ContentUri, projectionMap);
+			super(authority, DBTABLE3, DBCREATE3, DBCOL_ID, ContentUri, projectionMap);
 		}
 
 	}
@@ -235,7 +244,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 						NotSyncedContentProvider.DBCOL_status,
 						NotSyncedContentProvider.DBCOL_T }, null, null, null);
 		try {
-			if (c1.getCount() > 0) {
+			if (c1 != null &&  c1.getCount() > 0) {
 				c1.moveToFirst();
 				do {
 					allElements
@@ -245,7 +254,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				} while (c1.moveToNext());
 			}
 
-			if (c2.getCount() > 0) {
+			if (c2 != null && c2.getCount() > 0) {
 				c2.moveToFirst();
 				do {
 					long objId = c2
@@ -261,7 +270,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				} while (c2.moveToNext());
 			}
 
-			if (c3.getCount() > 0) {
+			if (c3 != null && c3.getCount() > 0) {
 				c3.moveToFirst();
 				do {
 					long objId = c3
@@ -308,7 +317,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				new String[] { Long.toString(id) }, null);
 		try {
 			// not synced
-			if (c1.getCount() > 0) {
+			if (c1 != null && c1.getCount() > 0) {
 				c1.moveToFirst();
 				LocalTuple.Status status = LocalTuple.Status.values()[c1
 						.getInt(NotSyncedContentProvider.DBCOL_status_INDEX)];
@@ -319,7 +328,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			}
 
 			// in progress
-			if (c2.getCount() > 0) {
+			if (c2 != null && c2.getCount() > 0) {
 				c2.moveToFirst();
 				LocalTuple.Status status = LocalTuple.Status.values()[c2
 						.getInt(InProgressContentProvider.DBCOL_status_INDEX)];
@@ -330,7 +339,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			}
 
 			// synced
-			if (c3.getCount() > 0) {
+			if (c3 != null  && c3.getCount() > 0) {
 				c3.moveToFirst();
 				return new JSONDeserializer<T>().deserialize(c3
 						.getString(SyncedContentProvider.DBCOL_T_INDEX));
@@ -363,7 +372,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				new String[] { NotSyncedContentProvider.DBCOL_ID },
 				NotSyncedContentProvider.DBCOL_ID + " = ?",
 				new String[] { Long.toString(id) }, null);
-		if (c1.getCount() > 0 || c2.getCount() > 0 || c3.getCount() > 0)
+		if ( (c1 != null && c1.getCount() > 0 )|| (c2 != null && c2.getCount() > 0) || (c3 != null && c3.getCount() > 0))
 			// objects already in some table
 			return;
 		ContentValues contentValues = new ContentValues();
@@ -400,7 +409,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				new String[] { NotSyncedContentProvider.DBCOL_ID },
 				NotSyncedContentProvider.DBCOL_ID + " = ?",
 				new String[] { Long.toString(id) }, null);
-		if (inElementsCursor.getCount() > 0
+		if (inElementsCursor != null && inElementsCursor.getCount() > 0
 				|| inSyncingElementsCursor.getCount() > 0) {
 			ContentValues contentValues = new ContentValues();
 			contentValues.put(NotSyncedContentProvider.DBCOL_ID,
@@ -411,7 +420,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 					new JSONSerializer().include("*").serialize(element));
 			contentResolver.insert(NotSyncedContentProvider.ContentUri,
 					contentValues);
-		} else if (inElementsToSyncCursor.getCount() > 0) {
+		} else if (inElementsToSyncCursor != null && inElementsToSyncCursor.getCount() > 0) {
 			contentResolver.delete(NotSyncedContentProvider.ContentUri,
 					NotSyncedContentProvider.DBCOL_ID + " =? ",
 					new String[] { Long.toString(id) });
@@ -442,13 +451,14 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 						NotSyncedContentProvider.DBCOL_status },
 				NotSyncedContentProvider.DBCOL_ID + " = ?",
 				new String[] { Long.toString(id) }, null);
-		if (!(inElementsCursor.getCount() > 0)
+		if (inElementsCursor != null && inSyncingElementsCursor!= null && inElementsToSyncCursor != null 
+				&& !(inElementsCursor.getCount() > 0)
 				&& !(inSyncingElementsCursor.getCount() > 0)
 				&& !(inElementsToSyncCursor.getCount() > 0))
 			// no elements to update in database
 			return;
 		LocalTuple.Status status = LocalTuple.Status.UPDATING;
-		if (inElementsToSyncCursor.getCount() > 0
+		if (inElementsToSyncCursor != null && inElementsToSyncCursor.getCount() > 0
 				&& inElementsToSyncCursor
 						.getInt(NotSyncedContentProvider.DBCOL_status_INDEX) == LocalTuple.Status.INSERTING
 						.ordinal()) {
@@ -505,24 +515,25 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	@Override
 	public ArrayList<LocalTuple<T>> getElementsToSync() {
 		ArrayList<LocalTuple<T>> ret = new ArrayList<LocalTuple<T>>();
-		Cursor syncingElements = contentResolver.query(
+		return ret;
+	/*	Cursor syncingElements = contentResolver.query(
 				InProgressContentProvider.ContentUri, new String[] {
 						InProgressContentProvider.DBCOL_ID,
 						InProgressContentProvider.DBCOL_T }, null, null, null);
-		if (syncingElements.getCount() <= 0) {
+		if (syncingElements == null || syncingElements.getCount() <= 0) {
 			DBContentProvider.moveFromOneTableToAnother(
 					InProgressContentProvider.DBTABLE2,
 					NotSyncedContentProvider.DBTABLE3, true);
 		}
 		syncingElements.requery();
-		if (syncingElements.getCount() > 0) {
+		if (syncingElements != null && syncingElements.getCount() > 0) {
 			syncingElements.moveToFirst();
 			do {
 				ret.add(new JSONDeserializer<LocalTuple<T>>().deserialize(syncingElements
 						.getString(InProgressContentProvider.DBCOL_T_INDEX)));
 			} while (syncingElements.moveToNext());
 		}
-		return ret;
+		return ret;*/
 	}
 
 	/*
@@ -572,7 +583,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	 */
 	@Override
 	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
-		DBContentProvider.cleanTable(InProgressContentProvider.DBTABLE2);
+		// TODO DBContentProvider.cleanTable(InProgressContentProvider.DBTABLE2);
 		for (RemoteTuple<T> remoteTuple : syncedElements) {
 			T remoteElement = remoteTuple.getElement();
 			long id = remoteElement.getId();

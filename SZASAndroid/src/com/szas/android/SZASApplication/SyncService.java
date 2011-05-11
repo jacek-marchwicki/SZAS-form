@@ -33,8 +33,6 @@ public class SyncService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		Log.v("SyncService", "SyncService started");
-		usersSqlDAO = new SQLLocalDAO<UserTuple>(getApplicationContext(),
-				getContentResolver());
 		if (syncAdapter == null)
 			syncAdapter = new SyncAdapter(getApplicationContext(), true);
 		Account[] accounts = AccountManager.get(getApplicationContext()).getAccounts();

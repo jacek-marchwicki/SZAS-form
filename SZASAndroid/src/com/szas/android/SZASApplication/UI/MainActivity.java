@@ -42,10 +42,9 @@ public class MainActivity extends ListActivity {
 		lv.setTextFilterEnabled(true);
 		lv.setOnItemClickListener(onItemClickListener);
 		startService(new Intent(getApplicationContext(), SyncService.class));
-		
-	//	Log.v("accountType", accounts[0].type);
-		
-		
+
+		// Log.v("accountType", accounts[0].type);
+
 	}
 
 	@Override
@@ -97,20 +96,30 @@ public class MainActivity extends ListActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			Intent i = new Intent(MainActivity.this, SecondActivity.class);
-			i.putExtra("title", ((TextView) view).getText());
-			startActivity(i);
+			if (id == 0)
+			{
+				Account account = AccountManager.get(getApplicationContext()).getAccounts()[0];
+				ContentResolver.setIsSyncable(account, "com.google", 1);
+				ContentResolver.requestSync(account, "com.google", new Bundle());
+			}
+			else {
+				Intent i = new Intent(MainActivity.this, SecondActivity.class);
+				i.putExtra("title", ((TextView) view).getText());
+				startActivity(i);
+			}
 		}
 	};
 
 	/**
 	 * Get elements which should be displayed in the listView
+	 * 
 	 * @return
 	 */
 	private String[] getItemForList() {
 		// XXX somehow download or get from db lists of departments
 
-		return new String[] { "oddzial1", "oddzial2", "oddzial3" };
+		return new String[] { "Rozpocznij synchronizacje", "oddzial2",
+				"oddzial3" };
 	}
 
 }

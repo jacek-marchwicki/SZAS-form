@@ -7,12 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Scanner;
 
 import org.apache.http.client.ClientProtocolException;
 
@@ -25,11 +23,17 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.szas.data.UserTuple;
-import com.szas.sync.Tuple;
-import com.szas.sync.remote.RemoteTuple;
+import com.szas.data.FilledQuestionnaireTuple;
+import com.szas.data.QuestionnaireTuple;
+import com.szas.sync.SyncedElementsHolder;
+import com.szas.sync.ToSyncElementsHolder;
+import com.szas.sync.local.LocalDAO;
+import com.szas.sync.local.LocalSyncHelperImpl;
+import com.szas.sync.local.SyncLocalService;
+import com.szas.sync.local.SyncLocalServiceResult;
 
 import flexjson.JSONDeserializer;
+import flexjson.JSONSerializer;
 
 /**
  * @author pszafer@gmail.com
@@ -46,23 +50,95 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	private static final String LOGTAG = "SZAS_SYNC_ADAPTER";
 
 	private final AccountManager accountManager;
-	private final Context context;
+	
+	private final static class AndroidSyncLocalService implements SyncLocalService {
+		
+		/**
+		 * @param googleAuthentication 
+		 * 
+		 */
+		public AndroidSyncLocalService(GoogleAuthentication googleAuthentication) {
+			this.googleAuthentication = googleAuthentication;
+		}
+		/**
+		 * GAE URL
+		 */
+		String gaeUrl = "http://szas-form.appspot.com/";
 
-	/**
-	 * Last updated time XXX NOT USED
-	 */
-	private Date mLastUpdated;
+		/**
+		 * GAE sync URL
+		 */
+		//String gaeSyncUrl = gaeUrl + "sync?oauth_token=";
+		GoogleAuthentication googleAuthentication;
 
-	/**
-	 * GAE URL
-	 */
-	String gaeUrl = "http://szas-form.appspot.com/";
+		/* (non-Javadoc)
+		 * @see com.szas.sync.local.SyncLocalService#sync(java.util.ArrayList, com.szas.sync.local.SyncLocalServiceResult)
+		 */
+		@Override
+		public void sync(ArrayList<ToSyncElementsHolder> toSyncElementsHolders,
+				SyncLocalServiceResult callback) {
+			
+			try {
+				ArrayList<SyncedElementsHolder> elements = fetchFromNetwork(toSyncElementsHolders, googleAuthentication);
+				Log.v("Sync", "Callback.onSuccess");
+				callback.onSuccess(elements);
+			} catch (ClientProtocolException e1) {
+				callback.onFailure(e1);
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				callback.onFailure(e1);
+				e1.printStackTrace();
+			}
 
-	/**
-	 * GAE sync URL
-	 */
-	String gaeSyncUrl = gaeUrl + "sync?oauth_token=";
-	GoogleAuthentication googleAuthentication;
+		}
+		
+		/**
+		 * Method to download syncing elements from network
+		 * 
+		 * @param googleAuthentication
+		 *            - googleAuth class
+		 * @return
+		 * @throws ClientProtocolException
+		 * @throws IOException
+		 */
+		private ArrayList<SyncedElementsHolder> fetchFromNetwork(
+				ArrayList<ToSyncElementsHolder> elementsToSync,
+				GoogleAuthentication googleAuthentication)
+				throws ClientProtocolException, IOException {
+			URL url = new URL(gaeUrl + "sync");
+			URLConnection conn = url.openConnection();
+			conn.addRequestProperty("Content-Type", "application/json");
+			conn.addRequestProperty("Cookie", googleAuthentication.getAuthCookie()
+					.getName()
+					+ "="
+					+ googleAuthentication.getAuthCookie().getValue());
+			
+			//this do post method
+			conn.setDoOutput(true);		
+			OutputStream outputStream = conn.getOutputStream();
+			OutputStreamWriter out = new OutputStreamWriter(outputStream);
+			new JSONSerializer().include("*").serialize(elementsToSync, out);
+			out.close();
+
+			InputStream inputStream = null;
+			inputStream = conn.getInputStream();
+			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+			if (inputStream == null) 
+				return null;
+
+			ArrayList<SyncedElementsHolder> result =
+				new JSONDeserializer<ArrayList<SyncedElementsHolder>>().deserialize(inputStreamReader);
+			return result;
+		}
+		
+	}
+	
+
+	private LocalDAO<QuestionnaireTuple> questionnaireDAO;
+
+	private LocalDAO<FilledQuestionnaireTuple> filledQuestionnaireDAO;
+
+	private AndroidSyncLocalService syncLocalService;
 
 	/**
 	 * Constructor to load needed parameters
@@ -74,8 +150,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	 */
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
-		this.context = context;
 		this.accountManager = AccountManager.get(context);
+		questionnaireDAO = new SQLLocalDAO<QuestionnaireTuple>(context);
+		filledQuestionnaireDAO = new SQLLocalDAO<FilledQuestionnaireTuple>(context);
+		
+	
 	}
 
 	/*
@@ -90,81 +169,19 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public void onPerformSync(Account account, Bundle extras, String authority,
 			ContentProviderClient contentProviderClient, SyncResult syncResult) {
 		Log.v(LOGTAG, "syncAdapter sync started");
-		List<RemoteTuple<Tuple>> remoteTuples;
-		googleAuthentication = GoogleAuthentication.getGoogleAuthentication(account);
-		googleAuthentication.connect(accountManager, context);
+		GoogleAuthentication googleAuthentication = GoogleAuthentication.getGoogleAuthentication(account);
+		googleAuthentication.connect(accountManager);
 		if (googleAuthentication.getAuthCookie() == null)
 		{
 			syncResult.stats.numAuthExceptions++;
 			return;
 		}
-		try {
-			remoteTuples = fetchFromNetwork(googleAuthentication);
-			for (RemoteTuple<Tuple> remoteTuple : remoteTuples)
-				SyncService.getUsersdao().insert(
-						(UserTuple) remoteTuple.getElement());
-		} catch (ClientProtocolException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-
-		mLastUpdated = new Date();
+		syncLocalService = new AndroidSyncLocalService(googleAuthentication);
+		LocalSyncHelperImpl syncHelper = new LocalSyncHelperImpl(syncLocalService);
+		syncHelper.append("questionnaire", questionnaireDAO);
+		syncHelper.append("filled", filledQuestionnaireDAO);
+		syncHelper.sync();
 	}
 
-	/**
-	 * Method to download syncing elements from network
-	 * 
-	 * @param googleAuthentication
-	 *            - googleAuth class
-	 * @return
-	 * @throws ClientProtocolException
-	 * @throws IOException
-	 */
-	// TODO dunno how to know if needed to do get
-	private ArrayList<RemoteTuple<Tuple>> fetchFromNetwork(
-			GoogleAuthentication googleAuthentication)
-			throws ClientProtocolException, IOException {
-		URL url = new URL(gaeUrl + "sync");
-		URLConnection conn = url.openConnection();
-		conn.addRequestProperty("Cookie", googleAuthentication.getAuthCookie()
-				.getName()
-				+ "="
-				+ googleAuthentication.getAuthCookie().getValue());
-		conn.setDoOutput(true);
-		// conn.setRequestMethod("POST");
 
-		InputStream inputStream = null;
-		inputStream = conn.getInputStream();
-		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-		if (inputStream == null) 
-			return null;
-
-		ArrayList<RemoteTuple<Tuple>> result = new JSONDeserializer<ArrayList<RemoteTuple<Tuple>>>().deserialize(inputStreamReader);
-		/*ArrayList<RemoteTuple<Tuple>> result = new JSONDeserializer<ArrayList<RemoteTuple<Tuple>>>()
-					.deserialize(inputStream)
-							.next());
-			String json = new JSONDeserializer<ArrayList<>()
-			.deserialize(new Scanner(inputStream).useDelimiter("\\A")
-					.next());*/
-		return result;
-	}
-
-	/**
-	 * Method to authenticate user and connect to GAE
-	 * 
-	 * @return TODO don't know how use it
-	 */
-	private boolean isUserAuthenticated() {
-		boolean retVal;
-		String result = null;
-		googleAuthentication = GoogleAuthentication
-		.getNewGoogleAuthentication(null);
-		googleAuthentication.connect(accountManager, context);
-		result = "error"; // FIXME here fetchFromNetwork or try login, something
-		retVal = result.equals("true");
-		return retVal;
-	}
 }

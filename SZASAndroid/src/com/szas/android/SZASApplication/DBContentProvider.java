@@ -28,8 +28,7 @@ public class DBContentProvider extends ContentProvider {
 	/**
 	 * Authority name for ContentResolver
 	 */
-	public static final String AUTHORITY = "com.szas.android.SZASApplication";
-
+	//public static final String AUTHORITY = "SZASApplication";
 	/**
 	 * Database name
 	 */
@@ -50,44 +49,47 @@ public class DBContentProvider extends ContentProvider {
 	 */
 	// private static final String LOGTAG = "SZAS_ANDROID_PROJECT_DB";
 
-	private static UriMatcher sUriMatcher;
+	private UriMatcher sUriMatcher;
 
 	private static final int DB_TABLE_ID = 1; // not sure if need to be
 												// different in each table
 
 	private static final int DB_TABLE_ITEM_ID = 2; // like above
 
-	private static String DBCOL_ID = null;
+	private String databaseColumnId = null;
 
-	private static DatabaseHelper databaseHelper;
-	private static HashMap<String, String> szasProjectionMap;
+	private DatabaseHelper databaseHelper;
+	private HashMap<String, String> szasProjectionMap;
 
-	private static String DBCREATE = null;
-	private static String DBTABLE = null;
-	public static Uri CONTENT_URI = null;
+	private String createTableString = null;
+	private String tableName = null;
+	public Uri contentUri = null;
 
 	/**
 	 * Every content provider (SQLLocalDAO) extends DBContentProvider with
 	 * another data, but structure of tables are the same
 	 */
-	public DBContentProvider(String DBTABLE, String DBCREATE, String DBCOL_ID,
+	public DBContentProvider(String authority, String DBTABLE, String DBCREATE, String DBCOL_ID,
 			Uri ContentUri, HashMap<String, String> projectionMap) {
-		DBContentProvider.DBCREATE = DBCREATE;
-		DBContentProvider.DBTABLE = DBTABLE;
-		DBContentProvider.CONTENT_URI = ContentUri;
-		DBContentProvider.DBCOL_ID = DBCOL_ID;
-		createProjectionMap(projectionMap);
+		this.createTableString = DBCREATE;
+		this.tableName = DBTABLE;
+		this.contentUri = ContentUri;
+		this.databaseColumnId = DBCOL_ID;
+		createProjectionMap(authority, projectionMap);
+	}
+	
+	static {
+		
 	}
 
 	/**
 	 * Projection map to create Urimatcher
 	 */
-	private void createProjectionMap(HashMap<String, String> projectionMap) {
-		sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		sUriMatcher.addURI(AUTHORITY, DBTABLE, DB_TABLE_ID);
-		sUriMatcher.addURI(AUTHORITY, DBTABLE + "/#", DB_TABLE_ITEM_ID);
+	private void createProjectionMap(String authority, HashMap<String, String> projectionMap) {
 		szasProjectionMap = projectionMap;
-
+		sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+		sUriMatcher.addURI(authority, tableName, DB_TABLE_ID);
+		sUriMatcher.addURI(authority, tableName + "/#", DB_TABLE_ITEM_ID);
 	}
 
 	@Override
@@ -96,15 +98,15 @@ public class DBContentProvider extends ContentProvider {
 		int count;
 		switch (sUriMatcher.match(arg0)) {
 		case DB_TABLE_ID:
-			count = sqLiteDatabase.delete(DBTABLE, where, whereArgs);
+			count = sqLiteDatabase.delete(tableName, where, whereArgs);
 			break;
 		case DB_TABLE_ITEM_ID:
 			long itemId = Long.parseLong(arg0.getLastPathSegment());
-			count = sqLiteDatabase.delete(DBTABLE, DBCOL_ID + " = ? ",
+			count = sqLiteDatabase.delete(tableName, databaseColumnId + " = ? ",
 					new String[] { String.valueOf(itemId) });
 			break;
 		default:
-			throw new IllegalArgumentException("Unknown URI");
+			throw new IllegalArgumentException("Unknown URI " + arg0.getPath());
 		}
 		getContext().getContentResolver().notifyChange(arg0, null);
 		return count;
@@ -130,9 +132,9 @@ public class DBContentProvider extends ContentProvider {
 		else
 			contentValues = new ContentValues();
 		SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
-		long rowID = sqLiteDatabase.insert(DBTABLE, null, contentValues);
+		long rowID = sqLiteDatabase.insert(tableName, null, contentValues);
 		if (rowID > 0) {
-			Uri noteUri = ContentUris.withAppendedId(CONTENT_URI, rowID);
+			Uri noteUri = ContentUris.withAppendedId(contentUri, rowID);
 			getContext().getContentResolver().notifyChange(noteUri, null);
 			return noteUri;
 		}
@@ -141,7 +143,7 @@ public class DBContentProvider extends ContentProvider {
 
 	@Override
 	public boolean onCreate() {
-		databaseHelper = new DatabaseHelper(getContext());
+		databaseHelper = new DatabaseHelper(getContext(),createTableString,tableName);
 		return true;
 	}
 
@@ -151,7 +153,7 @@ public class DBContentProvider extends ContentProvider {
 		SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
 		switch (sUriMatcher.match(uri)) {
 		case DB_TABLE_ID:
-			sqLiteQueryBuilder.setTables(DBTABLE);
+			sqLiteQueryBuilder.setTables(tableName);
 			sqLiteQueryBuilder.setProjectionMap(szasProjectionMap);
 			break;
 		default:
@@ -171,11 +173,11 @@ public class DBContentProvider extends ContentProvider {
 		int count;
 		switch (sUriMatcher.match(uri)) {
 		case DB_TABLE_ID:
-			count = sqLiteDatabase.update(DBTABLE, values, where, whereArgs);
+			count = sqLiteDatabase.update(tableName, values, where, whereArgs);
 			break;
 		case DB_TABLE_ITEM_ID:
 			long itemId = Long.parseLong(uri.getLastPathSegment());
-			count = sqLiteDatabase.update(DBTABLE, values, DBCOL_ID + " = ? ",
+			count = sqLiteDatabase.update(tableName, values, databaseColumnId + " = ? ",
 					new String[] { String.valueOf(itemId) });
 			break;
 		default:
@@ -193,7 +195,7 @@ public class DBContentProvider extends ContentProvider {
 	 * @param cleanInsertTable
 	 *            set true if you want clean insert table first
 	 */
-	public static void moveFromOneTableToAnother(String insertTable,
+	public void moveFromOneTableToAnother(String insertTable,
 			String fromTable, boolean cleanInsertTable) {
 		databaseHelper.moveFromOneTableToAnother(
 				databaseHelper.getWritableDatabase(), insertTable, fromTable,
@@ -206,7 +208,7 @@ public class DBContentProvider extends ContentProvider {
 	 * @param dbTable
 	 *            table name
 	 */
-	public static void cleanTable(String dbTable) {
+	public void cleanTable(String dbTable) {
 		databaseHelper
 				.cleanTable(databaseHelper.getWritableDatabase(), dbTable);
 	}
@@ -217,18 +219,23 @@ public class DBContentProvider extends ContentProvider {
 	 */
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
-		public DatabaseHelper(Context context) {
+		private final String createTableString;
+		private final String tableName;
+
+		public DatabaseHelper(Context context, String createTableString, String tableName) {
 			super(context, DBNAME, null, DBVERSION);
+			this.createTableString = createTableString;
+			this.tableName = tableName;
 		}
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
-			db.execSQL(DBCREATE);
+			db.execSQL(createTableString);
 		}
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			db.execSQL("DROP TABLE IF EXISTS " + DBTABLE);
+			db.execSQL("DROP TABLE IF EXISTS " + tableName);
 			onCreate(db);
 		}
 

@@ -24,18 +24,20 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<provider android:authorities="com.szas.android.SZASApplication1"
+		<provider android:authorities="SZASApplication1"
 			android:enabled="true" android:syncable="true"
 			android:name="SQLLocalDAO$SyncedContentProvider"
-			android:label="@string/accountlabel"></provider>
-	<!-- 	<provider android:authorities="com.szas.android.SZASApplication2"
+			android:label="@string/accountlabel">
+			<grant-uri-permission android:pathPrefix="szas_table1"></grant-uri-permission>
+			</provider>
+	 	<provider android:authorities="SZASApplication2"
 			android:enabled="true" android:syncable="false"
 			android:name="SQLLocalDAO$InProgressContentProvider"
 			android:label="@string/accountlabel"></provider>
 		<provider android:authorities="com.szas.android.SZASApplication3"
 			android:enabled="true" android:syncable="false"
 			android:name="SQLLocalDAO$NotSyncedContentProvider"
-			android:label="@string/accountlabel"></provider>-->
+			android:label="@string/accountlabel"></provider>
 		<activity android:name="com.szas.android.SZASApplication.UI.SecondActivity"
 			android:label="@string/second_window_title"></activity>
 		<service android:name="SyncService" 

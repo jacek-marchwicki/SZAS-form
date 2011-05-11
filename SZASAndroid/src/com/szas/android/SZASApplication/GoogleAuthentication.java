@@ -66,8 +66,6 @@ public class GoogleAuthentication {
 
 	private final Account account;
 
-	private Context context;
-
 	/**
 	 * Get cookie which allow you to have access to GAE
 	 * 
@@ -134,9 +132,8 @@ public class GoogleAuthentication {
 	 * @param context 
 	 * @return true if connected, false if error
 	 */
-	public boolean connect(AccountManager accountManager, Context context) {
+	public boolean connect(AccountManager accountManager)  {
 		GoogleAuthentication.accountManager = accountManager;
-		this.context = context;
 		boolean retVal = true;
 		if (authCookie == null) {
 			String authtoken;
@@ -169,12 +166,6 @@ public class GoogleAuthentication {
 				.getAuthToken(account, AUTH_TOKEN_TYPE, true, null, null);
 		Bundle authTokenBundle = accountManagerFuture.getResult();
 		authtoken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
-		 if (authtoken == null) {
-             // No auth token - will need to ask permission from user.
-             Intent intent = new Intent("com.google.ctp.AUTH_PERMISSION");
-             intent.putExtra("AccountManagerBundle", authTokenBundle);
-             context.sendBroadcast(intent);
-         }
 		return authtoken;
 
 	}
