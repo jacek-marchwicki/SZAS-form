@@ -5,6 +5,8 @@ package com.szas.android.SZASApplication;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import android.content.ContentProviderClient;
 import android.content.Context;
 import android.content.SyncResult;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.szas.data.UserTuple;
 import com.szas.sync.Tuple;
@@ -36,6 +39,11 @@ import flexjson.JSONDeserializer;
  *         implemented yet
  */
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
+
+	/**
+	 * Log tag
+	 */
+	private static final String LOGTAG = "SZAS_SYNC_ADAPTER";
 
 	private final AccountManager accountManager;
 	private final Context context;
@@ -81,8 +89,15 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	@Override
 	public void onPerformSync(Account account, Bundle extras, String authority,
 			ContentProviderClient contentProviderClient, SyncResult syncResult) {
+		Log.v(LOGTAG, "syncAdapter sync started");
 		List<RemoteTuple<Tuple>> remoteTuples;
-		googleAuthentication = GoogleAuthentication.getGoogleAuthentication();
+		googleAuthentication = GoogleAuthentication.getGoogleAuthentication(account);
+		googleAuthentication.connect(accountManager, context);
+		if (googleAuthentication.getAuthCookie() == null)
+		{
+			syncResult.stats.numAuthExceptions++;
+			return;
+		}
 		try {
 			remoteTuples = fetchFromNetwork(googleAuthentication);
 			for (RemoteTuple<Tuple> remoteTuple : remoteTuples)
@@ -120,15 +135,21 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 				+ googleAuthentication.getAuthCookie().getValue());
 		conn.setDoOutput(true);
 		// conn.setRequestMethod("POST");
+
 		InputStream inputStream = null;
 		inputStream = conn.getInputStream();
-		if (inputStream != null) {
-			ArrayList<RemoteTuple<Tuple>> result = new JSONDeserializer<ArrayList<RemoteTuple<Tuple>>>()
-					.deserialize(new Scanner(inputStream).useDelimiter("\\A")
+		InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+		if (inputStream == null) 
+			return null;
+
+		ArrayList<RemoteTuple<Tuple>> result = new JSONDeserializer<ArrayList<RemoteTuple<Tuple>>>().deserialize(inputStreamReader);
+		/*ArrayList<RemoteTuple<Tuple>> result = new JSONDeserializer<ArrayList<RemoteTuple<Tuple>>>()
+					.deserialize(inputStream)
 							.next());
-			return result;
-		}
-		return null;
+			String json = new JSONDeserializer<ArrayList<>()
+			.deserialize(new Scanner(inputStream).useDelimiter("\\A")
+					.next());*/
+		return result;
 	}
 
 	/**
@@ -140,8 +161,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		boolean retVal;
 		String result = null;
 		googleAuthentication = GoogleAuthentication
-				.getNewGoogleAuthentication();
-		googleAuthentication.Connect(accountManager);
+		.getNewGoogleAuthentication(null);
+		googleAuthentication.connect(accountManager, context);
 		result = "error"; // FIXME here fetchFromNetwork or try login, something
 		retVal = result.equals("true");
 		return retVal;

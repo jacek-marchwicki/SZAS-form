@@ -18,7 +18,10 @@ import android.accounts.AccountManager;
 import android.accounts.AccountManagerFuture;
 import android.accounts.AuthenticatorException;
 import android.accounts.OperationCanceledException;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 /**
  * @author pszafer@gmail.com class to login into google account | oauth | etc
@@ -61,12 +64,17 @@ public class GoogleAuthentication {
 
 	private static GoogleAuthentication googleAuthentication;
 
+	private final Account account;
+
+	private Context context;
+
 	/**
 	 * Get cookie which allow you to have access to GAE
 	 * 
 	 * @return authCookie
 	 */
 	public Cookie getAuthCookie() {
+		Log.v("GoogleAuthentication", "Cookie value: " + authCookie.getValue());
 		return authCookie;
 	}
 
@@ -82,29 +90,33 @@ public class GoogleAuthentication {
 
 	/**
 	 * Creates new instance of class to reload authCookie
+	 * @param account 
 	 * 
 	 * @return
 	 */
-	public static GoogleAuthentication getNewGoogleAuthentication() {
-		googleAuthentication = new GoogleAuthentication();
+	public static GoogleAuthentication getNewGoogleAuthentication(Account account) {
+		googleAuthentication = new GoogleAuthentication(account);
 		return googleAuthentication;
 	}
 
 	/**
 	 * Gives actual state of GoogleAuthentication class
+	 * @param account 
 	 * 
 	 * @return
 	 */
-	public static GoogleAuthentication getGoogleAuthentication() {
+	public static GoogleAuthentication getGoogleAuthentication(Account account) {
 		if (googleAuthentication == null)
-			getNewGoogleAuthentication();
+			getNewGoogleAuthentication(account);
 		return googleAuthentication;
 	}
 
 	/**
 	 * Do nothing
+	 * @param account 
 	 */
-	private GoogleAuthentication() {
+	private GoogleAuthentication(Account account) {
+		this.account = account;
 	}
 
 	/**
@@ -119,10 +131,12 @@ public class GoogleAuthentication {
 	 * Connect to google service and authCookie
 	 * 
 	 * @param accountManager
+	 * @param context 
 	 * @return true if connected, false if error
 	 */
-	public boolean Connect(AccountManager accountManager) {
+	public boolean connect(AccountManager accountManager, Context context) {
 		GoogleAuthentication.accountManager = accountManager;
+		this.context = context;
 		boolean retVal = true;
 		if (authCookie == null) {
 			String authtoken;
@@ -150,14 +164,17 @@ public class GoogleAuthentication {
 	 */
 	private String getToken() throws OperationCanceledException,
 			AuthenticatorException, IOException {
-		Account[] accounts = accountManager.getAccounts();
 		accountManager.invalidateAuthToken("com.google", authtoken);
 		final AccountManagerFuture<Bundle> accountManagerFuture = accountManager
-				.getAuthToken(accounts[0], AUTH_TOKEN_TYPE, null, null, null,
-						null);
+				.getAuthToken(account, AUTH_TOKEN_TYPE, true, null, null);
 		Bundle authTokenBundle = accountManagerFuture.getResult();
-		authtoken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN)
-				.toString();
+		authtoken = authTokenBundle.getString(AccountManager.KEY_AUTHTOKEN);
+		 if (authtoken == null) {
+             // No auth token - will need to ask permission from user.
+             Intent intent = new Intent("com.google.ctp.AUTH_PERMISSION");
+             intent.putExtra("AccountManagerBundle", authTokenBundle);
+             context.sendBroadcast(intent);
+         }
 		return authtoken;
 
 	}
@@ -183,6 +200,7 @@ public class GoogleAuthentication {
 		if (response.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_OK
 				|| response.getStatusLine().getStatusCode() == HttpURLConnection.HTTP_NO_CONTENT) {
 			if (httpClient.getCookieStore().getCookies().size() > 0) {
+				//TODO CHECK IF ASCID COOKIE
 				retObj = httpClient.getCookieStore().getCookies().get(0);
 			}
 		}

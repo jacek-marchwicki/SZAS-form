@@ -14,11 +14,11 @@ public class Constans {
 	/**
 	 * Account type to get credentials
 	 */
-	private static final String ACCOUNT_TYPE = "com.google";
+	public static final String ACCOUNT_TYPE = "com.google";
 
 	/**
 	 * Authtoken type
 	 */
-	private static final String AUTHTOKEN_TYPE = "com.google";
+	public static final String AUTHTOKEN_TYPE = "com.google";
 
 }
