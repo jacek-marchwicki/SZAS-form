@@ -3,17 +3,19 @@
  */
 package com.szas.android.SZASApplication.UI;
 
-import android.app.AlertDialog;
+import java.util.HashMap;
+
 import android.app.ListActivity;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.TextView;
 
+import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
 
 
@@ -23,17 +25,20 @@ import com.szas.android.SZASApplication.R;
  * 
  *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
  *         implemented yet
+ * @param <T>
  */
-public class SecondActivity extends ListActivity {
+public class SecondActivity<T> extends ListActivity {
 	//private Context context = null;
 
+	private String questionnaryName;
+	private HashMap<Long, T> elements;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		//context = getApplicationContext();
 		String text = getIntent().getExtras().getString("title");
+		questionnaryName = getIntent().getExtras().getString("questionnaryName");
 		setTitle(getString(R.string.second_window_title) + " " + text);
-
 		setListAdapter(new ArrayAdapter<String>(this, R.layout.main,
 				getItemForList()));
 		ListView lv = getListView();
@@ -41,14 +46,18 @@ public class SecondActivity extends ListActivity {
 		lv.setOnItemClickListener(onItemClickListener);
 	}
 
+	
 	/**
 	 * Get departments to show in the listView
 	 * 
 	 * @return departments String[]
 	 */
+	@SuppressWarnings("unchecked")
 	private String[] getItemForList() {
-		// XXX somehow download or get from db lists of departments
-		return new String[] { "ble1", "ble2", "ble3" };
+		elements = (HashMap<Long, T>)LocalDAOContener.getTuplesByName(questionnaryName);
+		String[] array = new String[elements.size()];
+		elements.values().toArray(array);
+		return array;
 	}
 
 	/**
@@ -71,7 +80,7 @@ public class SecondActivity extends ListActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(
+/*			AlertDialog.Builder builder = new AlertDialog.Builder(
 					SecondActivity.this);
 			items = new String[] { getString(R.string.form_item1),
 					getString(R.string.form_item2),
@@ -87,7 +96,14 @@ public class SecondActivity extends ListActivity {
 				}
 			});
 			AlertDialog alert = builder.create();
-			alert.show();
+			alert.show();*/
+			Intent i = new Intent(SecondActivity.this, QuestionnaireActivity.class);
+			i.putExtra("title", ((TextView) view).getText());
+			Long[] longArray = new Long[elements.size()];
+			elements.keySet().toArray(longArray);
+			String _id = longArray[(int) id].toString();
+			i.putExtra("questionnaryID", _id);
+			startActivity(i);
 		}
 	};
 }

@@ -3,6 +3,7 @@
  */
 package com.szas.android.SZASApplication;
 
+import com.szas.data.QuestionnaireTuple;
 import com.szas.data.UserTuple;
 import com.szas.sync.local.LocalDAO;
 
@@ -49,19 +50,4 @@ public class SyncService extends Service {
 	public IBinder onBind(Intent intent) {
 		return syncAdapter.getSyncAdapterBinder();
 	}
-
-	/**
-	 * SQLLocalDAO of Users
-	 */
-	private static SQLLocalDAO<UserTuple> usersSqlDAO;
-
-	/**
-	 * Ger users dao
-	 * 
-	 * @return UserTuple
-	 */
-	public static LocalDAO<UserTuple> getUsersdao() {
-		return usersSqlDAO;
-	}
-
 }

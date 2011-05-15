@@ -122,7 +122,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 			InputStream inputStream = null;
 			inputStream = conn.getInputStream();
-			InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+			String encoding = conn.getContentEncoding();
+			 if (encoding == null) {
+				    encoding = "UTF-8";
+				  }
+			InputStreamReader inputStreamReader = new InputStreamReader(inputStream, encoding);
 			if (inputStream == null) 
 				return null;
 
@@ -151,8 +155,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
 		this.accountManager = AccountManager.get(context);
-		questionnaireDAO = new SQLLocalDAO<QuestionnaireTuple>(context);
-		filledQuestionnaireDAO = new SQLLocalDAO<FilledQuestionnaireTuple>(context);
+		setQuestionnaireDAO(new SQLLocalDAO<QuestionnaireTuple>(context, "com.szas.data.QuestionnaireTuple"));
+		filledQuestionnaireDAO = new SQLLocalDAO<FilledQuestionnaireTuple>(context, "com.szas.data.FilledQuestionnaireTuple");
 		
 	
 	}
@@ -178,9 +182,23 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		}
 		syncLocalService = new AndroidSyncLocalService(googleAuthentication);
 		LocalSyncHelperImpl syncHelper = new LocalSyncHelperImpl(syncLocalService);
-		syncHelper.append("questionnaire", questionnaireDAO);
+		syncHelper.append("questionnaire", getQuestionnaireDAO());
 		syncHelper.append("filled", filledQuestionnaireDAO);
 		syncHelper.sync();
+	}
+
+	/**
+	 * @param questionnaireDAO the questionnaireDAO to set
+	 */
+	public void setQuestionnaireDAO(LocalDAO<QuestionnaireTuple> questionnaireDAO) {
+		this.questionnaireDAO = questionnaireDAO;
+	}
+
+	/**
+	 * @return the questionnaireDAO
+	 */
+	public LocalDAO<QuestionnaireTuple> getQuestionnaireDAO() {
+		return questionnaireDAO;
 	}
 
 

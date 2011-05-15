@@ -38,5 +38,6 @@
 			<meta-data android:name="android.content.SyncAdapter"
 				android:resource="@xml/syncadapter" />
 		</service>
+		<activity android:name=".UI.QuestionnaireActivity"></activity>
 	</application>
 </manifest>

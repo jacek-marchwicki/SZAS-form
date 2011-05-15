@@ -1,10 +1,10 @@
 package com.szas.android.SZASApplication.UI;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -19,8 +19,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
+import com.szas.data.QuestionnaireTuple;
+import com.szas.sync.local.LocalDAO;
 
 //"http://szas-form.appspot.com/syncnoauth
 /**
@@ -29,18 +32,21 @@ import com.szas.android.SZASApplication.SyncService;
  */
 public class MainActivity extends ListActivity {
 
+	private LocalDAO<QuestionnaireTuple> questionnaireDAO;
+
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		startService(new Intent(getApplicationContext(), SyncService.class));
 		setListAdapter(new ArrayAdapter<String>(this, R.layout.main,
 				getItemForList()));
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
 		lv.setOnItemClickListener(onItemClickListener);
-		startService(new Intent(getApplicationContext(), SyncService.class));
-
+		
 		// Log.v("accountType", accounts[0].type);
+		
 
 	}
 
@@ -93,30 +99,30 @@ public class MainActivity extends ListActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			if (id == 0)
-			{
-				Account account = AccountManager.get(getApplicationContext()).getAccounts()[0];
-				ContentResolver.setIsSyncable(account, "com.google", 1);
-				ContentResolver.requestSync(account, "com.google", new Bundle());
-			}
-			else {
 				Intent i = new Intent(MainActivity.this, SecondActivity.class);
 				i.putExtra("title", ((TextView) view).getText());
+				i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
 				startActivity(i);
-			}
 		}
 	};
 
+	String[]  listViewElementsArray;
 	/**
 	 * Get elements which should be displayed in the listView
 	 * 
 	 * @return
 	 */
 	private String[] getItemForList() {
-		// XXX somehow download or get from db lists of departments
-
-		return new String[] { "Rozpocznij synchronizacje", "oddzial2",
-				"oddzial3" };
+		//TODO make run on UI Thread
+		ArrayList<String> array = new ArrayList<String>();
+		LocalDAOContener.loadContext(getApplicationContext());
+		Collection<QuestionnaireTuple> qq = LocalDAOContener.getQuestionnaireTuples();
+		for(QuestionnaireTuple q : qq){
+			 array.add(q.getName());
+		}
+		listViewElementsArray = new String[array.size()];
+		array.toArray(listViewElementsArray);
+		return listViewElementsArray;
 	}
 
 }

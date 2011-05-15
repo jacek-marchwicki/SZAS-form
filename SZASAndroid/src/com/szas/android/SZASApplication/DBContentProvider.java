@@ -80,7 +80,7 @@ public class DBContentProvider extends ContentProvider {
 		syncedUriMatcher.addURI(authority,
 				DatabaseContentHelper.tableNameSyncedElements + "/#", DB_TABLE_ITEM_ID);
 
-		inProgressProjectionMap = DatabaseContentHelper.projectionMapSyncedElements;
+		inProgressProjectionMap = DatabaseContentHelper.projectionMapInProgressSyncingNotSyncedElements;
 		inProgressUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 		inProgressUriMatcher.addURI(authority,
 				DatabaseContentHelper.tableNameInProgressSyncingElements, DB_TABLE_ID);
@@ -395,9 +395,9 @@ public class DBContentProvider extends ContentProvider {
 		static {
 			projectionMapInProgressSyncingNotSyncedElements = new HashMap<String, String>();
 			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_ID, DBCOL_ID);
+			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_status, DBCOL_status);
 			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_T, DBCOL_T);
 			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_type, DBCOL_type);
-			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_status, DBCOL_status);
 		}
 
 		/*
