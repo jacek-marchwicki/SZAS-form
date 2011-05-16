@@ -1,73 +1,121 @@
-/**
- * 
- */
 package com.szas.android.SZASApplication;
 
 import java.util.HashMap;
 
-import android.app.Application;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.SQLException;
 import android.net.Uri;
 
 /**
- * @author Pawel Szafer email pszafer@gmail.com
+ * @author pszafer@gmail.com
  * 
- * no comments because based on ContentProvider
+ *         LEGEND: XXX - adnotation FIXME - something wrong TODO - not
+ *         implemented yet
  */
 public class DBContentProvider extends ContentProvider {
-	
+
+	/**
+	 * Authority name for ContentResolver
+	 */
+	public static String authority = "SZASApplication1";
+	/**
+	 * Database name
+	 */
 	private static final String DBNAME = "szas";
+
+	/**
+	 * Database version
+	 */
 	private static final int DBVERSION = 2;
-	private static final String DBTABLE = "szas_table";
+
+	/**
+	 * Mime address
+	 */
 	private static final String DBMIME = "vnd.android.cursor.dir/stroringdata.szas";
 
-	private static final String LOGTAG = "SZAS_ANDROID_PROJECT_DB";
-	private static final UriMatcher sUriMatcher;
-	private static final int DB_TABLE_ID = 1;
-	private static final int DB_TABLE_ITEM_ID = 2;
-	private static final String appName = "SZASApplication";
+	/**
+	 * Log tag XXX commented because not used
+	 */
+	// private static final String LOGTAG = "SZAS_ANDROID_PROJECT_DB";
 
-	public static final Uri CONTENT_URI = Uri.parse("content://" + appName
-			+ "/" + DBTABLE);
-	public static final String DBCOL_ID = "_id";
-	public static final String DBCOL_syncTimestamp = "syncTimestamp";
-	public static final String DBCOL_status = "status";
-	public static final String DBCOL_form = "form";
+	private UriMatcher syncedUriMatcher;
+	private UriMatcher inProgressUriMatcher;
+	private UriMatcher notSyncedUriMatcher;
 
-	private DatabaseHelper databaseHelper;
-	private static HashMap<String, String> szasProjectionMap;
+	private static final int DB_TABLE_ID = 1; // not sure if need to be
+												// different in each table
 
-	private static final String DBCREATE = "create table " + DBTABLE + " ("
-			+ DBCOL_ID + " TEXT NOT NULL primary key," + 
-			DBCOL_syncTimestamp + " TEXT not null," + // --sqlite nie ma long'ow
-			DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
-			DBCOL_form + " TEXT not null )";
+	private static final int DB_TABLE_ITEM_ID = 2; // like above
+
+	private static DatabaseContentHelper databaseContentHelper;
+
+	private HashMap<String, String> syncedProjectionMap;
+	private HashMap<String, String> inProgressProjectionMap;
+	private HashMap<String, String> notSyncedProjectionMap;
+
+	/**
+	 * Every content provider (SQLLocalDAO) extends DBContentProvider with
+	 * another data, but structure of tables are the same
+	 */
+	public DBContentProvider() {
+		createProjectionMap();
+	}
+
+	/**
+	 * Projection map to create Urimatcher
+	 */
+	private void createProjectionMap() {
+		syncedProjectionMap = DatabaseContentHelper.projectionMapSyncedElements;
+		syncedUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+		syncedUriMatcher.addURI(authority,
+				DatabaseContentHelper.tableNameSyncedElements, DB_TABLE_ID);
+		syncedUriMatcher.addURI(authority,
+				DatabaseContentHelper.tableNameSyncedElements + "/#", DB_TABLE_ITEM_ID);
+
+		inProgressProjectionMap = DatabaseContentHelper.projectionMapInProgressSyncingNotSyncedElements;
+		inProgressUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+		inProgressUriMatcher.addURI(authority,
+				DatabaseContentHelper.tableNameInProgressSyncingElements, DB_TABLE_ID);
+		inProgressUriMatcher.addURI(authority,
+				DatabaseContentHelper.tableNameInProgressSyncingElements + "/#", DB_TABLE_ITEM_ID);
+
+		notSyncedProjectionMap = DatabaseContentHelper.projectionMapInProgressSyncingNotSyncedElements;
+		notSyncedUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+		notSyncedUriMatcher.addURI(authority,
+				DatabaseContentHelper.tableNameNotSyncedElements, DB_TABLE_ID);
+		notSyncedUriMatcher.addURI(authority,
+				DatabaseContentHelper.tableNameNotSyncedElements + "/#", DB_TABLE_ITEM_ID);
+	}
 
 	@Override
 	public int delete(Uri arg0, String where, String[] whereArgs) {
-		SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
+		Contener contener = getUriMatcherAndSqliteDatabase(arg0, true);
+		if (contener == null)
+			return -1;
+		UriMatcher sUriMatcher = contener.getsUriMatcher();
+		SQLiteDatabase sqLiteDatabase = contener.getSqLiteDatabase();
 		int count;
 		switch (sUriMatcher.match(arg0)) {
 		case DB_TABLE_ID:
-			count = sqLiteDatabase.delete(DBTABLE, where, whereArgs);
+			count = sqLiteDatabase.delete(contener.getTableName(), where,
+					whereArgs);
 			break;
 		case DB_TABLE_ITEM_ID:
 			long itemId = Long.parseLong(arg0.getLastPathSegment());
-			count = sqLiteDatabase.delete(DBTABLE, DBCOL_ID + " = ? ",
+			count = sqLiteDatabase.delete(contener.getTableName(),
+					DatabaseContentHelper.DBCOL_ID + " = ? ",
 					new String[] { String.valueOf(itemId) });
 			break;
 		default:
-			throw new IllegalArgumentException("Unknown URI");
+			throw new IllegalArgumentException("Unknown URI " + arg0.getPath());
 		}
 		getContext().getContentResolver().notifyChange(arg0, null);
 		return count;
@@ -75,7 +123,10 @@ public class DBContentProvider extends ContentProvider {
 
 	@Override
 	public String getType(Uri arg0) {
-		switch (sUriMatcher.match(arg0)) {
+		UriMatcher uriMatcher = getUriMatcher(arg0);
+		if (uriMatcher == null)
+			return null;
+		switch (uriMatcher.match(arg0)) {
 		case DB_TABLE_ID:
 			return DBMIME;
 		default:
@@ -85,6 +136,13 @@ public class DBContentProvider extends ContentProvider {
 
 	@Override
 	public Uri insert(Uri arg0, ContentValues arg1) {
+		Contener contener = getUriMatcherAndSqliteDatabase(arg0, true);
+		if (contener == null)
+			return null;
+		UriMatcher sUriMatcher = contener.getsUriMatcher();
+		SQLiteDatabase sqLiteDatabase = contener.getSqLiteDatabase();
+		String tableName = contener.getTableName();
+		Uri contentUri = contener.getContentUri();
 		if (sUriMatcher.match(arg0) != DB_TABLE_ID)
 			throw new IllegalArgumentException("Unknown URI" + arg0);
 		ContentValues contentValues;
@@ -92,37 +150,38 @@ public class DBContentProvider extends ContentProvider {
 			contentValues = new ContentValues(arg1);
 		else
 			contentValues = new ContentValues();
-		SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
-		long rowID = sqLiteDatabase.insert(DBTABLE, null, contentValues);
+		long rowID = sqLiteDatabase.insert(tableName, null, contentValues);
 		if (rowID > 0) {
-			Uri noteUri = ContentUris.withAppendedId(CONTENT_URI, rowID);
+			Uri noteUri = ContentUris.withAppendedId(contentUri, rowID);
 			getContext().getContentResolver().notifyChange(noteUri, null);
 			return noteUri;
 		}
-		throw new SQLException("Unknown URI");
+		throw new SQLException("Failed to insert ROW into " + arg0);
 	}
 
 	@Override
 	public boolean onCreate() {
-		databaseHelper = new DatabaseHelper(getContext());
+		databaseContentHelper = new DatabaseContentHelper(getContext());
 		return true;
 	}
 
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
+		Contener contener = getUriMatcherAndSqliteDatabase(uri, false);
+		if (contener == null)
+			return null;
 		SQLiteQueryBuilder sqLiteQueryBuilder = new SQLiteQueryBuilder();
-		switch (sUriMatcher.match(uri)) {
+		switch (contener.getsUriMatcher().match(uri)) {
 		case DB_TABLE_ID:
-			sqLiteQueryBuilder.setTables(DBTABLE);
-			sqLiteQueryBuilder.setProjectionMap(szasProjectionMap);
+			sqLiteQueryBuilder.setTables(contener.getTableName());
+			sqLiteQueryBuilder.setProjectionMap(contener.getProjectionMap());
 			break;
 		default:
 			throw new IllegalArgumentException("Unknown URI");
 		}
-		SQLiteDatabase sqLiteDatabase = databaseHelper.getReadableDatabase();
-		Cursor cursor = sqLiteQueryBuilder.query(sqLiteDatabase, projection,
-				selection, selectionArgs, null, null, sortOrder);
+		Cursor cursor = sqLiteQueryBuilder.query(contener.getSqLiteDatabase(),
+				projection, selection, selectionArgs, null, null, sortOrder);
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);
 		return cursor;
 	}
@@ -130,15 +189,21 @@ public class DBContentProvider extends ContentProvider {
 	@Override
 	public int update(Uri uri, ContentValues values, String where,
 			String[] whereArgs) {
-		SQLiteDatabase sqLiteDatabase = databaseHelper.getWritableDatabase();
+		Contener contener = getUriMatcherAndSqliteDatabase(uri, true);
+		if (contener == null)
+			return -1;
+		UriMatcher sUriMatcher = contener.getsUriMatcher();
+		SQLiteDatabase sqLiteDatabase = contener.getSqLiteDatabase();
+		String tableName = contener.getTableName();
 		int count;
 		switch (sUriMatcher.match(uri)) {
 		case DB_TABLE_ID:
-			count = sqLiteDatabase.update(DBTABLE, values, where, whereArgs);
+			count = sqLiteDatabase.update(tableName, values, where, whereArgs);
 			break;
 		case DB_TABLE_ITEM_ID:
 			long itemId = Long.parseLong(uri.getLastPathSegment());
-			count = sqLiteDatabase.update(DBTABLE, values, DBCOL_ID + " = ? ",
+			count = sqLiteDatabase.update(tableName, values,
+					DatabaseContentHelper.DBCOL_ID + " = ? ",
 					new String[] { String.valueOf(itemId) });
 			break;
 		default:
@@ -149,40 +214,251 @@ public class DBContentProvider extends ContentProvider {
 	}
 
 	/**
-	 * Projection map to create Urimatcher
+	 * Move fromTable to insertTable
+	 * 
+	 * @param insertTable
+	 * @param fromTable
+	 * @param cleanInsertTable
+	 *            set true if you want clean insert table first
 	 */
-	static {
-		sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-		sUriMatcher.addURI(appName, DBTABLE, DB_TABLE_ID);
-		sUriMatcher.addURI(appName, DBTABLE + "/#", DB_TABLE_ITEM_ID);
-
-		szasProjectionMap = new HashMap<String, String>();
-
-		szasProjectionMap.put(DBCOL_ID, DBCOL_ID);
-		szasProjectionMap.put(DBCOL_syncTimestamp, DBCOL_syncTimestamp);
-		szasProjectionMap.put(DBCOL_status, DBCOL_status);
-		szasProjectionMap.put(DBCOL_form, DBCOL_form);
+	public static void moveFromOneTableToAnother(String insertTable,
+			String fromTable, boolean cleanInsertTable) {
+		SQLiteDatabase sqLiteDatabase = databaseContentHelper.getWritableDatabase();
+		DatabaseContentHelper.moveFromOneTableToAnother(sqLiteDatabase
+				, insertTable,
+				fromTable, cleanInsertTable);
 	}
 
 	/**
-	 * Class to create and update sqlite database
+	 * Clean table
+	 * 
+	 * @param dbTable
+	 *            table name
+	 */
+	public static void cleanTable(String dbTable) {
+		DatabaseContentHelper.cleanTable(
+				databaseContentHelper.getWritableDatabase(), dbTable);
+	}
+
+	/**
+	 * 
+	 * @param arg0
+	 * @param isDBWritable
+	 *            if set to true returns getWritableDatabase otherwise
+	 *            getReadableDatabase
+	 * @return
+	 */
+	private Contener getUriMatcherAndSqliteDatabase(Uri arg0,
+			boolean isDBWritable) {
+		Contener contener = null;
+		String str = arg0.getLastPathSegment();
+		if (str.equals(DatabaseContentHelper.tableNameSyncedElements)) {
+			// if isDBWritable is true then return writableDB
+			contener = new Contener();
+			contener.setSqLiteDatabase(isDBWritable ? databaseContentHelper
+					.getWritableDatabase() : databaseContentHelper
+					.getReadableDatabase());
+			contener.setsUriMatcher(syncedUriMatcher);
+			contener.setTableName(DatabaseContentHelper.tableNameSyncedElements);
+			contener.setContentUri(DatabaseContentHelper.contentUriSyncedElements);
+			contener.setProjectionMap(syncedProjectionMap);
+		} else if (str.equals(DatabaseContentHelper.tableNameInProgressSyncingElements)) {
+			contener = new Contener();
+			contener.setSqLiteDatabase(isDBWritable ? databaseContentHelper
+					.getWritableDatabase() : databaseContentHelper
+					.getReadableDatabase());
+			contener.setsUriMatcher(inProgressUriMatcher);
+			contener.setTableName(DatabaseContentHelper.tableNameInProgressSyncingElements);
+			contener.setContentUri(DatabaseContentHelper.contentUriInProgressSyncingElements);
+			contener.setProjectionMap(inProgressProjectionMap);
+		} else if (str.equals(DatabaseContentHelper.tableNameNotSyncedElements)) {
+			contener = new Contener();
+			contener.setSqLiteDatabase(isDBWritable ? databaseContentHelper
+					.getWritableDatabase() : databaseContentHelper
+					.getReadableDatabase());
+			contener.setsUriMatcher(notSyncedUriMatcher);
+			contener.setTableName(DatabaseContentHelper.tableNameNotSyncedElements);
+			contener.setContentUri(DatabaseContentHelper.contentUriNotSyncedElements);
+			contener.setProjectionMap(notSyncedProjectionMap);
+		}
+		return contener;
+	}
+
+	/**
+	 * 
+	 * @param arg0
+	 * @param isDBWritable
+	 *            if set to true returns getWritableDatabase otherwise
+	 *            getReadableDatabase
+	 * @return
+	 */
+	private UriMatcher getUriMatcher(Uri arg0) {
+		String str = arg0.getLastPathSegment();
+		if (str.equals(DatabaseContentHelper.tableNameSyncedElements)) {
+			return syncedUriMatcher;
+		} else if (str.equals(DatabaseContentHelper.tableNameInProgressSyncingElements)) {
+			return inProgressUriMatcher;
+		} else if (str.equals(DatabaseContentHelper.tableNameNotSyncedElements)) {
+			return notSyncedUriMatcher;
+		}
+		return null;
+	}
+
+	/**
+	 * Elements
 	 * 
 	 */
-	private static class DatabaseHelper extends SQLiteOpenHelper {
+	public static class DatabaseContentHelper extends SQLiteOpenHelper {
 
-		public DatabaseHelper(Context context) {
+		/**
+		 * 1 - synced, elements
+		 * 2 - inProgress, SyncingElements
+		 * 3 - ElementsToSync, notsynced
+		 */
+		/**
+		 * @param context
+		 * @param name
+		 * @param version
+		 */
+		public DatabaseContentHelper(Context context) {
 			super(context, DBNAME, null, DBVERSION);
 		}
 
-		@Override
-		public void onCreate(SQLiteDatabase db) {
-			db.execSQL(DBCREATE);
+		/**
+		 * Name of table
+		 */
+		public static final String tableNameSyncedElements = "szas_table1";
+		public static final String tableNameInProgressSyncingElements = "szas_table2";
+		public static final String tableNameNotSyncedElements = "szas_table3";
+		
+		/**
+		 * Table URI
+		 */
+		public static final Uri contentUriSyncedElements = Uri.parse("content://" + authority
+				+ "/" + tableNameSyncedElements);
+		public static final Uri contentUriInProgressSyncingElements = Uri.parse("content://" + authority
+				+ "/" + tableNameInProgressSyncingElements);
+		public static final Uri contentUriNotSyncedElements = Uri.parse("content://" + authority
+				+ "/" + tableNameNotSyncedElements);
+		/**
+		 * Columns of table
+		 */
+		public static final String DBCOL_ID = "_id";
+		public static final String DBCOL_status = "status";
+		public static final String DBCOL_type = "type";
+		public static final String DBCOL_T = "T";
+
+		/**
+		 * Column indexes
+		 */
+		public static final int DBCOL_ID_INDEX = 0;
+		public static final int DBCOL_T_INDEX = 1;
+		public static final int DBCOL_type_INDEX = 2;
+		public static final int DBCOL_status_INDEX = 3;
+		
+
+		/**
+		 * String to create table
+		 */
+		private static final String createTableStringSyncedElements = "create table " + tableNameSyncedElements
+				+ " (" + DBCOL_ID + " TEXT NOT NULL primary key," 
+				+DBCOL_type + " TEXT not null,"
+				+ DBCOL_T
+				+ " TEXT not null )";
+		private static final String createTableStringProgressSyncingElements = "create table " + tableNameInProgressSyncingElements
+		+ " (" + DBCOL_ID + " TEXT NOT NULL primary key,"
+		+ DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
+		DBCOL_type + " TEXT not null,"+
+		DBCOL_T + " TEXT not null )";
+		private static final String createTableStringNotSyncedElements = "create table " + tableNameNotSyncedElements
+		+ " (" + DBCOL_ID + " TEXT NOT NULL primary key,"
+		+ DBCOL_status + " INTEGER not null," + // --inserting/updating/deleting/synced
+		DBCOL_type + " TEXT not null,"+
+		DBCOL_T + " TEXT not null )";
+		
+		/**
+		 * Hashmap of table
+		 */
+		public static HashMap<String, String> projectionMapSyncedElements = null;
+
+		static {
+			projectionMapSyncedElements = new HashMap<String, String>();
+			projectionMapSyncedElements.put(DBCOL_ID, DBCOL_ID);
+			projectionMapSyncedElements.put(DBCOL_T, DBCOL_T);
+			projectionMapSyncedElements.put(DBCOL_type, DBCOL_type);
+		}
+		
+		/**
+		 * Hashmap of table
+		 */
+		public static HashMap<String, String> projectionMapInProgressSyncingNotSyncedElements = null;
+		static {
+			projectionMapInProgressSyncingNotSyncedElements = new HashMap<String, String>();
+			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_ID, DBCOL_ID);
+			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_status, DBCOL_status);
+			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_T, DBCOL_T);
+			projectionMapInProgressSyncingNotSyncedElements.put(DBCOL_type, DBCOL_type);
 		}
 
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.database.sqlite.SQLiteOpenHelper#onCreate(android.database
+		 * .sqlite.SQLiteDatabase)
+		 */
+		@Override
+		public void onCreate(SQLiteDatabase db) {
+			db.execSQL(createTableStringSyncedElements);
+			db.execSQL(createTableStringProgressSyncingElements);
+			db.execSQL(createTableStringNotSyncedElements);
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.database.sqlite.SQLiteOpenHelper#onUpgrade(android.database
+		 * .sqlite.SQLiteDatabase, int, int)
+		 */
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			db.execSQL("DROP TABLE IF EXISTS " + DBTABLE);
+			db.execSQL("DROP TABLE IF EXISTS " + tableNameSyncedElements);
+			db.execSQL("DROP TABLE IF EXISTS " + tableNameInProgressSyncingElements);
+			db.execSQL("DROP TABLE IF EXISTS " + tableNameNotSyncedElements);
 			onCreate(db);
+		}
+
+		/**
+		 * Move content from fromTable to insetrtTable
+		 * 
+		 * @param db
+		 *            database
+		 * @param insertTable
+		 *            table to insert content
+		 * @param fromTable
+		 *            source of content
+		 * @param cleanInsertTable
+		 *            clean insert table first
+		 */
+		public static void moveFromOneTableToAnother(SQLiteDatabase db,
+				String insertTable, String fromTable, boolean cleanInsertTable) {
+			if (cleanInsertTable)
+				db.execSQL("DELETE FROM " + insertTable);
+			db.execSQL("INSERT INTO " + insertTable + " SELECT * FROM "
+					+ fromTable);
+		}
+
+		/**
+		 * Clean table
+		 * 
+		 * @param db
+		 *            database
+		 * @param dbTable
+		 *            table name
+		 */
+		public static void cleanTable(SQLiteDatabase db, String dbTable) {
+			db.execSQL("DELETE FROM " + dbTable);
 		}
 	}
 

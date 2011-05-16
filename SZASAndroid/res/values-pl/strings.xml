@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">System Zarządzania Ankietami Szpitalnymi</string>
+    <string name="second_window_title">Oddział:</string>
+    <string name="exit">Wyjście</string>
+    <string name="exit_prompt">Na pewno wyłączyć?</string>
+    <string name="yes">TAK</string>
+    <string name="no">NIE</string>
+    <string name="version">0.1</string>
+    <string name="about">O programie</string>
+    
+       
+    <string name="form_item1">Pusta ankieta</string>
+    <string name="form_item2">Wypełniona ankieta</string>
+    <string name="form_item3">Anuluj</string>
+    <string name="accountlabel">SZAS</string>
+    <string name="loading_progressbar"> Ładowanie elementów. Proszę czekać ... </string>
+</resources>
