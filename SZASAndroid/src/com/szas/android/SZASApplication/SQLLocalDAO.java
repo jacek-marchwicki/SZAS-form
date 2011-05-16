@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -84,16 +83,18 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		Cursor c2 = contentResolver.query(
 				DatabaseContentHelper.contentUriInProgressSyncingElements,
 				new String[] { DatabaseContentHelper.DBCOL_ID,
-						DatabaseContentHelper.DBCOL_status,
 						DatabaseContentHelper.DBCOL_T,
-						DatabaseContentHelper.DBCOL_type },  DatabaseContentHelper.DBCOL_type + " = ?",
+						DatabaseContentHelper.DBCOL_type,
+						DatabaseContentHelper.DBCOL_status
+						},  DatabaseContentHelper.DBCOL_type + " = ?",
 						new String[] { name }, null);
 		Cursor c3 = contentResolver.query(
 				DatabaseContentHelper.contentUriNotSyncedElements,
 				new String[] { DatabaseContentHelper.DBCOL_ID,
-						DatabaseContentHelper.DBCOL_status,
 						DatabaseContentHelper.DBCOL_T,
-						DatabaseContentHelper.DBCOL_type },  DatabaseContentHelper.DBCOL_type + " = ?",
+						DatabaseContentHelper.DBCOL_type,
+						DatabaseContentHelper.DBCOL_status
+						},  DatabaseContentHelper.DBCOL_type + " = ?",
 						new String[] { name }, null);
 		try {
 			if (c1 != null && c1.getCount() > 0) {
@@ -129,13 +130,14 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 					long objId = c3
 							.getLong(DatabaseContentHelper.DBCOL_ID_INDEX);
 					allElements.remove(objId);
-					LocalTuple.Status status = LocalTuple.Status.values()[c3
-							.getInt(DatabaseContentHelper.DBCOL_status_INDEX)];
-					if (!status.equals(LocalTuple.Status.DELETING))
+					int aa = c3.getInt(DatabaseContentHelper.DBCOL_status_INDEX);
+					LocalTuple.Status status = LocalTuple.Status.values()[aa];
+					if (!status.equals(LocalTuple.Status.DELETING)){
+						String element = c3.getString(DatabaseContentHelper.DBCOL_T_INDEX);
+						LocalTuple<T> localTuple = new JSONDeserializer<LocalTuple<T>>().deserialize(element);
 						allElements
-								.put(objId,
-										new JSONDeserializer<T>().deserialize(c3
-												.getString(DatabaseContentHelper.DBCOL_T_INDEX)));
+								.put(objId,localTuple.getElement());
+					}
 				} while (c3.moveToNext());
 			}
 
@@ -182,27 +184,27 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			if (c1 != null && c1.getCount() > 0) {
 				c1.moveToFirst();
 				LocalTuple.Status status = LocalTuple.Status.values()[c1
-						.getInt(DatabaseContentHelper.DBCOL_status_INDEX)];
+						.getInt(DatabaseContentHelper.DBCOL_status_INDEX-2)]; //XXX index is this what we need in cursor
 				if (status.equals(LocalTuple.Status.DELETING))
 					return null;
-				return new JSONDeserializer<T>().deserialize(c1
-						.getString(DatabaseContentHelper.DBCOL_T_INDEX));
+				LocalTuple<T> localTuple = new JSONDeserializer<LocalTuple<T>>().deserialize(c1.getString(DatabaseContentHelper.DBCOL_T_INDEX));
+				return localTuple.getElement(); 
 			}
 
 			// in progress
 			if (c2 != null && c2.getCount() > 0) {
 				c2.moveToFirst();
 				LocalTuple.Status status = LocalTuple.Status.values()[c2
-						.getInt(DatabaseContentHelper.DBCOL_status_INDEX)];
+						.getInt(DatabaseContentHelper.DBCOL_status_INDEX-2)];
 				if (status.equals(LocalTuple.Status.DELETING))
 					return null;
-				return new JSONDeserializer<T>().deserialize(c2
-						.getString(DatabaseContentHelper.DBCOL_T_INDEX));
+				LocalTuple<T> localTuple = new JSONDeserializer<LocalTuple<T>>().deserialize(c2.getString(DatabaseContentHelper.DBCOL_T_INDEX));
+				return localTuple.getElement(); 
 			}
 
 			// synced
 			if (c3 != null && c3.getCount() > 0) {
-				boolean whatHappened = c3.moveToFirst();
+				c3.moveToFirst();
 				String a = c3.getString(DatabaseContentHelper.DBCOL_T_INDEX);
 				RemoteTuple<T> tuple = new JSONDeserializer<RemoteTuple<T>>().deserialize(a);//FIXME czy tabela synced zawsze ma remoteTuple?
 				return tuple.getElement();
@@ -423,18 +425,21 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		ContentValues contentValues = new ContentValues();
 		contentValues.put(DatabaseContentHelper.DBCOL_ID, id);
 		contentValues.put(DatabaseContentHelper.DBCOL_status, status.ordinal());
+		LocalTuple<T> localTuple = new LocalTuple<T>();
+		localTuple.setStatus(status);
+		localTuple.setElement(element);
 		String type = null;
 		String serialized = new JSONSerializer().include("*")
-				.serialize(element);
+				.serialize(localTuple);
 		try {
-			type = new JSONObject(serialized).getJSONObject("element")
-					.getString("class");
+			type = new JSONObject(serialized).getJSONObject("element").getString("class");
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		contentValues.put(DatabaseContentHelper.DBCOL_type, type != null ? type
 				: "");
 		contentValues.put(DatabaseContentHelper.DBCOL_T, serialized);
+		contentResolver.insert(DatabaseContentHelper.contentUriNotSyncedElements, contentValues);
 	}
 
 	/*
@@ -496,8 +501,9 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		if (syncingElements != null && syncingElements.getCount() > 0) {
 			syncingElements.moveToFirst();
 			do {
-				ret.add(new JSONDeserializer<LocalTuple<T>>().deserialize(syncingElements
-						.getString(DatabaseContentHelper.DBCOL_T_INDEX)));
+				String a = syncingElements.getString(DatabaseContentHelper.DBCOL_T_INDEX);
+				LocalTuple<T> localTuple = new JSONDeserializer<LocalTuple<T>>().deserialize(a);
+				ret.add(localTuple);
 			} while (syncingElements.moveToNext());
 		}
 		return ret;

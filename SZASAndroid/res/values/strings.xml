@@ -13,4 +13,5 @@
     <string name="form_item2">Filled form</string>
     <string name="form_item3">Cancel</string>
     <string name="accountlabel">SZAS</string>
+    <string name="loading_progressbar"> Loading. Please wait ... </string>
 </resources>

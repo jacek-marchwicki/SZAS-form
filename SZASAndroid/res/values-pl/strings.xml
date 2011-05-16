@@ -14,4 +14,5 @@
     <string name="form_item2">Wypełniona ankieta</string>
     <string name="form_item3">Anuluj</string>
     <string name="accountlabel">SZAS</string>
+    <string name="loading_progressbar"> Ładowanie elementów. Proszę czekać ... </string>
 </resources>

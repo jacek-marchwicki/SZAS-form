@@ -1,14 +1,21 @@
 package com.szas.android.SZASApplication.UI;
 
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -22,8 +29,13 @@ import android.widget.TextView;
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
+import com.szas.data.FieldTextBoxDataTuple;
+import com.szas.data.FieldTextBoxTuple;
+import com.szas.data.FieldTuple;
 import com.szas.data.QuestionnaireTuple;
-import com.szas.sync.local.LocalDAO;
+import com.szas.sync.local.LocalTuple;
+
+import flexjson.JSONSerializer;
 
 //"http://szas-form.appspot.com/syncnoauth
 /**
@@ -32,22 +44,16 @@ import com.szas.sync.local.LocalDAO;
  */
 public class MainActivity extends ListActivity {
 
-	private LocalDAO<QuestionnaireTuple> questionnaireDAO;
+	//private LocalDAO<QuestionnaireTuple> questionnaireDAO;
+	private Context context;
 
-	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		startService(new Intent(getApplicationContext(), SyncService.class));
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.main,
-				getItemForList()));
-		ListView lv = getListView();
-		lv.setTextFilterEnabled(true);
-		lv.setOnItemClickListener(onItemClickListener);
-		
-		// Log.v("accountType", accounts[0].type);
-		
+		context = getApplicationContext();
+		startService(new Intent(context, SyncService.class));
 
+		new GetItemFromDatabase().execute(0);
 	}
 
 	@Override
@@ -99,30 +105,68 @@ public class MainActivity extends ListActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-				Intent i = new Intent(MainActivity.this, SecondActivity.class);
-				i.putExtra("title", ((TextView) view).getText());
-				i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
-				startActivity(i);
+			Intent i = new Intent(MainActivity.this, SecondActivity.class);
+			i.putExtra("title", ((TextView) view).getText());
+			i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
+			startActivity(i);
 		}
 	};
 
-	String[]  listViewElementsArray;
-	/**
-	 * Get elements which should be displayed in the listView
-	 * 
-	 * @return
-	 */
-	private String[] getItemForList() {
-		//TODO make run on UI Thread
-		ArrayList<String> array = new ArrayList<String>();
-		LocalDAOContener.loadContext(getApplicationContext());
-		Collection<QuestionnaireTuple> qq = LocalDAOContener.getQuestionnaireTuples();
-		for(QuestionnaireTuple q : qq){
-			 array.add(q.getName());
+	String[] listViewElementsArray;
+
+	private class GetItemFromDatabase extends
+			AsyncTask<Integer, Integer, ArrayAdapter<String>> {
+		ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPreExecute()
+		 */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			progressDialog.setMessage(getString(R.string.loading_progressbar));
+			progressDialog.show();
 		}
-		listViewElementsArray = new String[array.size()];
-		array.toArray(listViewElementsArray);
-		return listViewElementsArray;
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected ArrayAdapter<String> doInBackground(Integer... params) {
+			ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+					getApplicationContext(), R.layout.main, getItemForList());
+			if (arrayAdapter != null && arrayAdapter.getCount() > 0) {
+				return arrayAdapter;
+			}
+			return null;
+		}
+
+		private String[] getItemForList() {
+			ArrayList<String> array = new ArrayList<String>();
+			LocalDAOContener.loadContext(getApplicationContext());
+			Collection<QuestionnaireTuple> qq = LocalDAOContener
+					.getQuestionnaireTuples();
+			for (QuestionnaireTuple q : qq) {
+				array.add(q.getName());
+			}
+			listViewElementsArray = new String[array.size()];
+			array.toArray(listViewElementsArray);
+			return listViewElementsArray;
+		}
+
+		protected void onPostExecute(ArrayAdapter<String> arrayAdapter) {
+			progressDialog.dismiss();
+			if (arrayAdapter != null){
+				setListAdapter(arrayAdapter);
+				ListView lv = getListView();
+				lv.setTextFilterEnabled(true);
+				lv.setOnItemClickListener(onItemClickListener);
+			}
+		}
 	}
 
 }

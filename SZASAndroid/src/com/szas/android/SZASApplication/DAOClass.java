@@ -15,7 +15,7 @@ import com.szas.sync.Tuple;
 import com.szas.sync.local.LocalDAO;
 
 /**
- * @author xps
+ * @author pszafer@gmail.com
  *
  */
 public class DAOClass<T extends Tuple> {
@@ -112,6 +112,14 @@ public class DAOClass<T extends Tuple> {
 		
 		public static FilledQuestionnaireTuple getFilledQuestionnaireTupleById(long id){
 			return filledQuestionnaireDAO.getById(id);
+		}
+		
+		public static void insertFilledQuestionnaireTuple(FilledQuestionnaireTuple filledQuestionnaireTuple){
+			filledQuestionnaireDAO.insert(filledQuestionnaireTuple);
+		}
+		
+		public static void updateFilledQuestionnaireTuple(FilledQuestionnaireTuple filledQuestionnaireTuple){
+			filledQuestionnaireDAO.update(filledQuestionnaireTuple);
 		}
 	}
 	
