@@ -43,6 +43,7 @@ public class SyncNoAuthServlet extends HttpServlet {
 		try {
 			ArrayList<SyncedElementsHolder> syncedElementsHolders = StaticSyncer.getSyncHelper().sync(toSyncElementsHolders);
 			resp.setContentType("application/json");
+			resp.setCharacterEncoding("UTF-8");
 			PrintWriter printWriter = resp.getWriter();
 			new JSONSerializer().include("*").serialize(syncedElementsHolders,printWriter);
 		} catch (WrongObjectThrowable e) {

@@ -36,6 +36,7 @@ public class SyncNoAuthXmlServlet extends HttpServlet {
 		try {
 			ArrayList<SyncedElementsHolder> syncedElementsHolders = StaticSyncer.getSyncHelper().sync(toSyncElementsHolders);
 			resp.setContentType("application/xml");
+			resp.setCharacterEncoding("UTF-8");
 			PrintWriter printWriter = resp.getWriter();
 			
 			XStream xStream = new XStream();
