@@ -18,6 +18,7 @@ import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -209,6 +210,7 @@ public class MainActivity extends ListActivity {
 				ListView lv = getListView();
 				lv.setTextFilterEnabled(true);
 				lv.setOnItemClickListener(onItemClickListener);
+				Log.v("MainActivity", "ok");
 			} else {
 				String temp = context.getString(R.string.problem_information);
 				arrayAdapter = new ArrayAdapter<String>(

@@ -56,12 +56,12 @@ public class SecondActivity extends ListActivity {
 	private Context context;
 	private DBContentObserver dbContentObserver;
 	private Handler handler;
-	
+
 	/**
 	 * Items showed in AlertDialog ListAdapter
 	 */
 	String[] items;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -72,10 +72,10 @@ public class SecondActivity extends ListActivity {
 		setTitle(getString(R.string.second_window_title) + " " + text);
 		new GetItemFromDatabase().execute(0);
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == RESULT_OK){
+		if (resultCode == RESULT_OK) {
 			new GetItemFromDatabase().execute(1);
 		}
 	};
@@ -86,7 +86,7 @@ public class SecondActivity extends ListActivity {
 		inflater.inflate(R.menu.main_menu, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
@@ -125,7 +125,7 @@ public class SecondActivity extends ListActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
 	/**
 	 * List of departments item clicked
 	 */
@@ -136,13 +136,16 @@ public class SecondActivity extends ListActivity {
 				long id) {
 			Intent i = new Intent(SecondActivity.this,
 					QuestionnaireActivity.class);
-			
-			i.putExtra("title", ((TextView) view.findViewById(R.id.second_screen_textview)).getText());
-			
+
+			i.putExtra("title", ((TextView) view
+					.findViewById(R.id.second_screen_textview)).getText());
+
 			long _id = mQuestionnaireTypeRows.get((int) id).getId();
 			i.putExtra("questionnaryID", mQuestionnaireTypeRows.get(0).getId());
-			if(id >0) i.putExtra("filledQuestionnaireID", String.valueOf(_id));
-			i.putExtra("questionnaryType", mQuestionnaireTypeRows.get((int) id).getType());
+			if (id > 0)
+				i.putExtra("filledQuestionnaireID", String.valueOf(_id));
+			i.putExtra("questionnaryType", mQuestionnaireTypeRows.get((int) id)
+					.getType());
 			startActivityForResult(i, 1);
 		}
 	};
@@ -156,7 +159,7 @@ public class SecondActivity extends ListActivity {
 		ContentResolver.requestSync(accounts[0],
 				"com.szas.android.szasapplication.provider", new Bundle());
 	}
-	
+
 	private void registerContentObservers() {
 		ContentResolver cr = getContentResolver();
 		dbContentObserver = new DBContentObserver(handler);
@@ -178,7 +181,7 @@ public class SecondActivity extends ListActivity {
 			cr.unregisterContentObserver(dbContentObserver);
 		}
 	}
-	
+
 	private class GetItemFromDatabase extends
 			AsyncTask<Integer, Integer, CustomArrayAdapter> {
 		ProgressDialog progressDialog;
@@ -205,11 +208,11 @@ public class SecondActivity extends ListActivity {
 		 */
 		@Override
 		protected CustomArrayAdapter doInBackground(Integer... params) {
-			if(params[0] == 1){
+			if (params[0] == 1) {
 				LocalDAOContener.refreshFilledQuestionnaireTuples();
 			}
-			CustomArrayAdapter arrayAdapter = new CustomArrayAdapter(
-					context, R.layout.second_screen, getItemForList());
+			CustomArrayAdapter arrayAdapter = new CustomArrayAdapter(context,
+					R.layout.second_screen, getItemForList());
 			if (arrayAdapter != null && !arrayAdapter.isEmpty()) {
 				return arrayAdapter;
 			}
@@ -223,7 +226,7 @@ public class SecondActivity extends ListActivity {
 				ListView lv = getListView();
 				lv.setTextFilterEnabled(true);
 				lv.setOnItemClickListener(onItemClickListener);
-			}else {
+			} else {
 				ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(
 						context,
 						R.layout.main,
@@ -232,42 +235,47 @@ public class SecondActivity extends ListActivity {
 				registerContentObservers();
 			}
 		}
-		
+
 		/**
 		 * Get departments to show in the listView
 		 * 
 		 * @return departments String[]
 		 */
 		private List<QuestionnaireTypeRow> getItemForList() {
-			questionnaireTuples = new ArrayList<QuestionnaireTuple>(LocalDAOContener.getQuestionnaireTuplesByName(questionnaryName));
-			filledQuestionnaireTuples = new ArrayList<FilledQuestionnaireTuple>(LocalDAOContener.getFilledQuestionnaireTupleByName(questionnaryName));
+			questionnaireTuples = new ArrayList<QuestionnaireTuple>(
+					LocalDAOContener
+							.getQuestionnaireTuplesByName(questionnaryName));
+			filledQuestionnaireTuples = new ArrayList<FilledQuestionnaireTuple>(
+					LocalDAOContener
+							.getFilledQuestionnaireTupleByName(questionnaryName));
 			List<QuestionnaireTypeRow> questionnaireTypeRows = new ArrayList<QuestionnaireTypeRow>();
-			long id =  questionnaireTuples.get(0).getId();
-			questionnaireTypeRows.add(new QuestionnaireTypeRow( questionnaireTuples.get(0).getName(), 0,id, ""));
-			for(FilledQuestionnaireTuple filledQuestionnaireTuple : filledQuestionnaireTuples){
+			long id = questionnaireTuples.get(0).getId();
+			questionnaireTypeRows.add(new QuestionnaireTypeRow(
+					questionnaireTuples.get(0).getName(), 0, id, ""));
+			for (FilledQuestionnaireTuple filledQuestionnaireTuple : filledQuestionnaireTuples) {
 				long id2 = filledQuestionnaireTuple.getId();
-				String fullName = null;
-				for(FieldTuple fieldTuple : filledQuestionnaireTuple.getFilledFields()){
-					String temp = fieldTuple.getName();
-					if(temp.equals("Imię") || temp.equals("Imi?"))
-						fullName = ((FieldTextBoxTuple)fieldTuple).getValue(); 
-					if(temp.equals("Nazwisko")){
-						fullName += " " + ((FieldTextBoxTuple)fieldTuple).getValue();
-						break;
-					}
+				String fullName = "";
+				for (FieldTuple fieldTuple : filledQuestionnaireTuple
+						.getFilledFields()) {
+					if (fieldTuple.isOnList())
+						fullName += ((FieldTextBoxTuple) fieldTuple).getValue()
+								+ " ";
 				}
-				questionnaireTypeRows.add(new QuestionnaireTypeRow(filledQuestionnaireTuple.getName(), 1, id2, fullName));
-			//	elements.put(filledQuestionnaireTuple.getId(), filledQuestionnaireTuple);
+				if (!fullName.equals(""))
+					fullName = fullName.substring(0,
+							fullName.lastIndexOf(" "));
+				questionnaireTypeRows.add(new QuestionnaireTypeRow(
+						filledQuestionnaireTuple.getName(), 1, id2, fullName));
 			}
 			mQuestionnaireTypeRows = questionnaireTypeRows;
 			return questionnaireTypeRows;
 		}
 	}
-	
+
 	private class CustomArrayAdapter extends ArrayAdapter<QuestionnaireTypeRow> {
-		
+
 		List<QuestionnaireTypeRow> objects;
-		
+
 		/**
 		 * @param context
 		 * @param textViewResourceId
@@ -278,26 +286,32 @@ public class SecondActivity extends ListActivity {
 			super(context, textViewResourceId, objects);
 			this.objects = objects;
 		}
-		
-		/* (non-Javadoc)
-		 * @see android.widget.ArrayAdapter#getView(int, android.view.View, android.view.ViewGroup)
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.widget.ArrayAdapter#getView(int, android.view.View,
+		 * android.view.ViewGroup)
 		 */
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			LayoutInflater layoutInflater = getLayoutInflater();
-			View row= layoutInflater.inflate(R.layout.second_screen, parent, false);
+			View row = layoutInflater.inflate(R.layout.second_screen, parent,
+					false);
 			QuestionnaireTypeRow questionnaireTypeRow = objects.get(position);
-			TextView textView = (TextView) row.findViewById(R.id.second_screen_textview);
-			int type= questionnaireTypeRow.getType();
-			if(type== 0)
+			TextView textView = (TextView) row
+					.findViewById(R.id.second_screen_textview);
+			int type = questionnaireTypeRow.getType();
+			if (type == 0)
 				textView.setBackgroundColor(android.graphics.Color.BLACK);
-			else if(type==1)
+			else if (type == 1)
 				textView.setBackgroundColor(android.graphics.Color.DKGRAY);
-			textView.setText(questionnaireTypeRow.getFullName().equals("") ? questionnaireTypeRow.getName():questionnaireTypeRow.getFullName());
+			textView.setText(questionnaireTypeRow.getFullName().equals("") ? questionnaireTypeRow
+					.getName() : questionnaireTypeRow.getFullName());
 			return row;
 		}
 	}
-	
+
 	private class DBContentObserver extends ContentObserver {
 
 		public DBContentObserver(Handler handler) {

@@ -122,6 +122,7 @@ public class QuestionnaireActivity extends Activity {
 			filledQuestionnaireTuple.setName(questionnaireName);
 		}
 		if (filledFields == null) {
+			
 			filledFields = new ArrayList<FieldTuple>();
 			FieldTuple fieldTuple = new FieldTextBoxTuple();
 			fieldTuple.setName(editText.getTag().toString());
@@ -261,6 +262,8 @@ public class QuestionnaireActivity extends Activity {
 						String name = fieldDataTuple.getName().toString();
 						text.setText(name);
 						editText = new EditText(QuestionnaireActivity.this);
+						if(((FieldTextBoxDataTuple) fieldDataTuple).isOnList())
+							editText.setBackgroundColor(android.graphics.Color.CYAN);
 						editText.addTextChangedListener(new CustomTextWatcher());
 						editText.setTag(name);
 						linear.addView(text);
@@ -284,6 +287,8 @@ public class QuestionnaireActivity extends Activity {
 						String name = fieldTuple.getName().toString();
 						text.setText(name);
 						editText = new EditText(QuestionnaireActivity.this);
+						if(fieldTuple.isOnList())
+							editText.setBackgroundColor(android.graphics.Color.CYAN);
 						String txt = ((FieldTextBoxTuple) fieldTuple)
 								.getValue();
 						if (txt != null)

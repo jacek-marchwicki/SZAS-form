@@ -117,7 +117,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			conn.setDoOutput(true);		
 			OutputStream outputStream = conn.getOutputStream();
 			OutputStreamWriter out = new OutputStreamWriter(outputStream);
-			new JSONSerializer().include("*").serialize(elementsToSync, out);
+			new JSONSerializer().prettyPrint(true).include("*").serialize(elementsToSync, out);
 			out.close();
 
 			InputStream inputStream = null;

@@ -121,8 +121,10 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 						if (!status.equals(LocalTuple.Status.DELETING))
 							allElements
 									.put(objId,
-											new JSONDeserializer<LocalTuple<T>>().deserialize(c2
-													.getString(DatabaseContentHelper.DBCOL_T_INDEX)).getElement());
+											new JSONDeserializer<LocalTuple<T>>()
+													.deserialize(
+															c2.getString(DatabaseContentHelper.DBCOL_T_INDEX))
+													.getElement());
 					} while (c2.moveToNext());
 				}
 
@@ -343,8 +345,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		localTuple.setStatus(LocalTuple.Status.INSERTING);
 		localTuple.setElement(element);
 		String type = null;
-		String serialized = new JSONSerializer().include("*").serialize(
-				localTuple);
+		String serialized = new JSONSerializer().prettyPrint(true).include("*")
+				.serialize(localTuple);
 		try {
 			type = new JSONObject(serialized).getJSONObject("element")
 					.getString("class");
@@ -394,7 +396,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			localTuple.setStatus(LocalTuple.Status.DELETING);
 			localTuple.setElement(element);
 			contentValues.put(DatabaseContentHelper.DBCOL_T,
-					new JSONSerializer().include("*").serialize(localTuple));
+					new JSONSerializer().prettyPrint(true).include("*")
+							.serialize(localTuple));
 			if (inElementsToSyncCursor != null
 					&& inElementsToSyncCursor.getCount() > 0) {
 				contentResolver.update(
@@ -412,7 +415,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 					DatabaseContentHelper.contentUriNotSyncedElements,
 					DatabaseContentHelper.DBCOL_ID + " =? ",
 					new String[] { Long.toString(id) });
-		}else{
+		} else {
 			return;
 		}
 		notifyContentObservers(false);
@@ -451,12 +454,14 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			return;
 		LocalTuple.Status status = LocalTuple.Status.UPDATING;
 		if (inElementsToSyncCursor != null
-				&& inElementsToSyncCursor.getCount() > 0)
+				&& inElementsToSyncCursor.getCount() > 0) {
 			inElementsToSyncCursor.moveToFirst();
-				if (inElementsToSyncCursor
-		.getInt(inElementsToSyncCursor.getColumnIndex(DatabaseContentHelper.DBCOL_status)) == LocalTuple.Status.INSERTING
-						.ordinal()) {
-			status = LocalTuple.Status.INSERTING;
+			int colIndex = inElementsToSyncCursor
+					.getColumnIndex(DatabaseContentHelper.DBCOL_status);
+			int stat = inElementsToSyncCursor.getInt(colIndex);
+			if (stat == LocalTuple.Status.INSERTING.ordinal()) {
+				status = LocalTuple.Status.INSERTING;
+			}
 		}
 		ContentValues contentValues = new ContentValues();
 		contentValues.put(DatabaseContentHelper.DBCOL_ID, id);
@@ -465,8 +470,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		localTuple.setStatus(status);
 		localTuple.setElement(element);
 		String type = null;
-		String serialized = new JSONSerializer().include("*").serialize(
-				localTuple);
+		String serialized = new JSONSerializer().prettyPrint(true).include("*")
+				.serialize(localTuple);
 		try {
 			type = new JSONObject(serialized).getJSONObject("element")
 					.getString("class");
@@ -477,14 +482,13 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				: "");
 		contentValues.put(DatabaseContentHelper.DBCOL_T, serialized);
 		if (inElementsToSyncCursor != null
-				&& inElementsToSyncCursor.getCount() > 0){
+				&& inElementsToSyncCursor.getCount() > 0) {
 			contentResolver.update(
 					DatabaseContentHelper.contentUriNotSyncedElements,
 					contentValues, DatabaseContentHelper.DBCOL_ID + " = ?",
 					new String[] { Long.toString(id) });
 			notifyContentObservers(false);
-		}
-		else {
+		} else {
 			contentResolver.insert(
 					DatabaseContentHelper.contentUriNotSyncedElements,
 					contentValues);
@@ -538,7 +542,9 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		Cursor syncingElements = contentResolver.query(
 				DatabaseContentHelper.contentUriInProgressSyncingElements,
 				new String[] { DatabaseContentHelper.DBCOL_ID,
-						DatabaseContentHelper.DBCOL_T }, null, null, null);
+						DatabaseContentHelper.DBCOL_T },
+				DatabaseContentHelper.DBCOL_type + " = ?",
+				new String[] { name }, null);
 		if (syncingElements == null || syncingElements.getCount() <= 0) {
 			DBContentProvider.moveFromOneTableToAnother(
 					DatabaseContentHelper.tableNameInProgressSyncingElements,
@@ -547,7 +553,9 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		syncingElements = contentResolver.query(
 				DatabaseContentHelper.contentUriInProgressSyncingElements,
 				new String[] { DatabaseContentHelper.DBCOL_ID,
-						DatabaseContentHelper.DBCOL_T }, null, null, null);
+						DatabaseContentHelper.DBCOL_T },
+				DatabaseContentHelper.DBCOL_type + " = ?",
+				new String[] { name }, null);
 		if (syncingElements != null && syncingElements.getCount() > 0) {
 			syncingElements.moveToFirst();
 			do {
@@ -620,8 +628,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				ContentValues contentValues = new ContentValues();
 				contentValues.put(DatabaseContentHelper.DBCOL_ID, id);
 				String type = null;
-				String serialized = new JSONSerializer().include("*")
-						.serialize(remoteTuple);
+				String serialized = new JSONSerializer().prettyPrint(true)
+						.include("*").serialize(remoteTuple);
 				try {
 					type = new JSONObject(serialized).getJSONObject("element")
 							.getString("class");
