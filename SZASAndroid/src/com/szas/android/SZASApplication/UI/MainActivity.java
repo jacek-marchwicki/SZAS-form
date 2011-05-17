@@ -1,21 +1,23 @@
 package com.szas.android.SZASApplication.UI;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,15 +29,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
+import com.szas.android.SZASApplication.DBContentProvider;
 import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
-import com.szas.data.FieldTextBoxDataTuple;
-import com.szas.data.FieldTextBoxTuple;
-import com.szas.data.FieldTuple;
 import com.szas.data.QuestionnaireTuple;
-import com.szas.sync.local.LocalTuple;
-
-import flexjson.JSONSerializer;
 
 //"http://szas-form.appspot.com/syncnoauth
 /**
@@ -44,7 +41,7 @@ import flexjson.JSONSerializer;
  */
 public class MainActivity extends ListActivity {
 
-	//private LocalDAO<QuestionnaireTuple> questionnaireDAO;
+	// private LocalDAO<QuestionnaireTuple> questionnaireDAO;
 	private Context context;
 
 	@Override
@@ -52,7 +49,10 @@ public class MainActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		context = getApplicationContext();
 		startService(new Intent(context, SyncService.class));
-
+		SharedPreferences.Editor editor = context.getSharedPreferences(
+				"timestamp", Context.MODE_PRIVATE).edit();
+		editor.putLong("timestamp", -1);
+		editor.commit();
 		new GetItemFromDatabase().execute(0);
 	}
 
@@ -88,13 +88,31 @@ public class MainActivity extends ListActivity {
 			try {
 				AboutDialog.AboutDialogBuilder.createAboutWindow(this).show();
 			} catch (NameNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			return true;
+		case R.id.help_item:
+
+			return true;
+		case R.id.refresh_item:
+			refreshSyncAdapter();
+			registerContentObservers();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+	}
+
+	private void refreshSyncAdapter() {
+		Account[] accounts = AccountManager.get(context).getAccounts();
+		ContentResolver.setIsSyncable(accounts[0],
+				"com.szas.android.szasapplication.provider", 1);
+		ContentResolver.requestSync(accounts[0],
+				"com.szas.android.szasapplication.provider", new Bundle());
+		// Account[] accounts =
+		// AccountManager.get(getApplicationContext()).getAccounts();
+		ContentResolver.setSyncAutomatically(accounts[0],
+				"com.szas.android.szasapplication.provider", true);
 	}
 
 	/**
@@ -114,9 +132,13 @@ public class MainActivity extends ListActivity {
 
 	String[] listViewElementsArray;
 
+	private Handler handler;
+
+	private DBContentObserver dbContentObserver;
+
 	private class GetItemFromDatabase extends
 			AsyncTask<Integer, Integer, ArrayAdapter<String>> {
-		ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
+		ProgressDialog progressDialog;
 
 		/*
 		 * (non-Javadoc)
@@ -126,6 +148,9 @@ public class MainActivity extends ListActivity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
+			progressDialog = new ProgressDialog(MainActivity.this);
+			progressDialog.setTitle(getString(R.string.app_name));
+			progressDialog.setIcon(R.drawable.icon);
 			progressDialog.setMessage(getString(R.string.loading_progressbar));
 			progressDialog.show();
 		}
@@ -138,7 +163,7 @@ public class MainActivity extends ListActivity {
 		@Override
 		protected ArrayAdapter<String> doInBackground(Integer... params) {
 			ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-					getApplicationContext(), R.layout.main, getItemForList());
+					context, R.layout.main, getItemForList());
 			if (arrayAdapter != null && arrayAdapter.getCount() > 0) {
 				return arrayAdapter;
 			}
@@ -147,7 +172,7 @@ public class MainActivity extends ListActivity {
 
 		private String[] getItemForList() {
 			ArrayList<String> array = new ArrayList<String>();
-			LocalDAOContener.loadContext(getApplicationContext());
+			LocalDAOContener.loadContext(context);
 			Collection<QuestionnaireTuple> qq = LocalDAOContener
 					.getQuestionnaireTuples();
 			for (QuestionnaireTuple q : qq) {
@@ -160,12 +185,66 @@ public class MainActivity extends ListActivity {
 
 		protected void onPostExecute(ArrayAdapter<String> arrayAdapter) {
 			progressDialog.dismiss();
-			if (arrayAdapter != null){
+			if (arrayAdapter != null) {
 				setListAdapter(arrayAdapter);
 				ListView lv = getListView();
 				lv.setTextFilterEnabled(true);
 				lv.setOnItemClickListener(onItemClickListener);
+			} else {
+				String temp = context.getString(R.string.problem_information);
+				arrayAdapter = new ArrayAdapter<String>(
+						context,
+						R.layout.main,
+						new String[] {  temp});
+				setListAdapter(arrayAdapter);
+				try{
+				registerContentObservers();
+				}
+				catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
+		}
+	}
+
+	public class DBContentObserver extends ContentObserver {
+
+		/**
+		 * @param handler
+		 */
+		public DBContentObserver(Handler handler) {
+			super(handler);
+		}
+
+		public void onChange(boolean selfChange) {
+			handler.post(new Runnable() {
+				public void run() {
+					new GetItemFromDatabase().execute(0);
+				}
+			});
+			unregisterContentObservers();
+		}
+	}
+
+	private void registerContentObservers() {
+		ContentResolver cr = getContentResolver();
+		dbContentObserver = new DBContentObserver(handler);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
+				true, dbContentObserver);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
+				true, dbContentObserver);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
+				true, dbContentObserver);
+	}
+
+	private void unregisterContentObservers() {
+		ContentResolver cr = getContentResolver();
+		dbContentObserver = new DBContentObserver(handler);
+		if (dbContentObserver != null) { // just paranoia
+			cr.unregisterContentObserver(dbContentObserver);
 		}
 	}
 

@@ -121,8 +121,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 						if (!status.equals(LocalTuple.Status.DELETING))
 							allElements
 									.put(objId,
-											new JSONDeserializer<T>().deserialize(c2
-													.getString(DatabaseContentHelper.DBCOL_T_INDEX)));
+											new JSONDeserializer<LocalTuple<T>>().deserialize(c2
+													.getString(DatabaseContentHelper.DBCOL_T_INDEX)).getElement());
 					} while (c2.moveToNext());
 				}
 
@@ -412,7 +412,10 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 					DatabaseContentHelper.contentUriNotSyncedElements,
 					DatabaseContentHelper.DBCOL_ID + " =? ",
 					new String[] { Long.toString(id) });
+		}else{
+			return;
 		}
+		notifyContentObservers(false);
 	}
 
 	/*
@@ -448,9 +451,10 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			return;
 		LocalTuple.Status status = LocalTuple.Status.UPDATING;
 		if (inElementsToSyncCursor != null
-				&& inElementsToSyncCursor.getCount() > 0
-				&& inElementsToSyncCursor
-						.getInt(DatabaseContentHelper.DBCOL_status_INDEX) == LocalTuple.Status.INSERTING
+				&& inElementsToSyncCursor.getCount() > 0)
+			inElementsToSyncCursor.moveToFirst();
+				if (inElementsToSyncCursor
+		.getInt(inElementsToSyncCursor.getColumnIndex(DatabaseContentHelper.DBCOL_status)) == LocalTuple.Status.INSERTING
 						.ordinal()) {
 			status = LocalTuple.Status.INSERTING;
 		}
@@ -472,15 +476,20 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 		contentValues.put(DatabaseContentHelper.DBCOL_type, type != null ? type
 				: "");
 		contentValues.put(DatabaseContentHelper.DBCOL_T, serialized);
-		if (status == LocalTuple.Status.INSERTING)
-			contentResolver.insert(
-					DatabaseContentHelper.contentUriNotSyncedElements,
-					contentValues);
-		else if (status == LocalTuple.Status.UPDATING)
+		if (inElementsToSyncCursor != null
+				&& inElementsToSyncCursor.getCount() > 0){
 			contentResolver.update(
 					DatabaseContentHelper.contentUriNotSyncedElements,
 					contentValues, DatabaseContentHelper.DBCOL_ID + " = ?",
 					new String[] { Long.toString(id) });
+			notifyContentObservers(false);
+		}
+		else {
+			contentResolver.insert(
+					DatabaseContentHelper.contentUriNotSyncedElements,
+					contentValues);
+			notifyContentObservers(false);
+		}
 	}
 
 	/*
@@ -574,7 +583,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	 */
 	@Override
 	public long getLastTimestamp() {
-		return context.getSharedPreferences("TimeStamp", 0).getLong(
+		return context.getSharedPreferences("timestamp", -1).getLong(
 				"timestamp", Context.MODE_PRIVATE);
 	}
 
@@ -587,9 +596,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	public void setLastTimestamp(long lastTimestamp) {
 		SharedPreferences.Editor editor = context.getSharedPreferences(
 				"timestamp", Context.MODE_PRIVATE).edit();
-		editor.putLong("timestampe", lastTimestamp);
+		editor.putLong("timestamp", lastTimestamp);
 		editor.commit();
-
 	}
 
 	/*

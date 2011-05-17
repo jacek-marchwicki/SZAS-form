@@ -6,12 +6,17 @@
     <string name="exit_prompt">Really exit?</string>
     <string name="yes">YES</string>
     <string name="no">NO</string>
-    <string name="version">0.1</string>
     <string name="about">About</string>
-    
+    <string name="version_word">Version</string>
+    <string name="help">Help</string>
+    <string name="refresh_elements">Refresh from network</string>
+    <string name="problem_information">Sorry. I am looking for download data from servers for you, right now. </string>
     <string name="form_item1">Empty form</string>
     <string name="form_item2">Filled form</string>
     <string name="form_item3">Cancel</string>
     <string name="accountlabel">SZAS</string>
     <string name="loading_progressbar"> Loading. Please wait ... </string>
+    <string name="about_authors">Developers:\nJacek Marchwicki - GAE Server,\nTomasz Merda - Bada Application,\nPaweł Szafer - Android application.</string>
+    <string name="questionnaire_save_close">Save changes &amp; go back</string>
+    
 </resources>

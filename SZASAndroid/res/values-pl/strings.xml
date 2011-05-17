@@ -6,13 +6,16 @@
     <string name="exit_prompt">Na pewno wyłączyć?</string>
     <string name="yes">TAK</string>
     <string name="no">NIE</string>
-    <string name="version">0.1</string>
     <string name="about">O programie</string>
-    
-       
+    <string name="version_word">Wersja</string>
+    <string name="help">Pomoc</string>   
+    <string name="refresh_elements">Odśwież z sieci</string>
+    <string name="problem_information">Przepraszam. W tej chwili staram się pobrać dane z serwera dla Ciebie. </string>
     <string name="form_item1">Pusta ankieta</string>
     <string name="form_item2">Wypełniona ankieta</string>
     <string name="form_item3">Anuluj</string>
     <string name="accountlabel">SZAS</string>
     <string name="loading_progressbar"> Ładowanie elementów. Proszę czekać ... </string>
+    <string name="about_authors">Autorzy:\nJacek Marchwicki - serwer GAE,\nTomasz Merda - aplikacja BADA,\nPaweł Szafer - aplikacja Android.</string>
+    <string name="questionnaire_save_close">Zapisz zmiany i wróć do poprzedniego okna</string>
 </resources>

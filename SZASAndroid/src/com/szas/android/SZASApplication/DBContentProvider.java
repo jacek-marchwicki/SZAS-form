@@ -25,7 +25,7 @@ public class DBContentProvider extends ContentProvider {
 	/**
 	 * Authority name for ContentResolver
 	 */
-	public static String authority = "SZASApplication1";
+	public static String authority = "com.szas.android.szasapplication.provider";
 	/**
 	 * Database name
 	 */

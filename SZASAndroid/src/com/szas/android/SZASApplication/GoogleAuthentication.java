@@ -138,6 +138,8 @@ public class GoogleAuthentication {
 			try {
 				authtoken = getToken();
 				authCookie = getAuthCookie(authtoken);
+			}catch (NullPointerException e){
+				retVal = false;
 			} catch (OperationCanceledException e) {
 				retVal = false;
 			} catch (AuthenticatorException e) {

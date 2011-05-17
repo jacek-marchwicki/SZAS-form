@@ -29,11 +29,9 @@ public class AboutDialog {
 					context.getPackageName(), PackageManager.GET_META_DATA);
 			String versionInfo = pInfo.versionName;
 
-			String aboutTitle = String.format("About %s",
-					context.getString(R.string.app_name));
-			String versionString = String.format("Version: %s", versionInfo);
-			String aboutText = "Autorzy:\nJacek Marchwicki,\nTomasz Merda,\nPaweł Szafer";
-
+			String aboutTitle = context.getString(R.string.about) + " " + context.getString(R.string.app_name);
+			String versionString = context.getString(R.string.version_word) +": " + versionInfo;
+			String aboutText =  context.getString(R.string.about_authors);
 			// Set up the TextView
 			final TextView message = new TextView(context);
 			// We'll use a spannablestring to be able to make links clickable

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.szas.android.SZASApplication" android:versionCode="1"
-	android:versionName="0.1">
+	package="com.szas.android.SZASApplication" android:versionCode="1" android:versionName="0.2">
 
 	<uses-sdk android:minSdkVersion="9" android:targetSdkVersion="9" />
 
@@ -15,13 +14,13 @@
 	<uses-permission android:name="com.google.android.googleapps.permission.GOOGLE_AUTH" />
 	<application android:icon="@drawable/icon" android:label="@string/app_name">
 		<activity android:label="@string/app_name"
-			android:name="com.szas.android.SZASApplication.UI.MainActivity">
+			android:name="com.szas.android.SZASApplication.UI.MainActivity" android:icon="@drawable/icon">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<provider android:authorities="SZASApplication1"
+		<provider android:authorities="com.szas.android.szasapplication.provider"
 			android:enabled="true" android:syncable="true" android:label="@string/accountlabel"
 			android:name="DBContentProvider">
 			<grant-uri-permission android:pathPrefix="szas_table1"></grant-uri-permission>
@@ -29,7 +28,7 @@
 			<grant-uri-permission android:pathPrefix="szas_table3"></grant-uri-permission>
 		</provider>
 		<activity android:name="com.szas.android.SZASApplication.UI.SecondActivity"
-			android:label="@string/second_window_title"></activity>
+			android:label="@string/second_window_title" android:icon="@drawable/icon"></activity>
 		<service android:name="SyncService" android:exported="true"
 			android:label="@string/accountlabel">
 			<intent-filter>
