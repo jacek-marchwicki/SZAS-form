@@ -29,6 +29,7 @@ public class FilledQuestionnaireWidget extends UniversalWidget<FilledQuestionnai
 
 	public FilledQuestionnaireWidget(FilledQuestionnaireTuple tuple) {
 		super(tuple);
+		initWidget();
 	}
 
 	public static final String NAME = "filledQuestionnaire";

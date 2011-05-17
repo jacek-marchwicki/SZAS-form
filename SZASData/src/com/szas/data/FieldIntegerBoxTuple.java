@@ -13,5 +13,9 @@ public class FieldIntegerBoxTuple extends FieldTuple {
 	public int getValue() {
 		return value;
 	}
+	@Override
+	public String getText() {
+		return Integer.toString(value);
+	}
 
 }

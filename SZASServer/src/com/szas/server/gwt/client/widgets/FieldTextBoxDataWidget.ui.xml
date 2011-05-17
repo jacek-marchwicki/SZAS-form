@@ -30,6 +30,14 @@
 						<g:SimpleCheckBox ui:field="nullableCheckBox"/>
 					</g:customCell>
 				</g:row>
+				<g:row>
+					<g:customCell>
+						<g:Label text="label field:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:SimpleCheckBox ui:field="onListCheckBox"/>
+					</g:customCell>
+				</g:row>
 			</g:Grid>
 	</g:AbsolutePanel>
 </ui:UiBinder> 

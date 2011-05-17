@@ -12,4 +12,12 @@ public class FieldTextAreaTuple extends FieldTuple {
 	public String getValue() {
 		return value;
 	}
+	@Override
+	public String getText() {
+		return "";
+	}
+	@Override
+	public void setOnList(boolean onList) {
+		onList = false;
+	}
 }

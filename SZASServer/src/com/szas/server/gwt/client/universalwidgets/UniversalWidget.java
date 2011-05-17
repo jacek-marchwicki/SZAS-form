@@ -11,17 +11,22 @@ public abstract class UniversalWidget<T extends Tuple> extends Composite {
 	
 	protected abstract void initWidget();
 	protected abstract LocalDAO<T> getLocalDAO();
-	protected abstract void updateWidgets();
 	protected abstract void updateTuple();
 	protected abstract void setDeleteable(boolean deletable);
 	
 	public UniversalWidget(T tuple) {
 		this.tuple = tuple;
+	}
+	
+	@Override
+	protected void onAttach() {
+		super.onAttach();
 		update = getLocalDAO().getById(tuple.getId()) != null;
-		initWidget();
 		setDeleteable(update);
 		updateWidgets();
 	}
+	
+	protected abstract void updateWidgets();
 	
 	protected void onSave() {
 		updateTuple();

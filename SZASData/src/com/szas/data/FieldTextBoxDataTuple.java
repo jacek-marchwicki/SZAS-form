@@ -19,6 +19,7 @@ public class FieldTextBoxDataTuple extends FieldTextBoxTuple implements FieldDat
 			new FieldTextBoxTuple();
 		tuple.setName(name);
 		tuple.setValue(value);
+		tuple.setOnList(onList);
 		return tuple;
 	}
 }

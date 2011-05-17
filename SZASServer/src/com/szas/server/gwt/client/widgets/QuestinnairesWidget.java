@@ -10,6 +10,7 @@ import com.google.gwt.user.cellview.client.TextColumn;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Widget;
+import com.szas.data.FieldTuple;
 import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.server.gwt.client.sync.StaticGWTSyncer;
@@ -24,33 +25,55 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	static class MyTupleList extends SimpleTupleList<FilledQuestionnaireTuple> {
 
-			@Override
-			protected LocalDAO<FilledQuestionnaireTuple> getLocalDAO() {
-				return StaticGWTSyncer.getFilledquestionnairedao();
-			}
+		private final QuestionnaireTuple questionnaireTuple;
 
-			@Override
-			protected String getListName() {
-				return FilledQuestionnaireWidget.NAME;
-			}
+		public MyTupleList(QuestionnaireTuple questionnaireTuple) {
+			this.questionnaireTuple = questionnaireTuple;
+		}
 
-			@Override
-			protected void addColumns(CellTable<FilledQuestionnaireTuple> cellTable) {
-				TextColumn<FilledQuestionnaireTuple> nameColumn;
-				nameColumn = new TextColumn<FilledQuestionnaireTuple>() {
-					@Override
-					public String getValue(FilledQuestionnaireTuple object) {
-						return object.getName();
+		@Override
+		protected LocalDAO<FilledQuestionnaireTuple> getLocalDAO() {
+			return StaticGWTSyncer.getFilledquestionnairedao();
+		}
+
+		@Override
+		protected String getListName() {
+			return FilledQuestionnaireWidget.NAME;
+		}
+
+		@Override
+		protected boolean filter(FilledQuestionnaireTuple filledTuple) {
+			if (filledTuple.getName().equals(questionnaireTuple.getName()))
+				return true;
+			return false;
+		}
+
+		@Override
+		protected void addColumns(CellTable<FilledQuestionnaireTuple> cellTable) {
+			TextColumn<FilledQuestionnaireTuple> nameColumn;
+			nameColumn = new TextColumn<FilledQuestionnaireTuple>() {
+				@Override
+				public String getValue(FilledQuestionnaireTuple object) {
+					String value = "";
+					for (FieldTuple fieldTuple : object.getFilledFields()) {
+						if (!fieldTuple.isOnList())
+							continue;
+						value += fieldTuple.getText() + " ";
 					}
-				};
-				nameColumn.setSortable(true);
-				cellTable.addColumn(nameColumn, "Filled");
-			}
-		};
+					if (value.equals("")) {
+						value = object.getName();
+					}
+					return value;
+				}
+			};
+			nameColumn.setSortable(true);
+			cellTable.addColumn(nameColumn, "Filled");
+		}
+	};
 
 
 	@UiField(provided=true)
-	CellTable<FilledQuestionnaireTuple> cellTable;
+	MyTupleList cellTable;
 	@UiField Button deleteButton;
 	@UiField Label questionnaireName;
 	@UiField Button editButton;
@@ -66,6 +89,8 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	public QuestinnairesWidget(QuestionnaireTuple questionnaireTuple) {
 		super(questionnaireTuple);
+		cellTable = new MyTupleList(tuple);
+		initWidget();
 	}
 
 	@UiHandler("deleteButton")
@@ -85,7 +110,6 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	@Override
 	protected void initWidget() {
-		cellTable = new MyTupleList();
 		initWidget(uiBinder.createAndBindUi(this));
 	}
 

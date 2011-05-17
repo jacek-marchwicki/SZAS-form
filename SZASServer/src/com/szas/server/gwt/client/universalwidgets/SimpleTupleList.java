@@ -24,7 +24,7 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 		}
 
 	}
-	
+
 	private ProvidesKey<T> providesKey;
 	private SingleSelectionModel<T> selectionModel;
 	private List<T> list;
@@ -64,22 +64,27 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 		super(new UniversalProvidesKey<T>());
 		providesKey = getKeyProvider();
 		
+
 		addColumns(this);
 
 		selectionModel = createSelectionModel();
 		this.setSelectionModel(selectionModel);
 
 		createDataProvider(this);
-		
-		daoUpdated();
 	}
-	
+
+	protected boolean filter(T tuple) {
+		return true;
+	}
+
 	public void daoUpdated() {
 		Collection<T> tuples = getLocalDAO().getAll();
 		this.setRowCount(tuples.size(), true);
 		while (list.size() != 0)
 			list.remove(0);
 		for (T tuple : tuples) {
+			if (!filter(tuple))
+				continue;
 			list.add(tuple);
 		}
 	}
@@ -87,6 +92,7 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 	@Override
 	protected void onAttach() {
 		super.onAttach();
+		daoUpdated();
 		contentObserver = new DAOObserver() {
 
 			@Override

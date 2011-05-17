@@ -13,4 +13,8 @@ public class FieldTextBoxTuple extends FieldTuple {
 	public String getValue() {
 		return value;
 	}
+	@Override
+	public String getText() {
+		return value;
+	}
 }

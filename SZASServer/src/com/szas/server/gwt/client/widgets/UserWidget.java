@@ -29,6 +29,7 @@ public class UserWidget extends UniversalWidget<UserTuple> {
 	
 	public UserWidget(UserTuple userTuple) {
 		super(userTuple);
+		initWidget();
 	}
 
 	@UiHandler("saveButton")

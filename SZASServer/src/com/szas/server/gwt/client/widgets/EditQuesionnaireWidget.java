@@ -25,6 +25,7 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 
 	public EditQuesionnaireWidget(QuestionnaireTuple tuple) {
 		super(tuple);
+		initWidget();
 	}
 	public static String NAME = "editquestionnaire";
 

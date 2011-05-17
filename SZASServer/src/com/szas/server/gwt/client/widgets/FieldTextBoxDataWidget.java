@@ -16,6 +16,7 @@ public class FieldTextBoxDataWidget extends FieldDataWidget {
 	@UiField TextBox nameTextBox;
 	@UiField TextBox valueTextBox;
 	@UiField SimpleCheckBox nullableCheckBox;
+	@UiField SimpleCheckBox onListCheckBox;
 
 	interface FieldTextBoxDataWidgetUiBinder extends
 			UiBinder<Widget, FieldTextBoxDataWidget> {
@@ -33,6 +34,7 @@ public class FieldTextBoxDataWidget extends FieldDataWidget {
 		nameTextBox.setText(field.getName());
 		valueTextBox.setText(field.getValue());
 		nullableCheckBox.setValue(field.isNullable());
+		onListCheckBox.setValue(field.isOnList());
 	}
 
 	@Override
@@ -40,6 +42,7 @@ public class FieldTextBoxDataWidget extends FieldDataWidget {
 		field.setName(nameTextBox.getText());
 		field.setValue(valueTextBox.getText());
 		field.setNullable(nullableCheckBox.getValue());
+		field.setOnList(onListCheckBox.getValue());
 	}
 
 }
