@@ -10,6 +10,7 @@ package com.szas.android.SZASApplication;
  */
 public class QuestionnaireTypeRow {
 	private String name;
+	private String fullName; 
 	private long id;
 	/**
 	 * Type:
@@ -45,10 +46,11 @@ public class QuestionnaireTypeRow {
 	/**
 	 * 
 	 */
-	public QuestionnaireTypeRow(String name, int type, long id) {
+	public QuestionnaireTypeRow(String name, int type, long id, String fullName) {
 		this.name = name;
 		this.type = type;
 		this.id = id;
+		this.fullName = fullName;
 	}
 	/**
 	 * @param id the id to set
@@ -61,5 +63,17 @@ public class QuestionnaireTypeRow {
 	 */
 	public long getId() {
 		return id;
+	}
+	/**
+	 * @param fullName the fullName to set
+	 */
+	public void setFullName(String fullName) {
+		this.fullName = fullName;
+	}
+	/**
+	 * @return the fullName
+	 */
+	public String getFullName() {
+		return fullName;
 	}
 }

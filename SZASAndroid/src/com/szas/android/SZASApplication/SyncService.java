@@ -3,16 +3,8 @@
  */
 package com.szas.android.SZASApplication;
 
-import com.szas.data.QuestionnaireTuple;
-import com.szas.data.UserTuple;
-import com.szas.sync.local.LocalDAO;
-
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.Service;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -25,6 +17,14 @@ import android.util.Log;
 public class SyncService extends Service {
 	private static SyncAdapter syncAdapter = null;
 
+	/**
+	 * 
+	 */
+	public SyncService() 
+	{
+		super();
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -36,9 +36,7 @@ public class SyncService extends Service {
 		Log.v("SyncService", "SyncService started");
 		if (syncAdapter == null)
 			syncAdapter = new SyncAdapter(getApplicationContext(), true);
-		Account[] accounts = AccountManager.get(getApplicationContext()).getAccounts();
-		ContentResolver.setIsSyncable(accounts[0], "com.szas.android.SZASApplication.SyncAdapter", 1);
-		ContentResolver.requestSync(accounts[0], "com.szas.android.SZASApplication.SyncAdapter", new Bundle());
+		Log.v("SyncService syncadapter info: ", syncAdapter.toString());
 	}
 
 	/*
@@ -50,4 +48,9 @@ public class SyncService extends Service {
 	public IBinder onBind(Intent intent) {
 		return syncAdapter.getSyncAdapterBinder();
 	}
+	
+	 @Override
+	    public void onDestroy() {
+		 syncAdapter = null;
+	    }
 }

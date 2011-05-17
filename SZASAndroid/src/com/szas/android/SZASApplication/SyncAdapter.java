@@ -107,12 +107,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 				throws ClientProtocolException, IOException {
 			URL url = new URL(gaeUrl + "sync");
 			URLConnection conn = url.openConnection();
-			conn.addRequestProperty("Content-Type", "application/json");
+			conn.addRequestProperty("Content-Type", "application/json; charset=UTF-8");
 			conn.addRequestProperty("Cookie", googleAuthentication.getAuthCookie()
 					.getName()
 					+ "="
 					+ googleAuthentication.getAuthCookie().getValue());
-			
+			conn.addRequestProperty("Charset", "UTF-8");
 			//this do post method
 			conn.setDoOutput(true);		
 			OutputStream outputStream = conn.getOutputStream();
@@ -174,7 +174,10 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			ContentProviderClient contentProviderClient, SyncResult syncResult) {
 		Log.v(LOGTAG, "syncAdapter sync started");
 		GoogleAuthentication googleAuthentication = GoogleAuthentication.getGoogleAuthentication(account);
-		googleAuthentication.connect(accountManager);
+		if(!googleAuthentication.connect(accountManager)){
+			syncResult.stats.numAuthExceptions++;
+			return;
+		}
 		if (googleAuthentication.getAuthCookie() == null)
 		{
 			syncResult.stats.numAuthExceptions++;

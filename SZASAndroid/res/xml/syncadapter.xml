@@ -21,7 +21,7 @@
 <!-- for the SyncAdapter. -->
 
 <sync-adapter xmlns:android="http://schemas.android.com/apk/res/android"
-    android:contentAuthority="SZASApplication1"
+    android:contentAuthority="com.szas.android.szasapplication.provider"
     android:accountType="com.google"
     android:supportsUploading="true"
     android:userVisible="true"

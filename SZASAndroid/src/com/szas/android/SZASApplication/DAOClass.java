@@ -88,8 +88,10 @@ public class DAOClass<T extends Tuple> {
 		
 		public static Collection<FilledQuestionnaireTuple> getFilledQuestionnaireTupleByName(String name){
 			Collection<FilledQuestionnaireTuple> collection = new ArrayList<FilledQuestionnaireTuple>();
+			if(filledQuestionnaireTuples.isEmpty())
+				refreshFilledQuestionnaireTuples();
 			for(FilledQuestionnaireTuple filledQuestionnaireTuple : filledQuestionnaireTuples){
-				if( filledQuestionnaireTuple.getName().equals(name))
+				if(filledQuestionnaireTuple.getName().equals(name))
 						collection.add(filledQuestionnaireTuple);
 			}
 			return collection;
