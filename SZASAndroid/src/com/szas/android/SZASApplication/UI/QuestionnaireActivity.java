@@ -6,6 +6,8 @@ package com.szas.android.SZASApplication.UI;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -41,13 +43,15 @@ public class QuestionnaireActivity extends Activity {
 	TextView text;
 	EditText editText;
 	RadioButton radioButton;
+	ScrollView sv;
 	MultiAutoCompleteTextView multiAutoCompleteTextView;
-	String _Fid = null;
+	String _filledId = null;
 	private FilledQuestionnaireTuple filledQuestionnaireTuple;
 	private ArrayList<FieldTuple> filledFields;
 	String questionnaireName = null;
 	int changed = 0;
 	int counter = 0;
+	long _id;
 
 	/*
 	 * (non-Javadoc)
@@ -57,114 +61,61 @@ public class QuestionnaireActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		long _id = getIntent().getExtras().getLong("questionnaryID");
-		String _Fid = getIntent().getExtras()
-				.getString("filledQuestionnaireID");
-		this._Fid = _Fid;
-		ScrollView sv = new ScrollView(this);
+		this._id = getIntent().getExtras().getLong("questionnaryID");
+		this._filledId = getIntent().getExtras().getString(
+				"filledQuestionnaireID");
+		sv = new ScrollView(this);
 		linear = new LinearLayout(this);
 		linear.setOrientation(LinearLayout.VERTICAL);
-
 		sv.addView(linear);
-		if (_Fid == null) {
-			QuestionnaireTuple questionnaireTuple;
-			questionnaireTuple = LocalDAOContener
-					.getQuestionnaireTupleById(_id);
-			questionnaireName = questionnaireTuple.getName();
-			ArrayList<FieldDataTuple> fields = questionnaireTuple.getFields();
-			for (FieldDataTuple fieldDataTuple : fields) {
-				if (fieldDataTuple instanceof FieldTextBoxDataTuple) {
-					text = new TextView(this);
-					String name = fieldDataTuple.getName().toString();
-					text.setText(name);
-					editText = new EditText(this);
-					editText.addTextChangedListener(new CustomTextWatcher());
-					editText.setTag(name);
-					linear.addView(text);
-					linear.addView(editText);
-				} else if (fieldDataTuple instanceof FieldTextAreaDataTuple) {
-					text = new TextView(this);
-					String name = fieldDataTuple.getName().toString();
-					text.setText(name);
-					multiAutoCompleteTextView = new MultiAutoCompleteTextView(
-							this);
-					multiAutoCompleteTextView
-							.addTextChangedListener(new CustomTextWatcher());
-					linear.addView(text);
-					linear.addView(multiAutoCompleteTextView);
-				}
-			}
-		} else {
-			filledQuestionnaireTuple = LocalDAOContener
-					.getFilledQuestionnaireTupleById(Long.parseLong(_Fid));
-			questionnaireName = filledQuestionnaireTuple.getName();
-			// FIXME if not uploaded to server we got null here
-			filledFields = filledQuestionnaireTuple.getFilledFields();
-			for (FieldTuple fieldTuple : filledFields) {
-				if (fieldTuple instanceof FieldTextBoxTuple) {
-					text = new TextView(this);
-					String name = fieldTuple.getName().toString();
-					text.setText(name);
-					editText = new EditText(this);
-					String txt = ((FieldTextBoxTuple) fieldTuple).getValue();
-					if (txt != null)
-						editText.setText(txt);
-					editText.addTextChangedListener(new CustomTextWatcher());
-					editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-							editText));
-					editText.setTag(name);
-					linear.addView(text);
-					linear.addView(editText);
-				} else if (fieldTuple instanceof FieldTextAreaTuple) {
-					text = new TextView(this);
-					String name = fieldTuple.getName().toString();
-					text.setText(name);
-					multiAutoCompleteTextView = new MultiAutoCompleteTextView(
-							this);
-					String txt = ((FieldTextAreaTuple) fieldTuple).getValue();
-					if (txt != null)
-						multiAutoCompleteTextView.setText(txt);
-					multiAutoCompleteTextView
-							.addTextChangedListener(new CustomTextWatcher());
-					multiAutoCompleteTextView
-							.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-									multiAutoCompleteTextView));
-					linear.addView(text);
-					linear.addView(multiAutoCompleteTextView);
-				}
-			}
-		}
-		setContentView(sv);
+		new GetQuestonnaireFromDB().execute(0);
+
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.questionnaire_menu, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.saveclose:
 			int childCount = linear.getChildCount();
-			for(int i=0; i<childCount; ++i){
+			for (int i = 0; i < childCount; ++i) {
 				View view = linear.getChildAt(i);
-				if(view instanceof EditText){
-					saveChanges((EditText)view);
-				}
-				else if (view instanceof MultiAutoCompleteTextView) {
-					
+				if (view instanceof EditText) {
+					saveChanges((EditText) view);
+				} else if (view instanceof MultiAutoCompleteTextView) {
+
 				}
 			}
+			onBackPressed();
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
-	private void saveChanges(EditText editText){
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onBackPressed()
+	 */
+	@Override
+	public void onBackPressed() {
+		if (changed > 0)
+			setResult(RESULT_OK); // , getIntent().putExtra("changed",
+									// changed)); Could be used to refresh only
+									// one row in list
+		else
+			setResult(RESULT_CANCELED);
+		super.onBackPressed();
+	}
+
+	private void saveChanges(EditText editText) {
 		++changed;
 		if (filledQuestionnaireTuple == null) {
 			filledQuestionnaireTuple = new FilledQuestionnaireTuple();
@@ -174,8 +125,8 @@ public class QuestionnaireActivity extends Activity {
 			filledFields = new ArrayList<FieldTuple>();
 			FieldTuple fieldTuple = new FieldTextBoxTuple();
 			fieldTuple.setName(editText.getTag().toString());
-			((FieldTextBoxTuple) fieldTuple).setValue((editText
-					.getText()).toString());
+			((FieldTextBoxTuple) fieldTuple).setValue((editText.getText())
+					.toString());
 			filledFields.add(fieldTuple);
 			// 1
 			filledQuestionnaireTuple.setFilledFields(filledFields);
@@ -183,29 +134,15 @@ public class QuestionnaireActivity extends Activity {
 					.insertFilledQuestionnaireTuple(filledQuestionnaireTuple);
 		} else {
 			for (FieldTuple fieldTuple : filledFields)
-				if (fieldTuple.getName().equals(
-						editText.getTag().toString())) {
-					((FieldTextBoxTuple) fieldTuple)
-							.setValue((editText.getText())
-									.toString());
+				if (fieldTuple.getName().equals(editText.getTag().toString())) {
+					((FieldTextBoxTuple) fieldTuple).setValue((editText
+							.getText()).toString());
 					break;
 				}
 			filledQuestionnaireTuple.setFilledFields(filledFields);
 			LocalDAOContener
 					.updateFilledQuestionnaireTuple(filledQuestionnaireTuple);
 		}
-	}
-	
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onBackPressed()
-	 */
-	@Override
-	public void onBackPressed() {
-		if(changed > 0)
-			setResult(RESULT_OK); //, getIntent().putExtra("changed", changed)); Could be used to refresh only one row in list
-		else
-			setResult(RESULT_CANCELED);
-		super.onBackPressed();
 	}
 
 	private class CustomOnFocusChangeListener implements
@@ -243,25 +180,144 @@ public class QuestionnaireActivity extends Activity {
 
 	private class CustomTextWatcher implements TextWatcher {
 		String firstValue;
+
 		public void beforeTextChanged(CharSequence s, int start, int count,
 				int after) {
-			if(changed == 0 )firstValue = s.toString();
+			if (changed == 0)
+				firstValue = s.toString();
 		}
 
 		public void onTextChanged(CharSequence s, int start, int before,
 				int count) {
-			if(firstValue.equals(s.toString())){
+			if (firstValue.equals(s.toString())) {
 				--changed;
 				counter = 0;
-			}
-			else{
-			++changed;
-			++counter;
+			} else {
+				++changed;
+				++counter;
 			}
 		}
 
 		public void afterTextChanged(Editable s) {
 		}
+	}
+
+	private class GetQuestonnaireFromDB extends
+			AsyncTask<Integer, Integer, Boolean> {
+
+		ProgressDialog progressDialog;
+		ArrayList<FieldDataTuple> questionnaireFields;
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPreExecute()
+		 */
+		@Override
+		protected void onPreExecute() {
+			progressDialog = new ProgressDialog(QuestionnaireActivity.this);
+			progressDialog.setTitle(getString(R.string.app_name));
+			progressDialog.setIcon(R.drawable.icon);
+			progressDialog.setMessage(getString(R.string.loading_progressbar));
+			progressDialog.show();
+			super.onPreExecute();
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected Boolean doInBackground(Integer... params) {
+			if (_filledId == null) {
+				QuestionnaireTuple questionnaireTuple;
+				questionnaireTuple = LocalDAOContener
+						.getQuestionnaireTupleById(_id);
+				questionnaireName = questionnaireTuple.getName();
+				this.questionnaireFields = questionnaireTuple.getFields();
+				return true;
+			} else {
+				filledQuestionnaireTuple = LocalDAOContener
+						.getFilledQuestionnaireTupleById(Long
+								.parseLong(_filledId));
+				questionnaireName = filledQuestionnaireTuple.getName();
+				filledFields = filledQuestionnaireTuple.getFilledFields();
+				return false;
+			}
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(Boolean result) {
+			if (result) {
+				for (FieldDataTuple fieldDataTuple : questionnaireFields) {
+					if (fieldDataTuple instanceof FieldTextBoxDataTuple) {
+						text = new TextView(QuestionnaireActivity.this);
+						String name = fieldDataTuple.getName().toString();
+						text.setText(name);
+						editText = new EditText(QuestionnaireActivity.this);
+						editText.addTextChangedListener(new CustomTextWatcher());
+						editText.setTag(name);
+						linear.addView(text);
+						linear.addView(editText);
+					} else if (fieldDataTuple instanceof FieldTextAreaDataTuple) {
+						text = new TextView(QuestionnaireActivity.this);
+						String name = fieldDataTuple.getName().toString();
+						text.setText(name);
+						multiAutoCompleteTextView = new MultiAutoCompleteTextView(
+								QuestionnaireActivity.this);
+						multiAutoCompleteTextView
+								.addTextChangedListener(new CustomTextWatcher());
+						linear.addView(text);
+						linear.addView(multiAutoCompleteTextView);
+					}
+				}
+			} else {
+				for (FieldTuple fieldTuple : filledFields)
+					if (fieldTuple instanceof FieldTextBoxTuple) {
+						text = new TextView(QuestionnaireActivity.this);
+						String name = fieldTuple.getName().toString();
+						text.setText(name);
+						editText = new EditText(QuestionnaireActivity.this);
+						String txt = ((FieldTextBoxTuple) fieldTuple)
+								.getValue();
+						if (txt != null)
+							editText.setText(txt);
+						editText.addTextChangedListener(new CustomTextWatcher());
+						editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
+								editText));
+						editText.setTag(name);
+						linear.addView(text);
+						linear.addView(editText);
+					} else if (fieldTuple instanceof FieldTextAreaTuple) {
+						text = new TextView(QuestionnaireActivity.this);
+						String name = fieldTuple.getName().toString();
+						text.setText(name);
+						multiAutoCompleteTextView = new MultiAutoCompleteTextView(
+								QuestionnaireActivity.this);
+						String txt = ((FieldTextAreaTuple) fieldTuple)
+								.getValue();
+						if (txt != null)
+							multiAutoCompleteTextView.setText(txt);
+						multiAutoCompleteTextView
+								.addTextChangedListener(new CustomTextWatcher());
+						multiAutoCompleteTextView
+								.setOnFocusChangeListener(new CustomOnFocusChangeListener(
+										multiAutoCompleteTextView));
+						linear.addView(text);
+						linear.addView(multiAutoCompleteTextView);
+					}
+			}
+			setContentView(sv);
+			progressDialog.dismiss();
+			super.onPostExecute(result);
+		}
+
 	}
 
 }

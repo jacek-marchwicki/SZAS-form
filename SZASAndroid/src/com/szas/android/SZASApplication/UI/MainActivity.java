@@ -28,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.szas.android.SZASApplication.Constans;
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.DBContentProvider;
 import com.szas.android.SZASApplication.R;
@@ -43,6 +44,9 @@ public class MainActivity extends ListActivity {
 
 	// private LocalDAO<QuestionnaireTuple> questionnaireDAO;
 	private Context context;
+	String[] listViewElementsArray;
+	private Handler handler;
+	private DBContentObserver dbContentObserver;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,6 +59,14 @@ public class MainActivity extends ListActivity {
 		editor.commit();
 		new GetItemFromDatabase().execute(0);
 	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(resultCode == Constans.RESULT_EXIT){
+			MainActivity.this.finish();
+		}
+		
+	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -103,6 +115,22 @@ public class MainActivity extends ListActivity {
 		}
 	}
 
+	
+	/**
+	 * Click on item in the list
+	 */
+	OnItemClickListener onItemClickListener = new OnItemClickListener() {
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			Intent i = new Intent(MainActivity.this, SecondActivity.class);
+			i.putExtra("title", ((TextView) view).getText());
+			i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
+			startActivityForResult(i, 0);
+		}
+	};
+
 	private void refreshSyncAdapter() {
 		Account[] accounts = AccountManager.get(context).getAccounts();
 		ContentResolver.setIsSyncable(accounts[0],
@@ -115,26 +143,29 @@ public class MainActivity extends ListActivity {
 				"com.szas.android.szasapplication.provider", true);
 	}
 
-	/**
-	 * Click on item in the list
-	 */
-	OnItemClickListener onItemClickListener = new OnItemClickListener() {
 
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position,
-				long id) {
-			Intent i = new Intent(MainActivity.this, SecondActivity.class);
-			i.putExtra("title", ((TextView) view).getText());
-			i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
-			startActivity(i);
+	private void registerContentObservers() {
+		ContentResolver cr = getContentResolver();
+		dbContentObserver = new DBContentObserver(handler);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
+				true, dbContentObserver);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
+				true, dbContentObserver);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
+				true, dbContentObserver);
+	}
+
+	private void unregisterContentObservers() {
+		ContentResolver cr = getContentResolver();
+		dbContentObserver = new DBContentObserver(handler);
+		if (dbContentObserver != null) {
+			cr.unregisterContentObserver(dbContentObserver);
 		}
-	};
-
-	String[] listViewElementsArray;
-
-	private Handler handler;
-
-	private DBContentObserver dbContentObserver;
+	}
+	
 
 	private class GetItemFromDatabase extends
 			AsyncTask<Integer, Integer, ArrayAdapter<String>> {
@@ -170,19 +201,7 @@ public class MainActivity extends ListActivity {
 			return null;
 		}
 
-		private String[] getItemForList() {
-			ArrayList<String> array = new ArrayList<String>();
-			LocalDAOContener.loadContext(context);
-			Collection<QuestionnaireTuple> qq = LocalDAOContener
-					.getQuestionnaireTuples();
-			for (QuestionnaireTuple q : qq) {
-				array.add(q.getName());
-			}
-			listViewElementsArray = new String[array.size()];
-			array.toArray(listViewElementsArray);
-			return listViewElementsArray;
-		}
-
+		@Override
 		protected void onPostExecute(ArrayAdapter<String> arrayAdapter) {
 			progressDialog.dismiss();
 			if (arrayAdapter != null) {
@@ -204,14 +223,25 @@ public class MainActivity extends ListActivity {
 					e.printStackTrace();
 				}
 			}
+			super.onPostExecute(arrayAdapter);
+		}
+		
+		private String[] getItemForList() {
+			ArrayList<String> array = new ArrayList<String>();
+			LocalDAOContener.loadContext(context);
+			Collection<QuestionnaireTuple> qq = LocalDAOContener
+					.getQuestionnaireTuples();
+			for (QuestionnaireTuple q : qq) {
+				array.add(q.getName());
+			}
+			listViewElementsArray = new String[array.size()];
+			array.toArray(listViewElementsArray);
+			return listViewElementsArray;
 		}
 	}
 
-	public class DBContentObserver extends ContentObserver {
+	private class DBContentObserver extends ContentObserver {
 
-		/**
-		 * @param handler
-		 */
 		public DBContentObserver(Handler handler) {
 			super(handler);
 		}
@@ -223,28 +253,6 @@ public class MainActivity extends ListActivity {
 				}
 			});
 			unregisterContentObservers();
-		}
-	}
-
-	private void registerContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
-				true, dbContentObserver);
-	}
-
-	private void unregisterContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		if (dbContentObserver != null) { // just paranoia
-			cr.unregisterContentObserver(dbContentObserver);
 		}
 	}
 

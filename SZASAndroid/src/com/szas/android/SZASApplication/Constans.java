@@ -20,5 +20,10 @@ public class Constans {
 	 * Authtoken type
 	 */
 	public static final String AUTHTOKEN_TYPE = "com.google";
+	
+	/**
+	 * Result for Activity exit
+	 */
+	public static final int RESULT_EXIT = 2;
 
 }

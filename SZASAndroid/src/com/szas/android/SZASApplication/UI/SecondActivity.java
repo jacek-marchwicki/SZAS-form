@@ -30,6 +30,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
+import com.szas.android.SZASApplication.Constans;
 import com.szas.android.SZASApplication.DBContentProvider;
 import com.szas.android.SZASApplication.QuestionnaireTypeRow;
 import com.szas.android.SZASApplication.R;
@@ -53,6 +54,13 @@ public class SecondActivity extends ListActivity {
 	List<FilledQuestionnaireTuple> filledQuestionnaireTuples;
 	List<QuestionnaireTypeRow> mQuestionnaireTypeRows;
 	private Context context;
+	private DBContentObserver dbContentObserver;
+	private Handler handler;
+	
+	/**
+	 * Items showed in AlertDialog ListAdapter
+	 */
+	String[] items;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +72,13 @@ public class SecondActivity extends ListActivity {
 		setTitle(getString(R.string.second_window_title) + " " + text);
 		new GetItemFromDatabase().execute(0);
 	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if(resultCode == RESULT_OK){
+			new GetItemFromDatabase().execute(1);
+		}
+	};
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -87,8 +102,7 @@ public class SecondActivity extends ListActivity {
 								@Override
 								public void onClick(DialogInterface dialog,
 										int which) {
-
-									// Stop the activity
+									setResult(Constans.RESULT_EXIT);
 									SecondActivity.this.finish();
 								}
 							}).setNegativeButton(R.string.no, null).show();
@@ -111,32 +125,7 @@ public class SecondActivity extends ListActivity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-
-	private void refreshSyncAdapter() {
-		Account[] accounts = AccountManager.get(context).getAccounts();
-		ContentResolver.setIsSyncable(accounts[0],
-				"com.szas.android.szasapplication.provider", 1);
-		ContentResolver.requestSync(accounts[0],
-				"com.szas.android.szasapplication.provider", new Bundle());
-		// Account[] accounts =
-		// AccountManager.get(getApplicationContext()).getAccounts();
-		ContentResolver.setSyncAutomatically(accounts[0],
-				"com.szas.android.szasapplication.provider", true);
-	}
 	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == RESULT_OK){
-			new GetItemFromDatabase().execute(1);
-		}
-		
-	};
-	
-	/**
-	 * Items showed in AlertDialog ListAdapter
-	 */
-	String[] items;
-
 	/**
 	 * List of departments item clicked
 	 */
@@ -145,19 +134,6 @@ public class SecondActivity extends ListActivity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			/*
-			 * AlertDialog.Builder builder = new AlertDialog.Builder(
-			 * SecondActivity.this); items = new String[] {
-			 * getString(R.string.form_item1), getString(R.string.form_item2),
-			 * getString(R.string.form_item3) };
-			 * builder.setTitle("Pick a tile set"); builder.setItems(items, new
-			 * DialogInterface.OnClickListener() {
-			 * 
-			 * @Override public void onClick(DialogInterface dialog, int item) {
-			 * Toast.makeText(SecondActivity.this, "You selected: " +
-			 * items[item], Toast.LENGTH_LONG) .show(); dialog.dismiss(); } });
-			 * AlertDialog alert = builder.create(); alert.show();
-			 */
 			Intent i = new Intent(SecondActivity.this,
 					QuestionnaireActivity.class);
 			
@@ -170,9 +146,39 @@ public class SecondActivity extends ListActivity {
 			startActivityForResult(i, 1);
 		}
 	};
-	private com.szas.android.SZASApplication.UI.SecondActivity.DBContentObserver dbContentObserver;
-	private Handler handler;
 
+	private void refreshSyncAdapter() {
+		Account[] accounts = AccountManager.get(context).getAccounts();
+		ContentResolver.setIsSyncable(accounts[0],
+				"com.szas.android.szasapplication.provider", 1);
+		ContentResolver.setSyncAutomatically(accounts[0],
+				"com.szas.android.szasapplication.provider", true);
+		ContentResolver.requestSync(accounts[0],
+				"com.szas.android.szasapplication.provider", new Bundle());
+	}
+	
+	private void registerContentObservers() {
+		ContentResolver cr = getContentResolver();
+		dbContentObserver = new DBContentObserver(handler);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
+				true, dbContentObserver);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
+				true, dbContentObserver);
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
+				true, dbContentObserver);
+	}
+
+	private void unregisterContentObservers() {
+		ContentResolver cr = getContentResolver();
+		dbContentObserver = new DBContentObserver(handler);
+		if (dbContentObserver != null) {
+			cr.unregisterContentObserver(dbContentObserver);
+		}
+	}
+	
 	private class GetItemFromDatabase extends
 			AsyncTask<Integer, Integer, CustomArrayAdapter> {
 		ProgressDialog progressDialog;
@@ -210,6 +216,23 @@ public class SecondActivity extends ListActivity {
 			return null;
 		}
 
+		protected void onPostExecute(CustomArrayAdapter arrayAdapter) {
+			progressDialog.dismiss();
+			if (arrayAdapter != null) {
+				setListAdapter(arrayAdapter);
+				ListView lv = getListView();
+				lv.setTextFilterEnabled(true);
+				lv.setOnItemClickListener(onItemClickListener);
+			}else {
+				ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(
+						context,
+						R.layout.main,
+						new String[] { getString(R.string.problem_information) });
+				setListAdapter(arrayAdapter2);
+				registerContentObservers();
+			}
+		}
+		
 		/**
 		 * Get departments to show in the listView
 		 * 
@@ -239,26 +262,12 @@ public class SecondActivity extends ListActivity {
 			mQuestionnaireTypeRows = questionnaireTypeRows;
 			return questionnaireTypeRows;
 		}
-
-		protected void onPostExecute(CustomArrayAdapter arrayAdapter) {
-			progressDialog.dismiss();
-			if (arrayAdapter != null) {
-				setListAdapter(arrayAdapter);
-				ListView lv = getListView();
-				lv.setTextFilterEnabled(true);
-				lv.setOnItemClickListener(onItemClickListener);
-			}else {
-				ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(
-						context,
-						R.layout.main,
-						new String[] { getString(R.string.problem_information) });
-				setListAdapter(arrayAdapter2);
-				registerContentObservers();
-			}
-		}
 	}
 	
 	private class CustomArrayAdapter extends ArrayAdapter<QuestionnaireTypeRow> {
+		
+		List<QuestionnaireTypeRow> objects;
+		
 		/**
 		 * @param context
 		 * @param textViewResourceId
@@ -269,11 +278,7 @@ public class SecondActivity extends ListActivity {
 			super(context, textViewResourceId, objects);
 			this.objects = objects;
 		}
-
-
-		List<QuestionnaireTypeRow> objects;
 		
-
 		/* (non-Javadoc)
 		 * @see android.widget.ArrayAdapter#getView(int, android.view.View, android.view.ViewGroup)
 		 */
@@ -291,15 +296,10 @@ public class SecondActivity extends ListActivity {
 			textView.setText(questionnaireTypeRow.getFullName().equals("") ? questionnaireTypeRow.getName():questionnaireTypeRow.getFullName());
 			return row;
 		}
-		
-		
 	}
 	
-	public class DBContentObserver extends ContentObserver {
+	private class DBContentObserver extends ContentObserver {
 
-		/**
-		 * @param handler
-		 */
 		public DBContentObserver(Handler handler) {
 			super(handler);
 		}
@@ -311,28 +311,6 @@ public class SecondActivity extends ListActivity {
 				}
 			});
 			unregisterContentObservers();
-		}
-	}
-
-	private void registerContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
-				true, dbContentObserver);
-	}
-
-	private void unregisterContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		if (dbContentObserver != null) { // just paranoia
-			cr.unregisterContentObserver(dbContentObserver);
 		}
 	}
 }
