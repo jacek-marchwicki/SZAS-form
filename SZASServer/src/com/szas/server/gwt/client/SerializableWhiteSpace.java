@@ -9,13 +9,12 @@ import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.data.FieldTextAreaDataTuple;
 import com.szas.data.FieldTextAreaTuple;
-import com.szas.data.UserTuple;
 import com.szas.sync.local.LocalTuple;
 import com.szas.sync.remote.RemoteTuple;
 
 public class SerializableWhiteSpace implements IsSerializable {
-	RemoteTuple<UserTuple> dummy1;
-	LocalTuple<UserTuple> dummy2;
+	RemoteTuple<QuestionnaireTuple> dummy1;
+	LocalTuple<QuestionnaireTuple> dummy2;
 	QuestionnaireTuple dummy3;
 	FieldDataTuple d1;
 	FieldIntegerBoxDataTuple d2;

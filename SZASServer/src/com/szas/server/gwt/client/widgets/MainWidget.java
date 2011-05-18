@@ -16,7 +16,6 @@ import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
-import com.szas.data.UserTuple;
 import com.szas.server.gwt.client.router.LongRouteAction;
 import com.szas.server.gwt.client.router.RouteAction;
 import com.szas.server.gwt.client.router.Router;
@@ -54,36 +53,14 @@ public class MainWidget extends Composite {
 	}
 	
 	private void addRoutes() {
-		RouteAction<Widget> usersRouteAction = new RouteAction<Widget>() {
-			@Override
-			public Widget run(String command, String params) {
-				return new UsersList();
-			}
-		};
-		router.addRoute(UsersList.NAME, usersRouteAction);
-		router.addRoute("", usersRouteAction);
-		router.addRoute(UserWidget.NAME, new LongRouteAction<Widget>() {
-			@Override
-			protected Widget run(String command, long id) {
-				UserTuple userTuple = StaticGWTSyncer.getUsersdao().getById(id);
-				if (userTuple == null)
-					return null;
-				return new UserWidget(userTuple);
-			}
-		});
-		router.addRoute(UserWidget.NAME, new RouteAction<Widget>() {
-			@Override
-			public Widget run(String command, String params) {
-				UserTuple userTuple = new UserTuple();
-				return new UserWidget(userTuple);
-			}
-		});
-		router.addRoute(QuestionnariesList.NAME, new RouteAction<Widget>() {
+		RouteAction<Widget> questionnaireRouteAction = new RouteAction<Widget>() {
 			@Override
 			public Widget run(String command, String params) {
 				return new QuestionnariesList();
 			}
-		});
+		};
+		router.addRoute("", questionnaireRouteAction);
+		router.addRoute(QuestionnariesList.NAME, questionnaireRouteAction);
 		router.addRoute(QuestinnairesWidget.NAME, new LongRouteAction<Widget>() {
 
 			@Override

@@ -9,6 +9,7 @@
 <meta name="Distribution" content="Global" />
 <meta name="Author" content="Jacek Marchwicki - jacek@3made.pl" />
 <meta name="Robots" content="index,follow" />
+<meta name="viewport" content="width = device-width, initial-scale = 1, user-scalable = no">
 <link rel="stylesheet" href="/stylesheets/main.css" type="text/css" />
 <script type="text/javascript">
  <!--

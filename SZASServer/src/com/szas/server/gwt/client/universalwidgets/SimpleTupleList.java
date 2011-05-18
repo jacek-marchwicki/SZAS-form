@@ -10,7 +10,6 @@ import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.ProvidesKey;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
-import com.szas.server.gwt.client.sync.StaticGWTSyncer;
 import com.szas.sync.DAOObserver;
 import com.szas.sync.Tuple;
 import com.szas.sync.local.LocalDAO;
@@ -105,7 +104,7 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 	@Override
 	protected void onDetach() {
 		if (contentObserver != null)
-			StaticGWTSyncer.getUsersdao().removeDAOObserver(contentObserver);
+			getLocalDAO().removeDAOObserver(contentObserver);
 		contentObserver = null;
 		super.onDetach();
 	}
