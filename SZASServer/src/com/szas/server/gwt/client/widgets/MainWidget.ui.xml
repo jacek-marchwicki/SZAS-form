@@ -11,32 +11,24 @@
 		}
 	</ui:style>
 	<g:RootLayoutPanel>
-		<g:layer left="10px" width="145px" top="60px" bottom="10px">
-			<g:HTML wordWrap="true">
-				<ul>
-					<li>
-						<a href="#users">Users</a>
-					</li>
-					<li>
-						<a href="#questionnaires">Questionnaries</a>
-					</li>
-				</ul>
-			</g:HTML>
+	<g:layer left="0px" top="17px" height="25px" right="0px">
+			<g:HTML styleName="{style.header}"><a href="#questionnaires">SZAS-form</a></g:HTML>
 		</g:layer>
-		<g:layer left="155px" top="35px" right="10px" bottom="10px">
-			<g:SimplePanel ui:field="simplePanel" />
-		</g:layer>
-		<g:layer left="31px" width="88px" top="35px" height="25px">
-			<g:Button ui:field="refreshButton">Refresh</g:Button>
-		</g:layer>
-		<g:layer left="0px" top="10px" height="25px" right="0px">
-			<g:Label styleName="{style.header}" text="SZAS-form" />
-		</g:layer>
-		<g:layer left="10px" width="145px" top="0px" height="17px">
-			<g:Label ui:field="syncStatusLabel"/>
-		</g:layer>
+		
 		<g:layer width="285px" top="0px" height="17px" right="10px">
 			<g:HTML wordWrap="true" ui:field="loginField"  styleName="{style.signOut}"></g:HTML>
+		</g:layer>
+		
+		<g:layer left="2px" width="88px" top="2px" height="25px">
+			<g:Button ui:field="refreshButton">Refresh</g:Button>
+		</g:layer>
+		
+		<g:layer left="2px" width="145px" top="29px" height="17px">
+			<g:Label ui:field="syncStatusLabel"/>
+		</g:layer>
+		
+		<g:layer left="10px" top="45px" right="10px" bottom="10px">
+			<g:SimplePanel ui:field="simplePanel" />
 		</g:layer>
 	</g:RootLayoutPanel>
 </ui:UiBinder> 

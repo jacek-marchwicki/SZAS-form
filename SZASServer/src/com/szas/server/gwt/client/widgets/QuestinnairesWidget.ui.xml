@@ -9,14 +9,15 @@
 		}
 	</ui:style>
 	<g:RootLayoutPanel width="" height="">
-		<g:layer left="0px" width="142px" top="0px" height="17px">
-			<g:Label text="Questionnaires"/>
+		
+		<g:layer left="0px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="fillButton" text="Fill"/>
 		</g:layer>
-		<g:layer left="148px" width="88px" top="0px" height="25px">
-			<g:Button ui:field="deleteButton">Delete</g:Button>
-		</g:layer>
-		<g:layer left="236px" width="88px" top="0px" height="25px">
+		<g:layer left="88px" width="88px" top="0px" height="25px">
 			<g:Button ui:field="editButton">Edit</g:Button>
+		</g:layer>
+		<g:layer left="176px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="deleteButton">Delete</g:Button>
 		</g:layer>
 		<g:layer left="0px" top="38px" height="26px" right="0px">
 			<g:Label styleName="{style.header}" text="Name" ui:field="questionnaireName"/>
@@ -27,8 +28,6 @@
 					width="100%" height="" />
 			</g:ScrollPanel>
 		</g:layer>
-		<g:layer left="324px" width="88px" top="0px" height="25px">
-			<g:Button ui:field="fillButton" text="Fill"/>
-		</g:layer>
+		
 	</g:RootLayoutPanel>
 </ui:UiBinder> 
