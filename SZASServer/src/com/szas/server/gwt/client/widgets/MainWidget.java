@@ -140,12 +140,8 @@ public class MainWidget extends Composite {
 			}
 		});
 	}
-
-	public MainWidget() {
-		initWidget(uiBinder.createAndBindUi(this));
-		
-		addRoutes();		
-		
+	
+	private void showWidgets() {
 		ValueChangeHandler<String> valueChangeHandler =
 			new ValueChangeHandler<String>() {
 			@Override
@@ -165,6 +161,32 @@ public class MainWidget extends Composite {
 				event.setMessage("Tere are sync in progress - are you sure to exit?");
 			}
 		});
+	}
+	
+	private AutoSyncer.AutoSyncerObserver syncObserver = new AutoSyncer.AutoSyncerObserver() {
+		@Override
+		public void onSuccess() {
+			StaticGWTSyncer.getAutosyncer().removeAutoSyncerObserver(this);
+			showWidgets();
+		}
+		@Override
+		public void onWait(int waitTime) {}
+		@Override
+		public void onStarted() {}
+		@Override
+		public void onFail() {}
+	};
+
+	public MainWidget() {
+		initWidget(uiBinder.createAndBindUi(this));
+		
+		addRoutes();	
+		if (StaticGWTSyncer.getAutosyncer().isSynced()) {
+			showWidgets();
+		} else {
+			StaticGWTSyncer.getAutosyncer().addAutoSyncerObserver(syncObserver);
+			switchWidget(new WaitWidget());
+		}
 	}
 
 	protected void switchWidget(Widget newWidget) {

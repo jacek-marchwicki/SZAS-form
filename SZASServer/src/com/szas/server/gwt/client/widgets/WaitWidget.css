@@ -1,0 +1,6 @@
+@CHARSET "UTF-8";
+
+@sprite .waitWidgetLoading {
+  gwt-image: 'waitWidgetLoading';
+  margin: 30px auto;
+}
