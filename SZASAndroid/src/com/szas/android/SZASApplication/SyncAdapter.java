@@ -18,9 +18,13 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
+import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SyncResult;
+import android.database.ContentObserver;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 
 import com.szas.data.FilledQuestionnaireTuple;
@@ -50,6 +54,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	private static final String LOGTAG = "SZAS_SYNC_ADAPTER";
 
 	private final AccountManager accountManager;
+	
+	boolean isChanged = false;
 	
 	private final static class AndroidSyncLocalService implements SyncLocalService {
 		
@@ -144,6 +150,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
 	private AndroidSyncLocalService syncLocalService;
 
+	private final Context context;
+
 	/**
 	 * Constructor to load needed parameters
 	 * 
@@ -154,10 +162,14 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	 */
 	public SyncAdapter(Context context, boolean autoInitialize) {
 		super(context, autoInitialize);
+		this.context = context;
 		this.accountManager = AccountManager.get(context);
-		setQuestionnaireDAO(new SQLLocalDAO<QuestionnaireTuple>(context, "com.szas.data.QuestionnaireTuple"));
+		questionnaireDAO = new SQLLocalDAO<QuestionnaireTuple>(context, "com.szas.data.QuestionnaireTuple");
 		filledQuestionnaireDAO = new SQLLocalDAO<FilledQuestionnaireTuple>(context, "com.szas.data.FilledQuestionnaireTuple");
-		
+		if(questionnaireDAO.getAll().isEmpty())
+			questionnaireDAO.setLastTimestamp(-1);
+		if(filledQuestionnaireDAO.getAll().isEmpty())
+			filledQuestionnaireDAO.setLastTimestamp(-1);
 	
 	}
 
@@ -187,7 +199,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 		LocalSyncHelperImpl syncHelper = new LocalSyncHelperImpl(syncLocalService);
 		syncHelper.append("questionnaire", getQuestionnaireDAO());
 		syncHelper.append("filled", filledQuestionnaireDAO);
+		registerContentObservers();
 		syncHelper.sync();
+		if(isChanged){
+			sendMessage("info");
+			isChanged = false;
+		}
+		unregisterContentObservers();
 	}
 
 	/**
@@ -203,6 +221,33 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	public LocalDAO<QuestionnaireTuple> getQuestionnaireDAO() {
 		return questionnaireDAO;
 	}
+	
+	public void sendMessage(String information){
+		Intent i = new Intent(Constans.broadcastMessage);
+		i.putExtra("info", information);
+		context.sendBroadcast(i);
+	}
+	
+	private void registerContentObservers() {
+		ContentResolver cr = context.getContentResolver();
+		cr.registerContentObserver(
+				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
+				true, contentObserver);
+	}
 
+	private void unregisterContentObservers() {
+		ContentResolver cr = context.getContentResolver();
+		if (contentObserver != null) {
+			cr.unregisterContentObserver(contentObserver);
+		}
+	}
+
+	private ContentObserver contentObserver = new ContentObserver(
+			new Handler()) {
+		@Override
+		public void onChange(boolean selfChange) {
+			isChanged = true;
+		};
+	};
 
 }

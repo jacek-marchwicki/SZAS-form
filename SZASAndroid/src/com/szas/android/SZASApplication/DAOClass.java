@@ -123,6 +123,17 @@ public class DAOClass<T extends Tuple> {
 		public static void updateFilledQuestionnaireTuple(FilledQuestionnaireTuple filledQuestionnaireTuple){
 			filledQuestionnaireDAO.update(filledQuestionnaireTuple);
 		}
+		
+		public static void deleteFilledQuestionnaireTuple(FilledQuestionnaireTuple filledQuestionnaireTuple){
+			filledQuestionnaireDAO.delete(filledQuestionnaireTuple);
+		}
+		
+		public static void insertUpdateFilledQuestionnaireTuple(FilledQuestionnaireTuple filledQuestionnaireTuple){
+			if(getFilledQuestionnaireTupleById(filledQuestionnaireTuple.getId()) != null)
+				updateFilledQuestionnaireTuple(filledQuestionnaireTuple);
+			else
+				insertFilledQuestionnaireTuple(filledQuestionnaireTuple);
+		}
 	}
 	
 }

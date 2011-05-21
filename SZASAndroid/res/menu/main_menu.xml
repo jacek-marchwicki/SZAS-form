@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-  xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:id="@+id/group1"><item android:id="@+id/about_item" android:title="@string/about"></item><item android:title="@string/help" android:id="@+id/help_item"></item></group><item android:id="@+id/refresh_item" android:title="@string/refresh_elements"></item><item android:title="@string/exit" android:id="@+id/exit_item"></item>
-    
-    
-    
-    
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<group android:id="@+id/group1">
+		<item android:id="@+id/about_item" android:title="@string/about" android:icon="@android:drawable/ic_menu_info_details"></item>
+		<item android:title="@string/help" android:id="@+id/help_item" android:icon="@android:drawable/ic_menu_help"></item>
+	</group>
+	<item android:id="@+id/refresh_item" android:title="@string/refresh_elements"
+		android:icon="@android:drawable/ic_popup_sync" android:titleCondensed="@string/refresh_elements_short"></item>
+	<item android:title="@string/exit" android:id="@+id/exit_item" android:icon="@android:drawable/ic_menu_close_clear_cancel"></item>
 </menu>

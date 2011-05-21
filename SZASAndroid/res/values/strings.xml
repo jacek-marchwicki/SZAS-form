@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Hospital Management System surveys</string>
-    <string name="second_window_title">Department name:</string>
-    <string name="exit">Exit</string>
-    <string name="exit_prompt">Really exit?</string>
-    <string name="yes">YES</string>
-    <string name="no">NO</string>
-    <string name="about">About</string>
-    <string name="version_word">Version</string>
-    <string name="help">Help</string>
-    <string name="refresh_elements">Refresh from network</string>
-    <string name="problem_information">Sorry. I am looking for download data from servers for you, right now. </string>
-    <string name="form_item1">Empty form</string>
-    <string name="form_item2">Filled form</string>
-    <string name="form_item3">Cancel</string>
-    <string name="accountlabel">SZAS</string>
-    <string name="loading_progressbar"> Loading. Please wait ... </string>
-    <string name="about_authors">Developers:\nJacek Marchwicki - GAE Server,\nTomasz Merda - Bada Application,\nPaweł Szafer - Android application.</string>
-    <string name="questionnaire_save_close">Save changes &amp; go back</string>
-    
+	<string name="app_name">Hospital Management System surveys</string>
+	<string name="second_window_title">Section name:</string>
+	<string name="exit">Exit</string>
+	<string name="exit_prompt">Really exit?</string>
+	<string name="yes">YES</string>
+	<string name="no">NO</string>
+	<string name="about">About</string>
+	<string name="version_word">Version</string>
+	<string name="help">Help</string>
+	<string name="refresh_elements">Refresh from network</string>
+	<string name="refresh_elements_short">Sync</string>
+	<string name="problem_information">Sorry. I am looking for download data from servers
+		for you, right now. </string>
+	<string name="delete_action">Delete</string>
+	<string name="cancel_action">Cancel</string>
+	<string name="accountlabel">SZAS</string>
+	<string name="empty_questionnaire">Empty questionnaire</string>
+	<string name="filled_questionnaire">Filled questionnaires</string>
+	<string name="loading_progressbar"> Loading. Please wait ... </string>
+	<string name="about_authors">Developers:\nJacek Marchwicki - GAE Server,\nTomasz
+		Merda - Bada Application,\nPaweł Szafer - Android application.
+	</string>
+	<string name="questionnaire_save_close">Save changes &amp; go back</string>
+	<string name="help1">Application at start should load questionnaire
+		data.\nYou should see list with questionnaire names.\nChoosing one of them move You to screen with posibility\nto fill empty questionnaire or to open/edit already filled questionnaire.\n
+		If You want to refresh questionnaire from network just choose appropriate option from menu.\nAt first load application would show You message: "Sorry. I am looking for download data from servers for you, right now.".\nPlease, wait a few seconds, application will download needed data from server.</string>
+	<string name="help2">Application loaded section You asked for.\nThere are 2 headers, Empty questionnaires and Filled questionaires.\nIf You click first one, You can fill empty questionnaire.\nIf you click one of filled questionnaire (if list is not empty) You can edit questionnaire.\nLong click on filled questionnaire allow You to delete it.</string>
+	<string name="questionnaire_context_menu_delete">Delete questionnaire</string>
+	<string name="questionnaire_context_menu_cancel">Cancel</string>
 </resources>
