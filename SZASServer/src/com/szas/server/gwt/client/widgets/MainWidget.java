@@ -124,7 +124,7 @@ public class MainWidget extends Composite {
 					return null;
 				FilledQuestionnaireTuple filledQuestionnaireTuple = 
 					questionnaireTuple.getFilled();
-				return new EditFilledQuestionnaireWidget(filledQuestionnaireTuple,false);
+				return new EditFilledQuestionnaireWidget(filledQuestionnaireTuple,true);
 			}
 		});
 	}
