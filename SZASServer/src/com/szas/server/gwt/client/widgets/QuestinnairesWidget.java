@@ -2,14 +2,9 @@ package com.szas.server.gwt.client.widgets;
 
 import java.util.ArrayList;
 
-import com.google.gwt.cell.client.AbstractCell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.safehtml.client.SafeHtmlTemplates;
-import com.google.gwt.safehtml.shared.SafeHtml;
-import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -19,9 +14,6 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.view.client.CellPreviewEvent;
-import com.google.gwt.view.client.DefaultSelectionEventManager;
-import com.google.gwt.view.client.DefaultSelectionEventManager.SelectAction;
 import com.szas.data.FieldDataTuple;
 import com.szas.data.FieldTuple;
 import com.szas.data.FilledQuestionnaireTuple;
@@ -35,32 +27,12 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	public static String NAME = "questionnaire";
 
-	interface Template extends SafeHtmlTemplates {
-		@Template("{0} <a href=\"{1}\">edit</a>")
-		SafeHtml cell(String value,String url);
-	}
-
 	static class StringUrlValues {
 		String value = "";
 		String url;
 	}
-
-	static class FilledQuestionnaireCell extends AbstractCell<StringUrlValues> {
-
-		private static Template template;
-
-		@Override
-		public void render(com.google.gwt.cell.client.Cell.Context context,
-				StringUrlValues value, SafeHtmlBuilder sb) {
-			if (template == null) {
-				template = GWT.create(Template.class);
-			}
-			sb.append(template.cell(value.value, value.url));
-		}
-
-	}
 	
-	static class FilledQuestionnaireFiledColumn extends Column<FilledQuestionnaireTuple, String> {
+	private static class FilledQuestionnaireFiledColumn extends Column<FilledQuestionnaireTuple, String> {
 
 		private String fieldName;
 
@@ -80,30 +52,6 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 		}
 		
 	}
-
-	static class FilledquestionnaireColumn extends Column<FilledQuestionnaireTuple, StringUrlValues> {
-
-		public FilledquestionnaireColumn() {
-			super(new FilledQuestionnaireCell());
-		}
-
-		@Override
-		public StringUrlValues getValue(FilledQuestionnaireTuple object) {
-			StringUrlValues value = new StringUrlValues();
-			for (FieldTuple fieldTuple : object.getFilledFields()) {
-				if (!fieldTuple.isOnList())
-					continue;
-				value.value += fieldTuple.getText() + " ";
-			}
-			if (value.equals("")) {
-				value.value = object.getName();
-			}
-			value.url = "http://google.pl";
-			return value;
-		}
-
-	}
-
 
 	static class MyTupleList extends SimpleTupleList<FilledQuestionnaireTuple> {
 
@@ -140,34 +88,6 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 					cellTable.addColumn(column,field.getName());
 				}
 			}
-		}
-
-		@Override
-		protected CellPreviewEvent.Handler<FilledQuestionnaireTuple> getSelectionEventManager() {
-			return DefaultSelectionEventManager.createCustomManager(
-					new DefaultSelectionEventManager.EventTranslator<FilledQuestionnaireTuple>() {
-
-						@Override
-						public boolean clearCurrentSelection(
-								CellPreviewEvent<FilledQuestionnaireTuple> event) {
-							return false;
-						}
-
-						@Override
-						public SelectAction translateSelectionEvent(
-								CellPreviewEvent<FilledQuestionnaireTuple> event) {
-							if (event.getColumn() == 0) {
-								return SelectAction.IGNORE;
-							} else {
-								NativeEvent nativeEvent = event.getNativeEvent();
-								if ("click".equals(nativeEvent.getType())) {
-									return SelectAction.SELECT;
-								} else
-									return SelectAction.DEFAULT;
-							}
-						}
-					}
-			);
 		}
 	};
 
