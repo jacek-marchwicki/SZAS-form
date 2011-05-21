@@ -15,6 +15,9 @@
 		<g:layer left="0px" width="88px" top="0px" height="25px">
 			<g:Button ui:field="saveButton">Save</g:Button>
 		</g:layer>
+		<g:layer left="0px" width="88px" top="0px" height="25px">
+			<g:Button ui:field="editButton">Edit</g:Button>
+		</g:layer>
 		<g:layer left="88px" width="88px" top="0px" height="25px">
 			<g:Button ui:field="deleteButton">Delete</g:Button>
 		</g:layer>

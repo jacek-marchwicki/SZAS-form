@@ -92,7 +92,7 @@ public class MainWidget extends Composite {
 				return new EditQuesionnaireWidget(questionnaireTuple);
 			}
 		});
-		router.addRoute(FilledQuestionnaireWidget.NAME, new LongRouteAction<Widget>() {
+		router.addRoute(EditFilledQuestionnaireWidget.NAME, new LongRouteAction<Widget>() {
 
 			@Override
 			protected Widget run(String command, long param) {
@@ -100,10 +100,21 @@ public class MainWidget extends Composite {
 					StaticGWTSyncer.getFilledquestionnairedao().getById(param);
 				if (filledQuestionnaireTuple == null)
 					return null;
-				return new FilledQuestionnaireWidget(filledQuestionnaireTuple);
+				return new EditFilledQuestionnaireWidget(filledQuestionnaireTuple,false);
 			}
 		});
-		router.addRoute(FilledQuestionnaireWidget.NAME_NEW, new LongRouteAction<Widget>() {
+		router.addRoute(EditFilledQuestionnaireWidget.NAME_EDIT, new LongRouteAction<Widget>() {
+
+			@Override
+			protected Widget run(String command, long param) {
+				FilledQuestionnaireTuple filledQuestionnaireTuple =
+					StaticGWTSyncer.getFilledquestionnairedao().getById(param);
+				if (filledQuestionnaireTuple == null)
+					return null;
+				return new EditFilledQuestionnaireWidget(filledQuestionnaireTuple,true);
+			}
+		});
+		router.addRoute(EditFilledQuestionnaireWidget.NAME_NEW, new LongRouteAction<Widget>() {
 
 			@Override
 			protected Widget run(String command, long param) {
@@ -113,7 +124,7 @@ public class MainWidget extends Composite {
 					return null;
 				FilledQuestionnaireTuple filledQuestionnaireTuple = 
 					questionnaireTuple.getFilled();
-				return new FilledQuestionnaireWidget(filledQuestionnaireTuple);
+				return new EditFilledQuestionnaireWidget(filledQuestionnaireTuple,false);
 			}
 		});
 	}

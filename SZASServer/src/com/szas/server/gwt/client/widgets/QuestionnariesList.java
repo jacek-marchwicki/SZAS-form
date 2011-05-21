@@ -65,7 +65,6 @@ public class QuestionnariesList extends Composite {
 
 	public QuestionnariesList() {
 		initWidget(uiBinder.createAndBindUi(this));
-		simpleTupleList.daoUpdated();
 	}
 
 }

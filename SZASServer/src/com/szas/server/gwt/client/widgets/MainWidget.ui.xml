@@ -16,7 +16,7 @@
 		</g:layer>
 		
 		<g:layer width="285px" top="0px" height="17px" right="10px">
-			<g:HTML wordWrap="true" ui:field="loginField"  styleName="{style.signOut}"></g:HTML>
+			<g:HTML wordWrap="true" ui:field="loginField" styleName="{style.signOut}"></g:HTML>
 		</g:layer>
 		
 		<g:layer left="2px" width="88px" top="2px" height="25px">

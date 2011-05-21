@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -25,19 +26,26 @@ import com.szas.sync.local.LocalDAO;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 
-public class FilledQuestionnaireWidget extends UniversalWidget<FilledQuestionnaireTuple> {
+public class EditFilledQuestionnaireWidget extends UniversalWidget<FilledQuestionnaireTuple> {
 
-	public FilledQuestionnaireWidget(FilledQuestionnaireTuple tuple) {
+	
+	public EditFilledQuestionnaireWidget(FilledQuestionnaireTuple tuple, boolean edit) {
 		super(tuple);
+		this.edit = edit;
 		initWidget();
 	}
 
+
+	private final boolean edit;
 	public static final String NAME = "filledQuestionnaire";
+	public static final String NAME_EDIT = "editFilledQuestionnaire";
 	public static final String NAME_NEW = "newFilledQuestionnaire";
-	private static FilledQuestionnaireWidgetUiBinder uiBinder = GWT
-			.create(FilledQuestionnaireWidgetUiBinder.class);
+	private static EditFilledQuestionnaireWidgetUiBinder uiBinder = GWT
+			.create(EditFilledQuestionnaireWidgetUiBinder.class);
 	@UiField Label questionnaireName;
 	@UiField Button deleteButton;
+	@UiField Button saveButton;
+	@UiField Button editButton;
 	@UiField VerticalPanel verticalPanel;
 	
 	private ArrayList<FieldWidget> fieldDataWidgets;
@@ -45,13 +53,15 @@ public class FilledQuestionnaireWidget extends UniversalWidget<FilledQuestionnai
 	private ArrayList<FieldDataTuple> dataFields = 
 		new ArrayList<FieldDataTuple>();
 
-	interface FilledQuestionnaireWidgetUiBinder extends
-			UiBinder<Widget, FilledQuestionnaireWidget> {
+	interface EditFilledQuestionnaireWidgetUiBinder extends
+			UiBinder<Widget, EditFilledQuestionnaireWidget> {
 	}
 
 	@Override
 	protected void initWidget() {
 		initWidget(uiBinder.createAndBindUi(this));
+		saveButton.setVisible(edit);
+		editButton.setVisible(!edit);
 	}
 
 	@Override
@@ -89,25 +99,23 @@ public class FilledQuestionnaireWidget extends UniversalWidget<FilledQuestionnai
 			FieldDataTuple fieldData = findDataTuple(field);
 			
 			if (field instanceof FieldTextBoxTuple) {
-				if (fieldData != null && fieldData instanceof FieldTextBoxDataTuple) {
+				if (fieldData != null && fieldData instanceof FieldTextBoxDataTuple && edit) {
 					widget = new FieldTextBoxWidget(
 							(FieldTextBoxTuple) field,
 							(FieldTextBoxDataTuple) fieldData);
 				} else {
-					// TODO display only data
-					continue;
+					widget = new FieldUniversalWidget(field);
 				}
 			} else if (field instanceof FieldTextAreaTuple) {
-				if (fieldData != null && fieldData instanceof FieldTextAreaTuple) {
+				if (fieldData != null && fieldData instanceof FieldTextAreaTuple && edit) {
 					widget = new FieldTextAreaWidget(
 							(FieldTextAreaTuple) field,
 							(FieldTextAreaDataTuple) fieldData);
 				} else {
-					// TODO display only data
-					continue;
+					widget = new FieldUniversalWidget(field);
 				}
 			} else {
-				continue;
+				widget = new FieldUniversalWidget(field);
 			}
 			widget.updateWidget();
 			
@@ -132,7 +140,10 @@ public class FilledQuestionnaireWidget extends UniversalWidget<FilledQuestionnai
 		deleteButton.setVisible(deletable);
 	}
 
-
+	@UiHandler("editButton")
+	void onEditButtonClick(ClickEvent event) {
+		History.newItem(NAME_EDIT+"," + tuple.getId(),true);;
+	}
 	@UiHandler("saveButton")
 	void onSaveButtonClick(ClickEvent event) {
 		onSave();
