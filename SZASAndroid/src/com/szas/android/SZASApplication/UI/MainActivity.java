@@ -3,35 +3,33 @@ package com.szas.android.SZASApplication.UI;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.szas.android.SZASApplication.Constans;
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
-import com.szas.android.SZASApplication.DBContentProvider;
 import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
 import com.szas.data.QuestionnaireTuple;
@@ -46,27 +44,27 @@ public class MainActivity extends ListActivity {
 	// private LocalDAO<QuestionnaireTuple> questionnaireDAO;
 	private Context context;
 	String[] listViewElementsArray;
-	private Handler handler;
-	private DBContentObserver dbContentObserver;
+	RefreshSyncReceiver refreshSyncReceiver;
+	private IntentFilter intentFilter;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		context = getApplicationContext();
+		refreshSyncReceiver = new RefreshSyncReceiver();
+		intentFilter = new IntentFilter();
+		intentFilter.addAction(Constans.broadcastMessage);
+		registerReceiver(refreshSyncReceiver, intentFilter);
 		startService(new Intent(context, SyncService.class));
-		SharedPreferences.Editor editor = context.getSharedPreferences(
-				"timestamp", Context.MODE_PRIVATE).edit();
-		editor.putLong("timestamp", -1);
-		editor.commit();
-		new GetItemFromDatabase().execute(0);
+		executeTask();
 	}
-	
+
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if(resultCode == Constans.RESULT_EXIT){
+		if (resultCode == Constans.RESULT_EXIT) {
 			MainActivity.this.finish();
 		}
-		
+
 	};
 
 	@Override
@@ -74,6 +72,28 @@ public class MainActivity extends ListActivity {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main_menu, menu);
 		return true;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		unregisterReceiver(refreshSyncReceiver);
+		super.onPause();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		registerReceiver(refreshSyncReceiver, intentFilter);
+		super.onResume();
 	}
 
 	@Override
@@ -99,24 +119,28 @@ public class MainActivity extends ListActivity {
 			return true;
 		case R.id.about_item:
 			try {
-				AboutDialog.AboutDialogBuilder.createAboutWindow(this).show();
+				AlertsDialog.DialogBuilder.createAboutWindow(this).show();
 			} catch (NameNotFoundException e) {
 				e.printStackTrace();
 			}
 			return true;
 		case R.id.help_item:
-
+			try {
+				AlertsDialog.DialogBuilder.createHelpWindow(this,
+						getString(R.string.help1)).show();
+			} catch (NameNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return true;
 		case R.id.refresh_item:
-			refreshSyncAdapter();
-			registerContentObservers();
+			Constans.RefreshSyncAdapter.refreshSyncAdapter(context);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
-	
 	/**
 	 * Click on item in the list
 	 */
@@ -126,51 +150,19 @@ public class MainActivity extends ListActivity {
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
 			Intent i = new Intent(MainActivity.this, SecondActivity.class);
-			i.putExtra("title", ((TextView) view).getText());
+			i.putExtra("title", ((TextView) view.findViewById(R.id.list_item_firstscreen)).getText());
 			i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
 			startActivityForResult(i, 0);
 		}
 	};
 
-	private void refreshSyncAdapter() {
-		Account[] accounts = AccountManager.get(context).getAccounts();
-		ContentResolver.setIsSyncable(accounts[0],
-				"com.szas.android.szasapplication.provider", 1);
-		ContentResolver.requestSync(accounts[0],
-				"com.szas.android.szasapplication.provider", new Bundle());
-		// Account[] accounts =
-		// AccountManager.get(getApplicationContext()).getAccounts();
-		ContentResolver.setSyncAutomatically(accounts[0],
-				"com.szas.android.szasapplication.provider", true);
+	private void executeTask() {
+		new GetItemFromDatabase().execute(0);
 	}
-
-
-	private void registerContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
-				true, dbContentObserver);
-	}
-
-	private void unregisterContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		if (dbContentObserver != null) {
-			cr.unregisterContentObserver(dbContentObserver);
-		}
-	}
-	
 
 	private class GetItemFromDatabase extends
-			AsyncTask<Integer, Integer, ArrayAdapter<String>> {
-		ProgressDialog progressDialog;
+			AsyncTask<Integer, Integer, CustomDepartmentAdapter> {
+		ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
 
 		/*
 		 * (non-Javadoc)
@@ -179,8 +171,6 @@ public class MainActivity extends ListActivity {
 		 */
 		@Override
 		protected void onPreExecute() {
-			super.onPreExecute();
-			progressDialog = new ProgressDialog(MainActivity.this);
 			progressDialog.setTitle(getString(R.string.app_name));
 			progressDialog.setIcon(R.drawable.icon);
 			progressDialog.setMessage(getString(R.string.loading_progressbar));
@@ -190,11 +180,21 @@ public class MainActivity extends ListActivity {
 		/*
 		 * (non-Javadoc)
 		 * 
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(Integer... values) {
+
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * 
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
-		protected ArrayAdapter<String> doInBackground(Integer... params) {
-			ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+		protected CustomDepartmentAdapter doInBackground(Integer... params) {
+			CustomDepartmentAdapter arrayAdapter = new CustomDepartmentAdapter(
 					context, R.layout.main, getItemForList());
 			if (arrayAdapter != null && arrayAdapter.getCount() > 0) {
 				return arrayAdapter;
@@ -203,7 +203,7 @@ public class MainActivity extends ListActivity {
 		}
 
 		@Override
-		protected void onPostExecute(ArrayAdapter<String> arrayAdapter) {
+		protected void onPostExecute(CustomDepartmentAdapter arrayAdapter) {
 			progressDialog.dismiss();
 			if (arrayAdapter != null) {
 				setListAdapter(arrayAdapter);
@@ -213,21 +213,18 @@ public class MainActivity extends ListActivity {
 				Log.v("MainActivity", "ok");
 			} else {
 				String temp = context.getString(R.string.problem_information);
-				arrayAdapter = new ArrayAdapter<String>(
-						context,
-						R.layout.main,
-						new String[] {  temp});
+				arrayAdapter = new CustomDepartmentAdapter(context, R.layout.problem_main, new String[] {  temp});
 				setListAdapter(arrayAdapter);
-				try{
-				registerContentObservers();
-				}
-				catch (Exception e) {
+				try {
+					Constans.RefreshSyncAdapter.refreshSyncAdapter(context);
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
+
 			super.onPostExecute(arrayAdapter);
 		}
-		
+
 		private String[] getItemForList() {
 			ArrayList<String> array = new ArrayList<String>();
 			LocalDAOContener.loadContext(context);
@@ -242,19 +239,76 @@ public class MainActivity extends ListActivity {
 		}
 	}
 
-	private class DBContentObserver extends ContentObserver {
+	private class RefreshSyncReceiver extends BroadcastReceiver {
 
-		public DBContentObserver(Handler handler) {
-			super(handler);
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see
+		 * android.content.BroadcastReceiver#onReceive(android.content.Context,
+		 * android.content.Intent)
+		 */
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			String info = intent.getStringExtra("info");
+			if (info != null) {
+				executeTask();
+			}
 		}
 
-		public void onChange(boolean selfChange) {
-			handler.post(new Runnable() {
-				public void run() {
-					new GetItemFromDatabase().execute(0);
-				}
-			});
-			unregisterContentObservers();
+	}
+
+	public class CustomDepartmentAdapter extends ArrayAdapter<String> {
+
+		String[] objects;
+		private final int textViewResourceId;
+
+		public CustomDepartmentAdapter(Context context, int textViewResourceId,
+				String[] objects) {
+			super(context, textViewResourceId, objects);
+			this.textViewResourceId = textViewResourceId;
+			this.objects = new String[objects.length];
+			this.objects = objects;
+		}
+
+		
+		public int getCount() {
+			return this.objects.length;
+		}
+		
+		public String getItem(int index) {
+			return this.objects[index];
+		}
+
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View row = convertView;
+			if(row == null){
+				LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				row = inflater.inflate(textViewResourceId, parent, false);
+			}
+			int textViewID, iconID;
+			if(R.layout.main == textViewResourceId){
+				textViewID = R.id.list_item_firstscreen;
+				iconID = R.id.department_icon;
+			}
+			else{
+				textViewID = R.id.list_item_firstscreen_problem;
+				iconID = R.id.department_icon_problem;
+			}
+			TextView label = (TextView) row
+					.findViewById(textViewID);
+			label.setText(objects[position]);
+			ImageView icon = (ImageView) row.findViewById(iconID);
+			String information = context
+					.getString(R.string.problem_information);
+			if (information != null && information.equals(objects[position]))
+				icon.setImageResource(R.drawable.sad_icon);
+			else {
+				icon.setImageResource(R.drawable.icon2);
+			}
+			return row;
 		}
 	}
 

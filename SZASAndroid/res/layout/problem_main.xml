@@ -5,20 +5,17 @@
 	android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
 <ImageView
-		android:id="@+id/filled_icon"
+		android:id="@+id/department_icon_problem"
 		android:layout_gravity="left"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:src="@drawable/icon" />
+		android:src="@drawable/icon2"
+		 />
 <TextView  
     xmlns:android="http://schemas.android.com/apk/res/android"  
-    android:id="@+id/list_item_title"  
+    android:id="@+id/list_item_firstscreen_problem"  
     android:layout_gravity="right"
     android:layout_width="fill_parent"  
     android:layout_height="fill_parent"  
-    android:paddingTop="10dip"  
-    android:paddingBottom="10dip"  
-    android:paddingLeft="15dip"  
-    android:textAppearance="?android:attr/textAppearanceLarge"  
-    />
-    </LinearLayout>
+    /></LinearLayout>
+    

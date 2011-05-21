@@ -1,21 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">System Zarządzania Ankietami Szpitalnymi</string>
-    <string name="second_window_title">Oddział:</string>
-    <string name="exit">Wyjście</string>
-    <string name="exit_prompt">Na pewno wyłączyć?</string>
-    <string name="yes">TAK</string>
-    <string name="no">NIE</string>
-    <string name="about">O programie</string>
-    <string name="version_word">Wersja</string>
-    <string name="help">Pomoc</string>   
-    <string name="refresh_elements">Odśwież z sieci</string>
-    <string name="problem_information">Przepraszam. W tej chwili staram się pobrać dane z serwera dla Ciebie. </string>
-    <string name="form_item1">Pusta ankieta</string>
-    <string name="form_item2">Wypełniona ankieta</string>
-    <string name="form_item3">Anuluj</string>
-    <string name="accountlabel">SZAS</string>
-    <string name="loading_progressbar"> Ładowanie elementów. Proszę czekać ... </string>
-    <string name="about_authors">Autorzy:\nJacek Marchwicki - serwer GAE,\nTomasz Merda - aplikacja BADA,\nPaweł Szafer - aplikacja Android.</string>
-    <string name="questionnaire_save_close">Zapisz zmiany i wróć do poprzedniego okna</string>
+	<string name="app_name">System Zarządzania Ankietami Szpitalnymi</string>
+	<string name="second_window_title">Nazwa:</string>
+	<string name="exit">Wyjście</string>
+	<string name="exit_prompt">Na pewno wyłączyć?</string>
+	<string name="yes">TAK</string>
+	<string name="no">NIE</string>
+	<string name="about">O programie</string>
+	<string name="version_word">Wersja</string>
+	<string name="help">Pomoc</string>
+	<string name="refresh_elements">Odśwież z sieci</string>
+	<string name="refresh_elements_short">Sync</string>
+	<string name="problem_information">Przepraszam. W tej chwili staram się pobrać dane z
+		serwera dla Ciebie. </string>
+	<string name="delete_action">Usuń</string>
+	<string name="cancel_action">Anuluj</string>
+	<string name="accountlabel">SZAS</string>
+	<string name="empty_questionnaire">Pusta ankieta</string>
+	<string name="filled_questionnaire">Wypełnione ankiety</string>
+	<string name="loading_progressbar"> Ładowanie elementów. Proszę czekać ... </string>
+	<string name="about_authors">Autorzy:\nJacek Marchwicki - serwer GAE,\nTomasz
+		Merda - aplikacja BADA,\nPaweł Szafer - aplikacja Android.</string>
+	<string name="questionnaire_save_close">Zapisz zmiany i wróć do poprzedniego okna</string>
+	<string name="help1">Aplikacja podczas uruchamiania powinna załadować
+		dane ankiet.\nPojawi się wówczas lista z nazwami ankiet.\nWybór jednej ankiety z listy przeniesie Cię do ekranu z możliwościami wypełnienia pustej ankiety oraz otworzenia/edycji wcześniej wypełnionej ankiety.\nJeżeli chcesz pobrać dane z sieci, wybierz odpowiednią opcję z menu.\nPodczas pierwszego uruchomienia aplikacja wyświetli komunikat: "Przepraszam. W tej chwili staram się pobrać dane z serwera dla Ciebie.".\nPoczekaj chwilę, aplikacja pobiera wymagane dane z serwera.</string>
+	<string name="help2">Aplikacja ładuje wybrany przez Ciebie rodzaj ankiety.\nW oknie widoczne są 2 nagłówki, "Pusta ankieta" oraz "Wypełniona ankieta".\nW przypadku wybrania ankiety z pierwszej sekcji, wówczas pojawi się okno umożliwiające wypełnienie pustej ankiety.\nW przypadku wybrania jednej z wypełnionych ankiet (jeżeli takie nie istnieją, lista  będzie pusta), pojawi się okno umożliwiające edycję ankiety.\nDługie przytrzymanie na wypełnionej ankiecie wyświetli podręczne menu z opcją usunięcia ankiety.</string>
+	<string name="questionnaire_context_menu_delete">Usuń ankietę</string>
+	<string name="questionnaire_context_menu_cancel">Anuluj</string>
 </resources>

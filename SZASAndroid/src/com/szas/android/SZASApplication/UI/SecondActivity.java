@@ -1,37 +1,36 @@
 package com.szas.android.SZASApplication.UI;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
-import android.content.ContentResolver;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.database.ContentObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.view.LayoutInflater;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.View.OnCreateContextMenuListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.Constans;
-import com.szas.android.SZASApplication.DBContentProvider;
+import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.QuestionnaireTypeRow;
 import com.szas.android.SZASApplication.R;
 import com.szas.data.FieldTextBoxTuple;
@@ -52,19 +51,23 @@ public class SecondActivity extends ListActivity {
 	private String questionnaryName;
 	List<QuestionnaireTuple> questionnaireTuples;
 	List<FilledQuestionnaireTuple> filledQuestionnaireTuples;
-	List<QuestionnaireTypeRow> mQuestionnaireTypeRows;
+	private static List<QuestionnaireTypeRow> mQuestionnaireTypeRows;
 	private Context context;
-	private DBContentObserver dbContentObserver;
-	private Handler handler;
-
+	private IntentFilter intentFilter;
+	
 	/**
 	 * Items showed in AlertDialog ListAdapter
 	 */
 	String[] items;
+	private BroadcastReceiver refreshSyncReceiver;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		refreshSyncReceiver = new RefreshSyncReceiver();
+		intentFilter = new IntentFilter();
+		intentFilter.addAction(Constans.broadcastMessage);
+		registerReceiver(refreshSyncReceiver, intentFilter);
 		this.context = getApplicationContext();
 		String text = getIntent().getExtras().getString("title");
 		questionnaryName = getIntent().getExtras()
@@ -79,6 +82,25 @@ public class SecondActivity extends ListActivity {
 			new GetItemFromDatabase().execute(1);
 		}
 	};
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		registerReceiver(refreshSyncReceiver, intentFilter);
+		super.onResume();
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.ListActivity#onDestroy()
+	 */
+	@Override
+	protected void onDestroy() {
+		unregisterReceiver(refreshSyncReceiver);
+		super.onDestroy();
+	}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -109,23 +131,63 @@ public class SecondActivity extends ListActivity {
 			return true;
 		case R.id.about_item:
 			try {
-				AboutDialog.AboutDialogBuilder.createAboutWindow(this).show();
+				AlertsDialog.DialogBuilder.createAboutWindow(this).show();
 			} catch (NameNotFoundException e) {
 				e.printStackTrace();
 			}
 			return true;
 		case R.id.help_item:
-
+			try {
+				AlertsDialog.DialogBuilder.createHelpWindow(this, getString(R.string.help2)).show();
+			} catch (NameNotFoundException e) {
+				e.printStackTrace();
+			}
 			return true;
 		case R.id.refresh_item:
-			refreshSyncAdapter();
-			registerContentObservers();
+			Constans.RefreshSyncAdapter.refreshSyncAdapter(context);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
+	
+	private void executeTask(){
+		new GetItemFromDatabase().execute(0);
+	}
 
+	private OnCreateContextMenuListener onCreateContextMenuListener = new OnCreateContextMenuListener() {
+		
+		@Override
+		public void onCreateContextMenu(ContextMenu menu, View v,
+				ContextMenuInfo menuInfo) {
+			AdapterContextMenuInfo info =
+	            (AdapterContextMenuInfo) menuInfo;
+			long idd = info.id;
+			if(idd > 2){
+				MenuInflater inflater = getMenuInflater();
+				inflater.inflate(R.menu.context_menu, menu);
+			}
+		}
+	};
+	
+	public boolean onContextItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.deleteitem:
+			AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+			long id = info.id;
+			if(id>2){
+				id -= 2;
+				deleteItem(id);
+				new GetItemFromDatabase().execute(1);
+			}
+			return true;
+		case R.id.cancelitem:
+			return false;
+		default:
+			return super.onContextItemSelected(item);
+		}
+	};
+	
 	/**
 	 * List of departments item clicked
 	 */
@@ -136,10 +198,13 @@ public class SecondActivity extends ListActivity {
 				long id) {
 			Intent i = new Intent(SecondActivity.this,
 					QuestionnaireActivity.class);
-
+			if(id>2){
+				id -= 2;
+			}
+			else if(id == 1) 
+				id = 0;
 			i.putExtra("title", ((TextView) view
-					.findViewById(R.id.second_screen_textview)).getText());
-
+					.findViewById(R.id.list_item_title)).getText());
 			long _id = mQuestionnaireTypeRows.get((int) id).getId();
 			i.putExtra("questionnaryID", mQuestionnaireTypeRows.get(0).getId());
 			if (id > 0)
@@ -149,41 +214,14 @@ public class SecondActivity extends ListActivity {
 			startActivityForResult(i, 1);
 		}
 	};
-
-	private void refreshSyncAdapter() {
-		Account[] accounts = AccountManager.get(context).getAccounts();
-		ContentResolver.setIsSyncable(accounts[0],
-				"com.szas.android.szasapplication.provider", 1);
-		ContentResolver.setSyncAutomatically(accounts[0],
-				"com.szas.android.szasapplication.provider", true);
-		ContentResolver.requestSync(accounts[0],
-				"com.szas.android.szasapplication.provider", new Bundle());
-	}
-
-	private void registerContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriSyncedElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriInProgressSyncingElements,
-				true, dbContentObserver);
-		cr.registerContentObserver(
-				DBContentProvider.DatabaseContentHelper.contentUriNotSyncedElements,
-				true, dbContentObserver);
-	}
-
-	private void unregisterContentObservers() {
-		ContentResolver cr = getContentResolver();
-		dbContentObserver = new DBContentObserver(handler);
-		if (dbContentObserver != null) {
-			cr.unregisterContentObserver(dbContentObserver);
-		}
+	
+	private void deleteItem(long id){
+		long _id = mQuestionnaireTypeRows.get((int) id).getId();
+		LocalDAOContener.deleteFilledQuestionnaireTuple(LocalDAOContener.getFilledQuestionnaireTupleById(_id));
 	}
 
 	private class GetItemFromDatabase extends
-			AsyncTask<Integer, Integer, CustomArrayAdapter> {
+			AsyncTask<Integer, Integer, List<QuestionnaireTypeRow>> {
 		ProgressDialog progressDialog;
 
 		/*
@@ -207,32 +245,38 @@ public class SecondActivity extends ListActivity {
 		 * @see android.os.AsyncTask#doInBackground(Params[])
 		 */
 		@Override
-		protected CustomArrayAdapter doInBackground(Integer... params) {
+		protected List<QuestionnaireTypeRow> doInBackground(Integer... params) {
 			if (params[0] == 1) {
 				LocalDAOContener.refreshFilledQuestionnaireTuples();
 			}
-			CustomArrayAdapter arrayAdapter = new CustomArrayAdapter(context,
-					R.layout.second_screen, getItemForList());
-			if (arrayAdapter != null && !arrayAdapter.isEmpty()) {
-				return arrayAdapter;
-			}
+			List<QuestionnaireTypeRow> itemForList = getItemForList();
+			if(itemForList.size()>0)
+				return itemForList;
 			return null;
 		}
 
-		protected void onPostExecute(CustomArrayAdapter arrayAdapter) {
+		protected void onPostExecute(List<QuestionnaireTypeRow> itemForList) {
 			progressDialog.dismiss();
-			if (arrayAdapter != null) {
+			if (itemForList != null) {
+
+				SeparatedListAdapter arrayAdapter = new SeparatedListAdapter(context);
+				ArrayList<QuestionnaireTypeRow> questionnaireTypeRows = new ArrayList<QuestionnaireTypeRow>();
+				questionnaireTypeRows.add(itemForList.get(0));
+				itemForList.remove(0);
+				arrayAdapter.addSection(getString(R.string.empty_questionnaire), new CustomArrayAdapter(context, R.layout.second_screen,questionnaireTypeRows));
+				arrayAdapter.addSection(getString(R.string.filled_questionnaire), new CustomArrayAdapter(context, R.layout.second_screen, itemForList));
 				setListAdapter(arrayAdapter);
 				ListView lv = getListView();
+				
 				lv.setTextFilterEnabled(true);
 				lv.setOnItemClickListener(onItemClickListener);
+				lv.setOnCreateContextMenuListener(onCreateContextMenuListener);
 			} else {
 				ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(
 						context,
 						R.layout.main,
 						new String[] { getString(R.string.problem_information) });
 				setListAdapter(arrayAdapter2);
-				registerContentObservers();
 			}
 		}
 
@@ -267,64 +311,24 @@ public class SecondActivity extends ListActivity {
 				questionnaireTypeRows.add(new QuestionnaireTypeRow(
 						filledQuestionnaireTuple.getName(), 1, id2, fullName));
 			}
-			mQuestionnaireTypeRows = questionnaireTypeRows;
+			mQuestionnaireTypeRows = new ArrayList<QuestionnaireTypeRow>(questionnaireTypeRows);
+			Collections.copy(mQuestionnaireTypeRows, questionnaireTypeRows);
 			return questionnaireTypeRows;
 		}
 	}
+	
+	private class RefreshSyncReceiver extends BroadcastReceiver{
 
-	private class CustomArrayAdapter extends ArrayAdapter<QuestionnaireTypeRow> {
-
-		List<QuestionnaireTypeRow> objects;
-
-		/**
-		 * @param context
-		 * @param textViewResourceId
-		 * @param objects
-		 */
-		public CustomArrayAdapter(Context context, int textViewResourceId,
-				List<QuestionnaireTypeRow> objects) {
-			super(context, textViewResourceId, objects);
-			this.objects = objects;
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.widget.ArrayAdapter#getView(int, android.view.View,
-		 * android.view.ViewGroup)
+		/* (non-Javadoc)
+		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
 		 */
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent) {
-			LayoutInflater layoutInflater = getLayoutInflater();
-			View row = layoutInflater.inflate(R.layout.second_screen, parent,
-					false);
-			QuestionnaireTypeRow questionnaireTypeRow = objects.get(position);
-			TextView textView = (TextView) row
-					.findViewById(R.id.second_screen_textview);
-			int type = questionnaireTypeRow.getType();
-			if (type == 0)
-				textView.setBackgroundColor(android.graphics.Color.BLACK);
-			else if (type == 1)
-				textView.setBackgroundColor(android.graphics.Color.DKGRAY);
-			textView.setText(questionnaireTypeRow.getFullName().equals("") ? questionnaireTypeRow
-					.getName() : questionnaireTypeRow.getFullName());
-			return row;
+		public void onReceive(Context context, Intent intent) {
+			String info = intent.getStringExtra("info");
+			if(info!= null){
+				executeTask(); 
+			}
 		}
-	}
-
-	private class DBContentObserver extends ContentObserver {
-
-		public DBContentObserver(Handler handler) {
-			super(handler);
-		}
-
-		public void onChange(boolean selfChange) {
-			handler.post(new Runnable() {
-				public void run() {
-					new GetItemFromDatabase().execute(1);
-				}
-			});
-			unregisterContentObservers();
-		}
+		
 	}
 }

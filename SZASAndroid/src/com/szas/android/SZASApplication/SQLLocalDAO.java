@@ -398,6 +398,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			contentValues.put(DatabaseContentHelper.DBCOL_T,
 					new JSONSerializer().prettyPrint(true).include("*")
 							.serialize(localTuple));
+			contentValues.put(DatabaseContentHelper.DBCOL_type, name);
 			if (inElementsToSyncCursor != null
 					&& inElementsToSyncCursor.getCount() > 0) {
 				contentResolver.update(
@@ -591,8 +592,10 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	 */
 	@Override
 	public long getLastTimestamp() {
-		return context.getSharedPreferences("timestamp", -1).getLong(
-				"timestamp", Context.MODE_PRIVATE);
+		SharedPreferences sharedPreferences = context.getSharedPreferences("timestamp", Context.MODE_PRIVATE);
+		long timestamp = sharedPreferences.getLong(
+				"timestamp"+name, -1); 
+		return timestamp;
 	}
 
 	/*
@@ -604,7 +607,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	public void setLastTimestamp(long lastTimestamp) {
 		SharedPreferences.Editor editor = context.getSharedPreferences(
 				"timestamp", Context.MODE_PRIVATE).edit();
-		editor.putLong("timestamp", lastTimestamp);
+		
+		editor.putLong("timestamp"+name, lastTimestamp);
 		editor.commit();
 	}
 
@@ -617,6 +621,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 	public void setSyncedElements(ArrayList<RemoteTuple<T>> syncedElements) {
 		DBContentProvider
 				.cleanTable(DatabaseContentHelper.tableNameInProgressSyncingElements);
+		ArrayList<ContentValues> arrayListContentValues = new ArrayList<ContentValues>();
 		for (RemoteTuple<T> remoteTuple : syncedElements) {
 			T remoteElement = remoteTuple.getElement();
 			long id = remoteElement.getId();
@@ -627,22 +632,24 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 			if (remoteTuple.isDeleted() == false) {
 				ContentValues contentValues = new ContentValues();
 				contentValues.put(DatabaseContentHelper.DBCOL_ID, id);
-				String type = null;
 				String serialized = new JSONSerializer().prettyPrint(true)
 						.include("*").serialize(remoteTuple);
-				try {
-					type = new JSONObject(serialized).getJSONObject("element")
-							.getString("class");
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
 				contentValues.put(DatabaseContentHelper.DBCOL_type,
-						type != null ? type : "");
+						name);
 				contentValues.put(DatabaseContentHelper.DBCOL_T, serialized);
-				contentResolver.insert(
-						DatabaseContentHelper.contentUriSyncedElements,
-						contentValues);
+				arrayListContentValues.add(contentValues);
 			}
+		}
+		int size = arrayListContentValues.size();
+		if(size == 1){
+		contentResolver.insert(
+				DatabaseContentHelper.contentUriSyncedElements,
+				arrayListContentValues.get(0));
+		}
+		else if(size > 1){
+			ContentValues[] contentValuesArray = new ContentValues[size];
+			arrayListContentValues.toArray(contentValuesArray);
+			contentResolver.bulkInsert(DatabaseContentHelper.contentUriSyncedElements, contentValuesArray);
 		}
 		notifyContentObservers(true);
 	}

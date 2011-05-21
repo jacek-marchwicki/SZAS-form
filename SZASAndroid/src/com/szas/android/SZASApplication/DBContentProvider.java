@@ -158,6 +158,36 @@ public class DBContentProvider extends ContentProvider {
 		}
 		throw new SQLException("Failed to insert ROW into " + arg0);
 	}
+	
+	/* (non-Javadoc)
+	 * @see android.content.ContentProvider#bulkInsert(android.net.Uri, android.content.ContentValues[])
+	 */
+	@Override
+	public int bulkInsert(Uri uri, ContentValues[] values) {
+		Contener contener = getUriMatcherAndSqliteDatabase(uri, true);
+		if (contener == null)
+			return -1;
+		SQLiteDatabase sqLiteDatabase = contener.getSqLiteDatabase();
+		String tableName = contener.getTableName();
+		UriMatcher sUriMatcher = contener.getsUriMatcher();
+		Uri contentUri = contener.getContentUri();
+		switch(sUriMatcher.match(uri)){
+		case DB_TABLE_ID:
+	                long rowID = 0;
+	                long notifyUri = -1;
+				for (ContentValues contentValues : values){
+					 notifyUri = sqLiteDatabase.insert(tableName, null, contentValues);
+					 ++rowID;
+				}
+				if (rowID > 0) {
+					Uri noteUri = ContentUris.withAppendedId(contentUri, notifyUri);
+					getContext().getContentResolver().notifyChange(noteUri, null);
+					return (int) rowID;
+				}
+		default:
+			throw new UnsupportedOperationException("unsupported uri: " + contentUri);
+		}
+		}
 
 	@Override
 	public boolean onCreate() {
