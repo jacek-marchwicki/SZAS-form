@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 
 import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
@@ -20,25 +23,63 @@ import com.szas.sync.local.LocalDAO;
  */
 public class DAOClass<T extends Tuple> {
 
+	
+
 	public static class LocalDAOContener{
 		private static LocalDAO<QuestionnaireTuple> questionnaireDAO;
 		private static LocalDAO<FilledQuestionnaireTuple> filledQuestionnaireDAO;
 		private static Collection<QuestionnaireTuple> questionnaireTuples;
 		private static Collection<FilledQuestionnaireTuple> filledQuestionnaireTuples;
+		private static RefreshSyncReceiver refreshSyncReceiver = new RefreshSyncReceiver();
+		private static IntentFilter intentFilter;
+		private static Context context;
 		
 		public static void loadContext(Context context){
+			LocalDAOContener.context = context;
 			questionnaireDAO = new SQLLocalDAO<QuestionnaireTuple>(context, "com.szas.data.QuestionnaireTuple");
 			filledQuestionnaireDAO = new SQLLocalDAO<FilledQuestionnaireTuple>(context, "com.szas.data.FilledQuestionnaireTuple");
 			refreshQuestionnaireTuples();
-			refreshFilledQuestionnaireTuples();
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					refreshFilledQuestionnaireTuples();		
+				}
+			}).start();
+			intentFilter = new IntentFilter();
+			intentFilter.addAction(Constans.broadcastMessage);
+			LocalDAOContener.context.registerReceiver(refreshSyncReceiver, intentFilter);
 		}
 		
+		private static Collection<QuestionnaireTuple> copyOfQuestionnaireTuples;
 		public static void refreshQuestionnaireTuples(){
-			setQuestionnaireTuples(getAllQuestionnaireTuples());
+			if(questionnaireTuples != null){
+				copyOfQuestionnaireTuples = new ArrayList<QuestionnaireTuple>();
+				copyOfQuestionnaireTuples.addAll(questionnaireTuples);
+				setQuestionnaireTuples(getAllQuestionnaireTuples());
+			if(!questionnaireTuples.equals(copyOfQuestionnaireTuples))
+				sendMessage(Constans.changesQuestionnaireMessage, "");
+			}
+			else
+				setQuestionnaireTuples(getAllQuestionnaireTuples());
 		}
 		
+		public static void sendMessage(String action, String information){
+			Intent i = new Intent(action);
+			i.putExtra("info", information);
+			LocalDAOContener.context.sendBroadcast(i);
+		}
+		
+		private static Collection<FilledQuestionnaireTuple> copyOfFilledQuestionnaireTuples;
 		public static void refreshFilledQuestionnaireTuples(){
-			setFilledQuestionnaireTuples(getAllFilledQuestionnaireTuples());
+			if(filledQuestionnaireTuples != null){
+				copyOfFilledQuestionnaireTuples = new ArrayList<FilledQuestionnaireTuple>();
+				copyOfFilledQuestionnaireTuples.addAll(filledQuestionnaireTuples);
+				setFilledQuestionnaireTuples(getAllFilledQuestionnaireTuples());
+				if(!filledQuestionnaireTuples.equals(copyOfFilledQuestionnaireTuples))
+					sendMessage(Constans.changesFilledMessage, "filled");
+			}
+			else
+				setFilledQuestionnaireTuples(getAllFilledQuestionnaireTuples());
 		}
 		
 		private static Collection<QuestionnaireTuple> getAllQuestionnaireTuples(){
@@ -88,7 +129,7 @@ public class DAOClass<T extends Tuple> {
 		
 		public static Collection<FilledQuestionnaireTuple> getFilledQuestionnaireTupleByName(String name){
 			Collection<FilledQuestionnaireTuple> collection = new ArrayList<FilledQuestionnaireTuple>();
-			if(filledQuestionnaireTuples.isEmpty())
+			if(filledQuestionnaireTuples == null || filledQuestionnaireTuples.isEmpty())
 				refreshFilledQuestionnaireTuples();
 			for(FilledQuestionnaireTuple filledQuestionnaireTuple : filledQuestionnaireTuples){
 				if(filledQuestionnaireTuple.getName().equals(name))
@@ -133,6 +174,26 @@ public class DAOClass<T extends Tuple> {
 				updateFilledQuestionnaireTuple(filledQuestionnaireTuple);
 			else
 				insertFilledQuestionnaireTuple(filledQuestionnaireTuple);
+		}
+		
+		private static class RefreshSyncReceiver extends BroadcastReceiver {
+
+			/*
+			 * (non-Javadoc)
+			 * 
+			 * @see
+			 * android.content.BroadcastReceiver#onReceive(android.content.Context,
+			 * android.content.Intent)
+			 */
+			@Override
+			public void onReceive(Context context, Intent intent) {
+				String info = intent.getStringExtra("info");
+				if (info != null) {
+					refreshQuestionnaireTuples();
+					refreshFilledQuestionnaireTuples();
+				}
+			}
+
 		}
 	}
 	

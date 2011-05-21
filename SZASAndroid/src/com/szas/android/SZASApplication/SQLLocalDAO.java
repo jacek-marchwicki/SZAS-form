@@ -203,7 +203,8 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				LocalTuple<T> localTuple = new JSONDeserializer<LocalTuple<T>>()
 						.deserialize(c1
 								.getString(DatabaseContentHelper.DBCOL_T_INDEX));
-				return localTuple.getElement();
+				T element = localTuple.getElement();
+				return element;
 			}
 
 			// in progress

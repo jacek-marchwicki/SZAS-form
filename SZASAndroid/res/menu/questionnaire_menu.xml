@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/saveclose" android:title="@string/questionnaire_save_close"></item>
+    <item android:id="@+id/saveclose" android:title="@string/questionnaire_save_close" android:icon="@android:drawable/ic_menu_save"></item>
 </menu>

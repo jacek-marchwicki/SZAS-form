@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
@@ -25,6 +26,8 @@ import android.widget.TextView;
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
 import com.szas.data.FieldDataTuple;
+import com.szas.data.FieldIntegerBoxDataTuple;
+import com.szas.data.FieldIntegerBoxTuple;
 import com.szas.data.FieldTextAreaDataTuple;
 import com.szas.data.FieldTextAreaTuple;
 import com.szas.data.FieldTextBoxDataTuple;
@@ -94,8 +97,10 @@ public class QuestionnaireActivity extends Activity {
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see android.app.Activity#onResume()
 	 */
 	@Override
@@ -103,16 +108,16 @@ public class QuestionnaireActivity extends Activity {
 		alreadySaved = false;
 		super.onResume();
 	}
-	
-	private void saveAll(){
+
+	private void saveAll() {
 		int childCount = linear.getChildCount();
 		for (int i = 0; i < childCount; ++i) {
 			View view = linear.getChildAt(i);
-			
-			if(view.getClass() == EditText.class){
-				insertChanges((EditText)view);
+
+			if (view.getClass() == EditText.class) {
+				insertChanges((EditText) view);
 			} else if (view.getClass() == MultiAutoCompleteTextView.class) {
-				insertChanges((MultiAutoCompleteTextView)view);
+				insertChanges((MultiAutoCompleteTextView) view);
 			}
 		}
 		saveAllChanges();
@@ -125,57 +130,59 @@ public class QuestionnaireActivity extends Activity {
 	 */
 	@Override
 	public void onBackPressed() {
-		if (changed > 0){
-			if(!alreadySaved) {
+		if (changed > 0) {
+			if (!alreadySaved) {
 				saveAll();
 				alreadySaved = true;
 			}
-			setResult(RESULT_OK); 
-	}
-		else
+			setResult(RESULT_OK);
+		} else
 			setResult(RESULT_CANCELED);
 		super.onBackPressed();
 	}
-	
-	private void saveChanges(EditText editText){
+
+	private void saveChanges(EditText editText) {
 		insertChanges(editText);
 		saveAllChanges();
 	}
-	
+
 	private void insertChanges(EditText editText) {
 		++changed;
 		if (filledQuestionnaireTuple == null) {
 			filledQuestionnaireTuple = questionnaireTuple.getFilled();
 		}
 		filledFields = filledQuestionnaireTuple.getFilledFields();
-			for (FieldTuple fieldTuple : filledFields)
-				if (fieldTuple.getName().equals(editText.getTag(R.id.nameTag).toString())) {
-					((FieldTextBoxTuple) fieldTuple).setValue((editText
-							.getText()).toString());
-					break;
-				}
-			filledQuestionnaireTuple.setFilledFields(filledFields);
+		for (FieldTuple fieldTuple : filledFields)
+			if (fieldTuple.getName().equals(
+					editText.getTag(R.id.nameTag).toString())) {
+				((FieldTextBoxTuple) fieldTuple).setValue((editText.getText())
+						.toString());
+				break;
+			}
+		filledQuestionnaireTuple.setFilledFields(filledFields);
 	}
-	
+
 	private void insertChanges(MultiAutoCompleteTextView editText) {
 		++changed;
 		if (filledQuestionnaireTuple == null) {
 			filledQuestionnaireTuple = questionnaireTuple.getFilled();
 		}
 		filledFields = filledQuestionnaireTuple.getFilledFields();
-			for (FieldTuple fieldTuple : filledFields)
-				if (fieldTuple.getName().equals(editText.getTag(R.id.nameTag).toString())) {
-					((FieldTextAreaTuple) fieldTuple).setValue((editText
-							.getText()).toString());
-					break;
-				}
-			filledQuestionnaireTuple.setFilledFields(filledFields);
+		for (FieldTuple fieldTuple : filledFields)
+			if (fieldTuple.getName().equals(
+					editText.getTag(R.id.nameTag).toString())) {
+				((FieldTextAreaTuple) fieldTuple).setValue((editText.getText())
+						.toString());
+				break;
+			}
+		filledQuestionnaireTuple.setFilledFields(filledFields);
 	}
 
-	private void saveAllChanges(){
-		LocalDAOContener.insertUpdateFilledQuestionnaireTuple(filledQuestionnaireTuple);
+	private void saveAllChanges() {
+		LocalDAOContener
+				.insertUpdateFilledQuestionnaireTuple(filledQuestionnaireTuple);
 	}
-	
+
 	private class CustomOnFocusChangeListener implements
 			View.OnFocusChangeListener {
 		EditText editText;
@@ -200,13 +207,13 @@ public class QuestionnaireActivity extends Activity {
 		public void onFocusChange(View v, boolean hasFocus) {
 			if (!hasFocus && counter > 0) {
 				counter = 0;
-				if(editText != null){
+				if (editText != null) {
 					String text = editText.getText().toString();
-				if (text != null && !text.equals("")) {
-					saveChanges(editText);
-				} else if (multiAutoCompleteTextView != null) {
-					++changed;
-				}
+					if (text != null && !text.equals("")) {
+						saveChanges(editText);
+					} else if (multiAutoCompleteTextView != null) {
+						++changed;
+					}
 				}
 			}
 		}
@@ -241,7 +248,6 @@ public class QuestionnaireActivity extends Activity {
 
 		ProgressDialog progressDialog;
 		ArrayList<FieldDataTuple> questionnaireFields;
-	
 
 		/*
 		 * (non-Javadoc)
@@ -254,7 +260,12 @@ public class QuestionnaireActivity extends Activity {
 			progressDialog.setTitle(getString(R.string.app_name));
 			progressDialog.setIcon(R.drawable.icon);
 			progressDialog.setMessage(getString(R.string.loading_progressbar));
-			progressDialog.show();
+			QuestionnaireActivity.this.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					progressDialog.show();
+				}
+			});
 			super.onPreExecute();
 		}
 
@@ -266,7 +277,8 @@ public class QuestionnaireActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(Integer... params) {
 			if (_filledId == null) {
-				questionnaireTuple = LocalDAOContener.getQuestionnaireTupleById(_id);
+				questionnaireTuple = LocalDAOContener
+						.getQuestionnaireTupleById(_id);
 				questionnaireName = questionnaireTuple.getName();
 				this.questionnaireFields = questionnaireTuple.getFields();
 				return true;
@@ -288,83 +300,50 @@ public class QuestionnaireActivity extends Activity {
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result) {
-				for (FieldDataTuple fieldDataTuple : questionnaireFields) {
-					if (fieldDataTuple instanceof FieldTextBoxDataTuple) {
-						text = new TextView(QuestionnaireActivity.this);
-						String name = fieldDataTuple.getName().toString();
-						text.setText(name);
-						editText = new EditText(QuestionnaireActivity.this);
-						boolean isOnList = ((FieldTextBoxDataTuple) fieldDataTuple).isOnList();
-						if(isOnList){
-							editText.setBackgroundColor(android.graphics.Color.CYAN);
-						}
-						editText.addTextChangedListener(new CustomTextWatcher());
-						editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-								editText));
-						editText.setTag(R.id.nameTag, name);
-						editText.setTag(R.id.onListTag, Boolean.toString(isOnList));
-						linear.addView(text);
-						linear.addView(editText);
-					} else if (fieldDataTuple instanceof FieldTextAreaDataTuple) {
-						text = new TextView(QuestionnaireActivity.this);
-						String name = fieldDataTuple.getName().toString();
-						text.setText(name);
-						multiAutoCompleteTextView = new MultiAutoCompleteTextView(
-								QuestionnaireActivity.this);
-						multiAutoCompleteTextView
-								.addTextChangedListener(new CustomTextWatcher());
-						multiAutoCompleteTextView
-						.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-								multiAutoCompleteTextView));
-						multiAutoCompleteTextView.setTag(R.id.nameTag, name);
-						linear.addView(text);
-						linear.addView(multiAutoCompleteTextView);
-					}
-				}
+				loadText(questionnaireFields);
 			} else {
-				for (FieldTuple fieldTuple : filledFields)
-					if (fieldTuple instanceof FieldTextBoxTuple) {
-						text = new TextView(QuestionnaireActivity.this);
-						String name = fieldTuple.getName().toString();
-						text.setText(name);
-						editText = new EditText(QuestionnaireActivity.this);
-						boolean isOnList = fieldTuple.isOnList();
-						if(isOnList)
-							editText.setBackgroundColor(android.graphics.Color.CYAN);
-						String txt = ((FieldTextBoxTuple) fieldTuple)
-								.getValue();
-						if (txt != null)
-							editText.setText(txt);
-						editText.addTextChangedListener(new CustomTextWatcher());
-						editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-								editText));
-						editText.setTag(R.id.nameTag, name);
-						editText.setTag(R.id.onListTag, Boolean.toString(isOnList));
-						linear.addView(text);
-						linear.addView(editText);
-					} else if (fieldTuple instanceof FieldTextAreaTuple) {
-						text = new TextView(QuestionnaireActivity.this);
-						String name = fieldTuple.getName().toString();
-						text.setText(name);
-						multiAutoCompleteTextView = new MultiAutoCompleteTextView(
-								QuestionnaireActivity.this);
-						String txt = ((FieldTextAreaTuple) fieldTuple)
-								.getValue();
-						if (txt != null)
-							multiAutoCompleteTextView.setText(txt);
-						multiAutoCompleteTextView
-								.addTextChangedListener(new CustomTextWatcher());
-						multiAutoCompleteTextView
-								.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-										multiAutoCompleteTextView));
-						multiAutoCompleteTextView.setTag(R.id.nameTag, name);
-						linear.addView(text);
-						linear.addView(multiAutoCompleteTextView);
-					}
+				loadText(filledFields);
 			}
 			setContentView(sv);
 			progressDialog.dismiss();
 			super.onPostExecute(result);
+		}
+
+	}
+
+	private void loadText(ArrayList<?> objects) {
+		for (Object object : objects) {
+			String name = ((FieldTuple) object).getName().toString();
+			text = new TextView(QuestionnaireActivity.this);
+			text.setText(name);
+			boolean isOnList = ((FieldTuple) object).isOnList();
+			if ((object instanceof FieldTextBoxDataTuple)
+					|| (object instanceof FieldTextBoxTuple)) {
+				editText = new EditText(QuestionnaireActivity.this);
+			} else if ((object instanceof FieldTextAreaTuple)
+					|| (object instanceof FieldTextAreaDataTuple)) {
+				editText = new MultiAutoCompleteTextView(
+						QuestionnaireActivity.this);
+				((MultiAutoCompleteTextView) editText).setSingleLine(false);
+				editText.setMaxLines(4);
+				editText.setMinLines(2);
+				editText.setScrollbarFadingEnabled(true);
+			} else if ((object instanceof FieldIntegerBoxTuple) || (object instanceof FieldIntegerBoxDataTuple)){
+				editText = new EditText(QuestionnaireActivity.this);
+				editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
+			}
+			if (isOnList)
+				editText.setBackgroundColor(android.graphics.Color.CYAN);
+			String txt = ((FieldTuple) object).getText();
+			if (txt != null)
+				editText.setText(txt);
+			editText.addTextChangedListener(new CustomTextWatcher());
+			editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
+					editText));
+			editText.setTag(R.id.nameTag, name);
+			editText.setTag(R.id.onListTag, Boolean.toString(isOnList));
+			linear.addView(text);
+			linear.addView(editText);
 		}
 
 	}

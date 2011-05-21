@@ -17,7 +17,8 @@ import android.content.Context;
 public class Constans {
 
 	public static final String broadcastMessage = "com.szas.android.szasapplication.broadcast";
-	
+	public static final String changesQuestionnaireMessage = "com.szas.android.szasapplication.changes";
+	public static final String changesFilledMessage = "com.szas.android.szasapplication.filledchanges";
 	/**
 	 * Account type to get credentials
 	 */
