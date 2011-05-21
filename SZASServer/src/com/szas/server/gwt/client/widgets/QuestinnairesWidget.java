@@ -58,6 +58,7 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 		private final QuestionnaireTuple questionnaireTuple;
 
 		public MyTupleList(QuestionnaireTuple questionnaireTuple) {
+			super();
 			this.questionnaireTuple = questionnaireTuple;
 		}
 

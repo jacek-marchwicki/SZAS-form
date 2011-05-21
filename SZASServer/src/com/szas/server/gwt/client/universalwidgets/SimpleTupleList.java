@@ -1,5 +1,6 @@
 package com.szas.server.gwt.client.universalwidgets;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,8 +28,8 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 
 	private ProvidesKey<T> providesKey;
 	private SingleSelectionModel<T> selectionModel;
-	private List<T> list;
 	private DAOObserver contentObserver;
+	private ListDataProvider<T> listDataProvider;
 	protected abstract void addColumns(CellTable<T> cellTable2);
 	protected abstract LocalDAO<T> getLocalDAO();
 	protected abstract String getListName();
@@ -54,9 +55,8 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 	}
 
 	private void createDataProvider() {
-		ListDataProvider<T> listDataProvider = new ListDataProvider<T>();
+		listDataProvider = new ListDataProvider<T>();
 		listDataProvider.addDataDisplay(this);
-		list =listDataProvider.getList();
 	}
 
 	public SimpleTupleList() {
@@ -72,14 +72,13 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 
 	public void daoUpdated() {
 		Collection<T> tuples = getLocalDAO().getAll();
-		this.setRowCount(tuples.size(), true);
-		while (list.size() != 0)
-			list.remove(0);
+		List<T> list = new ArrayList<T>();
 		for (T tuple : tuples) {
 			if (!filter(tuple))
 				continue;
 			list.add(tuple);
 		}
+		listDataProvider.setList(list);
 	}
 
 	@Override
