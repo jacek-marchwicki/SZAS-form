@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.client.History;
+import com.google.gwt.view.client.CellPreviewEvent;
+import com.google.gwt.view.client.CellPreviewEvent.Handler;
 import com.google.gwt.view.client.HasData;
 import com.google.gwt.view.client.ListDataProvider;
 import com.google.gwt.view.client.ProvidesKey;
@@ -61,17 +63,11 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 
 	public SimpleTupleList() {
 		super(new UniversalProvidesKey<T>());
-		providesKey = getKeyProvider();
-		
-
-		addColumns(this);
-
-		selectionModel = createSelectionModel();
-		this.setSelectionModel(selectionModel);
-
-		createDataProvider(this);
 	}
 
+	protected CellPreviewEvent.Handler<T> getSelectionEventManager() {
+		return null;
+	}
 	protected boolean filter(T tuple) {
 		return true;
 	}
@@ -91,6 +87,15 @@ public abstract class SimpleTupleList<T extends Tuple> extends CellTable<T> {
 	@Override
 	protected void onAttach() {
 		super.onAttach();
+		providesKey = getKeyProvider();
+
+
+		addColumns(this);
+
+		selectionModel = createSelectionModel();
+		this.setSelectionModel(selectionModel, getSelectionEventManager());
+
+		createDataProvider(this);
 		daoUpdated();
 		contentObserver = new DAOObserver() {
 

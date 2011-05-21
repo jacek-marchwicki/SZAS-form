@@ -54,15 +54,6 @@ public class SyncNoAuthXmlServlet extends HttpServlet {
 			ToSyncElementsHolder toSyncElementsHolder = 
 				new ToSyncElementsHolder();
 			toSyncElementsHolders.add(toSyncElementsHolder);
-			toSyncElementsHolder.className = "users";
-			toSyncElementsHolder.lastTimestamp = -1;
-			toSyncElementsHolder.elementsToSync =
-				new ArrayList<Object>();
-		}
-		{
-			ToSyncElementsHolder toSyncElementsHolder = 
-				new ToSyncElementsHolder();
-			toSyncElementsHolders.add(toSyncElementsHolder);
 			toSyncElementsHolder.className = "filled";
 			toSyncElementsHolder.lastTimestamp = -1;
 			toSyncElementsHolder.elementsToSync =

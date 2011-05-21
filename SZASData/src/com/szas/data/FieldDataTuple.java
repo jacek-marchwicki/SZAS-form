@@ -5,4 +5,6 @@ public interface FieldDataTuple {
 	public String getName();
 	public void setName(String name);
 	public FieldTuple getTuple();
+	public void setOnList(boolean onList);
+	public boolean isOnList();
 }
