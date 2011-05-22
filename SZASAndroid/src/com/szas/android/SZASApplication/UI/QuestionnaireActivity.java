@@ -3,12 +3,17 @@
  */
 package com.szas.android.SZASApplication.UI;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Menu;
@@ -36,27 +41,75 @@ import com.szas.data.FieldTuple;
 import com.szas.data.FilledQuestionnaireTuple;
 import com.szas.data.QuestionnaireTuple;
 
+import crl.android.pdfwriter.PDFWriter;
+import crl.android.pdfwriter.StandardFonts;
 /**
  * @author pszafer@gmail.com
  * 
  */
 public class QuestionnaireActivity extends Activity {
 
+	/**
+	 * Linear layout and view to build screen
+	 */
 	LinearLayout linear;
+	ScrollView sv;
+	/**
+	 * Text view to show header
+	 */
 	TextView text;
+	
+	
+	/**
+	 * Forms for input data
+	 */
 	EditText editText;
 	RadioButton radioButton;
-	ScrollView sv;
 	MultiAutoCompleteTextView multiAutoCompleteTextView;
-	String _filledId = null;
-	private FilledQuestionnaireTuple filledQuestionnaireTuple;
-	private QuestionnaireTuple questionnaireTuple;
-	private ArrayList<FieldTuple> filledFields;
-	boolean alreadySaved;
-	String questionnaireName = null;
-	int changed = 0;
-	int counter = 0;
+	
+	/**
+	 * ID of empty questionnaire /main ID/
+	 */
 	long _id;
+	
+	/**
+	 * ID different than null if SecondActivity opens filled questionnaire
+	 */
+	String _filledId = null;
+	
+	/**
+	 * Local variable to save FilledQuestionnaireTuple
+	 */
+	private FilledQuestionnaireTuple filledQuestionnaireTuple;
+	
+	/**
+	 * Filled fields from filledQuestionnaireTuple
+	 */
+	private ArrayList<FieldTuple> filledFields;
+	/**
+	 * Local variable to save empty questionnaireTuple
+	 */
+	private QuestionnaireTuple questionnaireTuple;
+	
+	/**
+	 * Check if data was already saved, because we won't save it too many times
+	 */
+	boolean alreadySaved;
+	
+	/**
+	 * Name of opened questionnaire
+	 */
+	String questionnaireName = null;
+	
+	/**
+	 * Used to know if we exit Activity without change focus of any view
+	 */
+	int changed = 0;
+	
+	/**
+	 * Used to know if we added some text to view
+	 */
+	int counter = 0;
 
 	/*
 	 * (non-Javadoc)
@@ -93,6 +146,9 @@ public class QuestionnaireActivity extends Activity {
 			alreadySaved = true;
 			saveAll();
 			onBackPressed();
+		case R.id.savepdf:
+			createPDF();
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -107,20 +163,6 @@ public class QuestionnaireActivity extends Activity {
 	protected void onResume() {
 		alreadySaved = false;
 		super.onResume();
-	}
-
-	private void saveAll() {
-		int childCount = linear.getChildCount();
-		for (int i = 0; i < childCount; ++i) {
-			View view = linear.getChildAt(i);
-
-			if (view.getClass() == EditText.class) {
-				insertChanges((EditText) view);
-			} else if (view.getClass() == MultiAutoCompleteTextView.class) {
-				insertChanges((MultiAutoCompleteTextView) view);
-			}
-		}
-		saveAllChanges();
 	}
 
 	/*
@@ -141,11 +183,46 @@ public class QuestionnaireActivity extends Activity {
 		super.onBackPressed();
 	}
 
+	/**
+	 * Save all items on screen to local filledQuestionnaireTuple and sqlLocalDAO 
+	 * which are EditText or MultiAutoCompleteTextView
+	 */
+	private void saveAll() {
+		int childCount = linear.getChildCount();
+		for (int i = 0; i < childCount; ++i) {
+			View view = linear.getChildAt(i);
+
+			if (view.getClass() == EditText.class) {
+				insertChanges((EditText) view);
+			} else if (view.getClass() == MultiAutoCompleteTextView.class) {
+				insertChanges((MultiAutoCompleteTextView) view);
+			}
+		}
+		saveAllChanges();
+	}
+	
+	/**
+	 * Save changes into local dao and sql local dao for single item
+	 * @param editText editText with data to insert
+	 */
 	private void saveChanges(EditText editText) {
 		insertChanges(editText);
 		saveAllChanges();
 	}
 
+	/**
+	 * Save changes into local dao and sql local dao for single item
+	 * @param multiAutoCompleteTextView MultiAutoCompleteTextView with data to insert
+	 */
+	private void saveChanges(MultiAutoCompleteTextView editText) {
+		insertChanges(editText);
+		saveAllChanges();
+	}
+	
+	/**
+	 * Insert changes into local filledQuestionnaireTuple from editText
+	 * @param editText editText with data to insert
+	 */
 	private void insertChanges(EditText editText) {
 		++changed;
 		if (filledQuestionnaireTuple == null) {
@@ -162,6 +239,10 @@ public class QuestionnaireActivity extends Activity {
 		filledQuestionnaireTuple.setFilledFields(filledFields);
 	}
 
+	/**
+	 * Insert changes into local filledQuestionnaireTuple from multiAutoCompleteTextView
+	 * @param multiAutoCompleteTextView multiAutoCompleteTextView with data to insert
+	 */
 	private void insertChanges(MultiAutoCompleteTextView editText) {
 		++changed;
 		if (filledQuestionnaireTuple == null) {
@@ -178,25 +259,37 @@ public class QuestionnaireActivity extends Activity {
 		filledQuestionnaireTuple.setFilledFields(filledFields);
 	}
 
+	/**
+	 * Save all changes into local DAO (SQL LOCAL DAO)
+	 */
 	private void saveAllChanges() {
 		LocalDAOContener
 				.insertUpdateFilledQuestionnaireTuple(filledQuestionnaireTuple);
 	}
 
+	/**
+	 * Class to listen of focus changed in EditText or MultiAutoCompleteTextView
+	 * 
+	 * Distinct for MultiAutoCompleteTextView and EditText don't needed because MultiAutoCompleteTextView inherits from EditText 
+	 * @author pszafer@gmail.com
+	 *
+	 */
 	private class CustomOnFocusChangeListener implements
 			View.OnFocusChangeListener {
 		EditText editText;
 		MultiAutoCompleteTextView multiAutoCompleteTextView;
 
 		/**
-		 * 
+		 * Constructor for EditText
+		 * @param editText if EditText loaded then get data from editText
 		 */
 		public CustomOnFocusChangeListener(EditText editText) {
 			this.editText = editText;
 		}
 
 		/**
-		 * 
+		 * Constructor for MultiAutoCompleteTextView
+		 * @param multiAutoCompleteTextView if multiAutoCompleteTextView loaded then get data from multiAutoCompleteTextView
 		 */
 		public CustomOnFocusChangeListener(
 				MultiAutoCompleteTextView multiAutoCompleteTextView) {
@@ -211,14 +304,23 @@ public class QuestionnaireActivity extends Activity {
 					String text = editText.getText().toString();
 					if (text != null && !text.equals("")) {
 						saveChanges(editText);
-					} else if (multiAutoCompleteTextView != null) {
-						++changed;
+					} 
+				}
+				else if (multiAutoCompleteTextView != null) {
+					String text = multiAutoCompleteTextView.getText().toString();
+					if (text != null && !text.equals("")) {
+						saveChanges(multiAutoCompleteTextView);
 					}
 				}
 			}
 		}
 	}
 
+	/**
+	 * Watch if some text was added
+	 * @author pszafer@gmail.com
+	 *
+	 */
 	private class CustomTextWatcher implements TextWatcher {
 		String firstValue;
 
@@ -239,14 +341,28 @@ public class QuestionnaireActivity extends Activity {
 			}
 		}
 
+		/* (non-Javadoc)
+		 * @see android.text.TextWatcher#afterTextChanged(android.text.Editable)
+		 */
+		@Override
 		public void afterTextChanged(Editable s) {
+			//nothing to do
 		}
 	}
 
+	/**
+	 * AsyncTask to get data from sql and avoid ANR problem
+	 * @author pszafer@gmail.com
+	 *
+	 */
 	private class GetQuestonnaireFromDB extends
 			AsyncTask<Integer, Integer, Boolean> {
 
 		ProgressDialog progressDialog;
+		
+		/**
+		 * Empty fields to fill
+		 */
 		ArrayList<FieldDataTuple> questionnaireFields;
 
 		/*
@@ -300,9 +416,9 @@ public class QuestionnaireActivity extends Activity {
 		@Override
 		protected void onPostExecute(Boolean result) {
 			if (result) {
-				loadText(questionnaireFields);
+				loadData(questionnaireFields);
 			} else {
-				loadText(filledFields);
+				loadData(filledFields);
 			}
 			setContentView(sv);
 			progressDialog.dismiss();
@@ -311,25 +427,43 @@ public class QuestionnaireActivity extends Activity {
 
 	}
 
-	private void loadText(ArrayList<?> objects) {
+	/**
+	 * LoadData and show on the screen. It's started from AsyncTask
+	 * 
+	 * Working with EditText with text, EditText with Integer values and MultiAutoCompleteTextView for multiline text input /long text input/
+	 * @param objects can load two kind of objects - questionnaireFields or filledFields
+	 */
+	private void loadData(ArrayList<?> objects) {
 		for (Object object : objects) {
 			String name = ((FieldTuple) object).getName().toString();
 			text = new TextView(QuestionnaireActivity.this);
 			text.setText(name);
 			boolean isOnList = ((FieldTuple) object).isOnList();
+			// REGULAR TEXT BOX
 			if ((object instanceof FieldTextBoxDataTuple)
 					|| (object instanceof FieldTextBoxTuple)) {
 				editText = new EditText(QuestionnaireActivity.this);
-			} else if ((object instanceof FieldTextAreaTuple)
+				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
+						editText));
+			} else
+			// MULTILINE TEXT BOX
+			if ((object instanceof FieldTextAreaTuple)
 					|| (object instanceof FieldTextAreaDataTuple)) {
 				editText = new MultiAutoCompleteTextView(
 						QuestionnaireActivity.this);
 				((MultiAutoCompleteTextView) editText).setSingleLine(false);
+				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
+						((MultiAutoCompleteTextView) editText)));
 				editText.setMaxLines(4);
 				editText.setMinLines(2);
 				editText.setScrollbarFadingEnabled(true);
-			} else if ((object instanceof FieldIntegerBoxTuple) || (object instanceof FieldIntegerBoxDataTuple)){
+			} else
+			// INTEGER TEXT BOX
+			if ((object instanceof FieldIntegerBoxTuple)
+					|| (object instanceof FieldIntegerBoxDataTuple)) {
 				editText = new EditText(QuestionnaireActivity.this);
+				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
+						editText));
 				editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
 			}
 			if (isOnList)
@@ -338,14 +472,61 @@ public class QuestionnaireActivity extends Activity {
 			if (txt != null)
 				editText.setText(txt);
 			editText.addTextChangedListener(new CustomTextWatcher());
-			editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-					editText));
 			editText.setTag(R.id.nameTag, name);
 			editText.setTag(R.id.onListTag, Boolean.toString(isOnList));
 			linear.addView(text);
 			linear.addView(editText);
 		}
 
+	}
+	
+	/**
+	 * Create pdf file
+	 * Problems with encoding
+	 * still really alpha
+	 */
+	private void createPDF(){
+		PDFWriter pdfWriter = new PDFWriter();
+		pdfWriter.setPageHeight(594);
+		pdfWriter.setPageWidth(420);
+		pdfWriter.setPageFont(StandardFonts.SUBTYPE, StandardFonts.TIMES_ROMAN, StandardFonts.WIN_ANSI_ENCODING);
+		int childCount = linear.getChildCount();
+		int start = 360;
+		int j = 0;
+		for (int i = 0; i < childCount; ++i) {
+			View view = linear.getChildAt(i);
+			if (view.getClass() == EditText.class) {
+				pdfWriter.addText(240, start, 14, ((EditText)view).getText().toString());
+				++j;
+			} else if (view.getClass() == MultiAutoCompleteTextView.class) {
+				pdfWriter.addText(240, start, 14, ((MultiAutoCompleteTextView)view).getText().toString());
+				++j;
+			}else if(view.getClass() == TextView.class){
+				pdfWriter.addText(40, start, 20, ((TextView)view).getText().toString());
+				++j;
+			}
+			
+			if(j == 2){
+				j = 0;
+				start -=10;
+				pdfWriter.addLine(30, start, 300, start);
+				start -=20;
+			}
+		}
+		saveAllChanges();
+		String s = pdfWriter.asString();
+		try {
+			File sdCard = Environment.getExternalStorageDirectory();				
+			File file = new File(sdCard, filledFields.get(0).getText() + ".pdf");
+			FileOutputStream f = new FileOutputStream(file);
+			f.write(s.getBytes("CP-1250"));
+			f.flush();
+			f.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

@@ -133,11 +133,6 @@ public class MainActivity extends ListActivity {
 							}).setNegativeButton(R.string.no, null).show();
 			return true;
 		case R.id.about_item:
-			try {
-				AlertsDialog.DialogBuilder.createAboutWindow(this).show();
-			} catch (NameNotFoundException e) {
-				e.printStackTrace();
-			}
 			return true;
 		case R.id.help_item:
 			try {
