@@ -184,7 +184,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 	@Override
 	public void onPerformSync(Account account, Bundle extras, String authority,
 			ContentProviderClient contentProviderClient, SyncResult syncResult) {
-		Log.v(LOGTAG, "syncAdapter sync started");
+		
+		boolean bool = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
+		if(bool){
+			Log.v(LOGTAG, "syncAdapter sync started manually");
+		}else{
+			Log.v(LOGTAG, "syncAdapter sync started automatically");
+		}
 		GoogleAuthentication googleAuthentication = GoogleAuthentication.getGoogleAuthentication(account);
 		if(!googleAuthentication.connect(accountManager)){
 			syncResult.stats.numAuthExceptions++;
