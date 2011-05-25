@@ -44,7 +44,6 @@ public class EditFilledQuestionnaireWidget extends UniversalWidget<FilledQuestio
 			.create(EditFilledQuestionnaireWidgetUiBinder.class);
 	@UiField Label questionnaireName;
 	@UiField Button deleteButton;
-	@UiField Button saveButton;
 	@UiField Button editButton;
 	@UiField VerticalPanel verticalPanel;
 	
@@ -60,8 +59,11 @@ public class EditFilledQuestionnaireWidget extends UniversalWidget<FilledQuestio
 	@Override
 	protected void initWidget() {
 		initWidget(uiBinder.createAndBindUi(this));
-		saveButton.setVisible(edit);
-		editButton.setVisible(!edit);
+		if (edit) {
+			editButton.setText("Save");
+		} else {
+			editButton.setText("Edit");
+		}
 	}
 
 	@Override
@@ -142,11 +144,11 @@ public class EditFilledQuestionnaireWidget extends UniversalWidget<FilledQuestio
 
 	@UiHandler("editButton")
 	void onEditButtonClick(ClickEvent event) {
-		History.newItem(NAME_EDIT+"," + tuple.getId(),true);;
-	}
-	@UiHandler("saveButton")
-	void onSaveButtonClick(ClickEvent event) {
-		onSave();
+		if (edit) {
+			onSave();
+		} else {
+			History.newItem(NAME_EDIT+"," + tuple.getId(),true);
+		}
 	}
 	@UiHandler("deleteButton")
 	void onDeleteButtonClick(ClickEvent event) {
