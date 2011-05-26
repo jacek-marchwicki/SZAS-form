@@ -230,12 +230,20 @@ public class SecondActivity extends ListActivity {
 		}
 	};
 
+	/**
+	 * Remove selected item from list from database
+	 * @param id id of item
+	 */
 	private void deleteItem(long id) {
 		long _id = mQuestionnaireTypeRows.get((int) id).getId();
 		LocalDAOContener.deleteFilledQuestionnaireTuple(LocalDAOContener
 				.getFilledQuestionnaireTupleById(_id));
 	}
 
+	/**
+	 * Get filled items by questionnaireName
+	 * @return returns List<QuestionnaireTypeRow>
+	 */
 	private List<QuestionnaireTypeRow> getFilledItemsForList() {
 		filledQuestionnaireTuples = new ArrayList<FilledQuestionnaireTuple>(
 				LocalDAOContener

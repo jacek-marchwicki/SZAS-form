@@ -28,4 +28,6 @@
 	<string name="questionnaire_context_menu_delete">Usuń ankietę</string>
 	<string name="questionnaire_context_menu_cancel">Anuluj</string>
 	<string name="save2pdf">Zapisz do pdf (wersja rozwojowa)</string>
+	<string name="export_to_csv">Eksportuj kategorię do CSV</string>
+	<string name="import_to_csv">Import z pliku CSV</string>
 </resources>

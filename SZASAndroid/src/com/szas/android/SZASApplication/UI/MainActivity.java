@@ -1,5 +1,6 @@
 package com.szas.android.SZASApplication.UI;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -15,13 +16,17 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -33,6 +38,7 @@ import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
 import com.szas.data.QuestionnaireTuple;
+import com.szas.export.CSVExport;
 
 //"http://szas-form.appspot.com/syncnoauth
 /**
@@ -61,6 +67,7 @@ public class MainActivity extends ListActivity {
 		context.registerReceiver(refreshSyncReceiver, intentFilter);
 		startService(new Intent(context, SyncService.class));
 		setListAdapter(arrayAdapter);
+		csvExport = new CSVExport();
 		executeTask();
 	}
 
@@ -176,6 +183,56 @@ public class MainActivity extends ListActivity {
 		}
 	};
 
+	private OnCreateContextMenuListener onCreateContextMenuListener = new OnCreateContextMenuListener() {
+
+		@Override
+		public void onCreateContextMenu(ContextMenu menu, View v,
+				ContextMenuInfo menuInfo) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.csv_main_screen_context, menu);
+		}
+	};
+	private CSVExport csvExport;
+
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		long id = info.id;
+		switch (item.getItemId()) {
+		case R.id.csvexport:
+			try {
+				csvExport
+						.exportCSVToFile(
+								"/mnt/sdcard/file2.csv",
+								LocalDAOContener
+										.getFilledQuestionnaireTupleByName(listViewElementsArray[(int) id]));
+				// TODO file chooser in preferences
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return true;
+		case R.id.csvimport:
+			ArrayList<QuestionnaireTuple> questionnaireTuples = new ArrayList<QuestionnaireTuple>(
+					LocalDAOContener
+							.getQuestionnaireTuplesByName(listViewElementsArray[(int) id]));
+			try {
+				csvExport.importCSVFromFile("/mnt/sdcard/file2.csv",
+						questionnaireTuples.get(0).getFilled());
+				// TODO file name to input and in preferences to choose
+				// directory to save
+				// XXX how it is about get(0). is any time
+				// getQuestionnaireTuplesByName -> should be by id
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return true;
+		case R.id.cancelitem:
+			return false;
+		default:
+			return super.onContextItemSelected(item);
+		}
+	};
+
 	/**
 	 * Execute task in AsyncTask
 	 */
@@ -250,6 +307,7 @@ public class MainActivity extends ListActivity {
 				ListView lv = getListView();
 				lv.setTextFilterEnabled(true);
 				lv.setOnItemClickListener(onItemClickListener);
+				lv.setOnCreateContextMenuListener(onCreateContextMenuListener);
 				Log.v("MainActivity", "ok");
 			} else {
 				String temp = context.getString(R.string.problem_information);

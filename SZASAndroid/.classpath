@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="/home/xps/Software/SZAS_projekt/other/flexjson-2.1-javadoc.jar"/>
 	<classpathentry kind="src" path="/SZASData"/>
 	<classpathentry kind="lib" path="/home/xps/Software/pdfwriter.jar"/>
+	<classpathentry kind="lib" path="/home/xps/Pobrane/supercsv/SuperCSV-1.52/SuperCSV-1.52-javadoc.zip"/>
+	<classpathentry kind="lib" path="/home/xps/Pobrane/supercsv/SuperCSV-1.52/SuperCSV-with_src-1.52.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

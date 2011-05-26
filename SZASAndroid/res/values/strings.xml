@@ -30,4 +30,6 @@
 	<string name="questionnaire_context_menu_delete">Delete questionnaire</string>
 	<string name="questionnaire_context_menu_cancel">Cancel</string>
 	<string name="save2pdf">Save to pdf (alpha stadium)</string>
+	<string name="export_to_csv">Export to CSV</string>
+	<string name="import_to_csv">Import from CSV</string>
 </resources>

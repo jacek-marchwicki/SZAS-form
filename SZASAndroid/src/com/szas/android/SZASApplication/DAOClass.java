@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.szas.android.SZASApplication;
 
 import java.util.ArrayList;
