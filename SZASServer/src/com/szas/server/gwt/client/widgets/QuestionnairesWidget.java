@@ -23,7 +23,7 @@ import com.szas.server.gwt.client.universalwidgets.SimpleTupleList;
 import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 
-public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
+public class QuestionnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	public static String NAME = "questionnaire";
 
@@ -100,15 +100,15 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 	@UiField Button editButton;
 	@UiField Button fillButton;
 
-	private static QuestinnairesWidgetUiBinder uiBinder = GWT
-	.create(QuestinnairesWidgetUiBinder.class);
+	private static QuestionnaireWidgetUiBinder uiBinder = GWT
+	.create(QuestionnaireWidgetUiBinder.class);
 
-	interface QuestinnairesWidgetUiBinder extends
-	UiBinder<Widget, QuestinnairesWidget> {
+	interface QuestionnaireWidgetUiBinder extends
+	UiBinder<Widget, QuestionnairesWidget> {
 	}
 
 
-	public QuestinnairesWidget(QuestionnaireTuple questionnaireTuple) {
+	public QuestionnairesWidget(QuestionnaireTuple questionnaireTuple) {
 		super(questionnaireTuple);
 		cellTable = new MyTupleList(tuple);
 		initWidget();
@@ -146,7 +146,7 @@ public class QuestinnairesWidget extends UniversalWidget<QuestionnaireTuple> {
 
 	@UiHandler("editButton")
 	void onEditButtonClick(ClickEvent event) {
-		History.newItem(EditQuesionnaireWidget.NAME+"," + tuple.getId(),true);
+		History.newItem(EditQuestionnaireWidget.NAME+"," + tuple.getId(),true);
 	}
 
 	@UiHandler("fillButton")

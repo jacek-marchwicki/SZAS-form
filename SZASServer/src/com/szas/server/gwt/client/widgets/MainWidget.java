@@ -56,12 +56,12 @@ public class MainWidget extends Composite {
 		RouteAction<Widget> questionnaireRouteAction = new RouteAction<Widget>() {
 			@Override
 			public Widget run(String command, String params) {
-				return new QuestionnariesList();
+				return new QuestionnairesList();
 			}
 		};
 		router.addRoute("", questionnaireRouteAction);
-		router.addRoute(QuestionnariesList.NAME, questionnaireRouteAction);
-		router.addRoute(QuestinnairesWidget.NAME, new LongRouteAction<Widget>() {
+		router.addRoute(QuestionnairesList.NAME, questionnaireRouteAction);
+		router.addRoute(QuestionnairesWidget.NAME, new LongRouteAction<Widget>() {
 
 			@Override
 			protected Widget run(String command, long param) {
@@ -69,10 +69,10 @@ public class MainWidget extends Composite {
 					StaticGWTSyncer.getQuestionnairedao().getById(param);
 				if (questionnaireTuple == null)
 					return null;
-				return new QuestinnairesWidget(questionnaireTuple);
+				return new QuestionnairesWidget(questionnaireTuple);
 			}
 		});
-		router.addRoute(EditQuesionnaireWidget.NAME, new LongRouteAction<Widget>() {
+		router.addRoute(EditQuestionnaireWidget.NAME, new LongRouteAction<Widget>() {
 
 			@Override
 			protected Widget run(String command, long param) {
@@ -80,16 +80,16 @@ public class MainWidget extends Composite {
 					StaticGWTSyncer.getQuestionnairedao().getById(param);
 				if (questionnaireTuple == null)
 					return null;
-				return new EditQuesionnaireWidget(questionnaireTuple);
+				return new EditQuestionnaireWidget(questionnaireTuple);
 			}
 		});
-		router.addRoute(EditQuesionnaireWidget.NAME, new RouteAction<Widget>() {
+		router.addRoute(EditQuestionnaireWidget.NAME, new RouteAction<Widget>() {
 
 			@Override
 			public Widget run(String command, String params) {
 				QuestionnaireTuple questionnaireTuple =
 					new QuestionnaireTuple();
-				return new EditQuesionnaireWidget(questionnaireTuple);
+				return new EditQuestionnaireWidget(questionnaireTuple);
 			}
 		});
 		router.addRoute(EditFilledQuestionnaireWidget.NAME, new LongRouteAction<Widget>() {

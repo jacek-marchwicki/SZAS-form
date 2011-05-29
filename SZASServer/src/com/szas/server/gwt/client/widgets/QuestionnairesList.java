@@ -16,7 +16,7 @@ import com.szas.server.gwt.client.sync.StaticGWTSyncer;
 import com.szas.server.gwt.client.universalwidgets.SimpleTupleList;
 import com.szas.sync.local.LocalDAO;
 
-public class QuestionnariesList extends Composite {
+public class QuestionnairesList extends Composite {
 	
 	public static String NAME = "questionnaires";
 	
@@ -42,7 +42,7 @@ public class QuestionnariesList extends Composite {
 
 		@Override
 		protected String getListName() {
-			return QuestinnairesWidget.NAME;
+			return QuestionnairesWidget.NAME;
 		}
 	};
 	
@@ -53,17 +53,17 @@ public class QuestionnariesList extends Composite {
 	
 	@UiHandler("addButton")
 	void onAddButtonClick(ClickEvent event) {
-		History.newItem(EditQuesionnaireWidget.NAME,true);
+		History.newItem(EditQuestionnaireWidget.NAME,true);
 	}
 
-	private static QuestionnariesListUiBinder uiBinder = GWT
-			.create(QuestionnariesListUiBinder.class);
+	private static QuestionnairesListUiBinder uiBinder = GWT
+			.create(QuestionnairesListUiBinder.class);
 
-	interface QuestionnariesListUiBinder extends
-			UiBinder<Widget, QuestionnariesList> {
+	interface QuestionnairesListUiBinder extends
+			UiBinder<Widget, QuestionnairesList> {
 	}
 
-	public QuestionnariesList() {
+	public QuestionnairesList() {
 		initWidget(uiBinder.createAndBindUi(this));
 	}
 

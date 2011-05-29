@@ -21,19 +21,19 @@ import com.szas.server.gwt.client.universalwidgets.FieldDataWidget;
 import com.szas.server.gwt.client.universalwidgets.UniversalWidget;
 import com.szas.sync.local.LocalDAO;
 
-public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> {
+public class EditQuestionnaireWidget extends UniversalWidget<QuestionnaireTuple> {
 
-	public EditQuesionnaireWidget(QuestionnaireTuple tuple) {
+	public EditQuestionnaireWidget(QuestionnaireTuple tuple) {
 		super(tuple);
 		initWidget();
 	}
-	public static String NAME = "editquestionnaire";
+	public static String NAME = "edituestionnaire";
 
-	private static EditQuesionnaireWidgetUiBinder uiBinder = GWT
-	.create(EditQuesionnaireWidgetUiBinder.class);
+	private static EditQuestionnaireWidgetUiBinder uiBinder = GWT
+	.create(EditQuestionnaireWidgetUiBinder.class);
 
-	interface EditQuesionnaireWidgetUiBinder extends
-	UiBinder<Widget, EditQuesionnaireWidget> {
+	interface EditQuestionnaireWidgetUiBinder extends
+	UiBinder<Widget, EditQuestionnaireWidget> {
 	}
 
 	@UiField Button deleteButton;
