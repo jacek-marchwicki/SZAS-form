@@ -37,7 +37,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 
 	<servlet-mapping>
 		<servlet-name>syncingService</servlet-name>
-		<url-pattern>/questionnaries/syncing</url-pattern>
+		<url-pattern>/questionnaires/syncing</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>

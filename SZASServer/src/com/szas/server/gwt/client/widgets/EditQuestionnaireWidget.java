@@ -9,6 +9,7 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -41,6 +42,7 @@ public class EditQuestionnaireWidget extends UniversalWidget<QuestionnaireTuple>
 	@UiField Button addItemButton;
 	@UiField ListBox itemTypesListBox;
 	@UiField VerticalPanel verticalPanel;
+	@UiField ScrollPanel scrollPanel;
 
 	private ArrayList<FieldDataTuple> fields;
 
@@ -133,5 +135,6 @@ public class EditQuestionnaireWidget extends UniversalWidget<QuestionnaireTuple>
 		} else {
 			return;
 		}
+		scrollPanel.setVerticalScrollPosition(scrollPanel.getMaximumVerticalScrollPosition());
 	}
 }

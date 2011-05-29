@@ -19,7 +19,7 @@
  </script>
 <script src="/_ah/channel/jsapi"></script>
 <script type="text/javascript" language="javascript"
-	src="questionnaries/questionnaries.nocache.js"></script>
+	src="questionnaires/questionnaires.nocache.js"></script>
 <title>SZAS-form application</title>
 <!--[if IE]>
 		<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
