@@ -13,6 +13,7 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.szas.data.FieldDataTuple;
+import com.szas.data.FieldIntegerBoxDataTuple;
 import com.szas.data.FieldTextBoxDataTuple;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.data.FieldTextAreaDataTuple;
@@ -56,6 +57,7 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 		initWidget(uiBinder.createAndBindUi(this));
 		itemTypesListBox.addItem("Input field", FieldTextBoxDataTuple.class.getName());
 		itemTypesListBox.addItem("Long input filed", FieldTextAreaDataTuple.class.getName());
+		itemTypesListBox.addItem("Integer field", FieldIntegerBoxDataTuple.class.getName());
 	}
 
 	@Override
@@ -89,6 +91,8 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 				widget = new FieldTextBoxDataWidget((FieldTextBoxDataTuple) field);
 			} else if (field instanceof FieldTextAreaDataTuple) {
 				widget = new FieldTextAreaDataWidget((FieldTextAreaDataTuple) field);
+			} else if (field instanceof FieldIntegerBoxDataTuple) {
+				widget = new FieldIntegerBoxDataWidget((FieldIntegerBoxDataTuple) field);
 			} else {
 				continue;
 			}
@@ -128,6 +132,10 @@ public class EditQuesionnaireWidget extends UniversalWidget<QuestionnaireTuple> 
 			updateList();
 		} else if (value.equals(FieldTextAreaDataTuple.class.getName())) {
 			FieldTextAreaDataTuple field = new FieldTextAreaDataTuple();
+			fields.add(field);
+			updateList();
+		} else if (value.equals(FieldIntegerBoxDataTuple.class.getName())) {
+			FieldIntegerBoxDataTuple field = new FieldIntegerBoxDataTuple();
 			fields.add(field);
 			updateList();
 		} else {

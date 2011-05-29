@@ -1,0 +1,59 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		
+	</ui:style>
+	<g:AbsolutePanel>
+			<g:Grid>
+				<g:row>
+					<g:customCell>
+						<g:Label text="Name:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:TextBox ui:field="nameTextBox"/>
+					</g:customCell>
+				</g:row>
+				<g:row>
+					<g:customCell>
+						<g:Label text="Minimal value:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:TextBox ui:field="minTextBox"/>
+					</g:customCell>
+				</g:row>
+				<g:row>
+					<g:customCell>
+						<g:Label text="Maximal value:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:TextBox ui:field="maxTextBox"/>
+					</g:customCell>
+				</g:row>
+				<g:row>
+					<g:customCell>
+						<g:Label text="Default value:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:TextBox ui:field="valueTextBox"/>
+					</g:customCell>
+				</g:row>
+				<g:row>
+					<g:customCell>
+						<g:Label text="Could be empty:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:SimpleCheckBox ui:field="nullableCheckBox"/>
+					</g:customCell>
+				</g:row>
+				<g:row>
+					<g:customCell>
+						<g:Label text="label field:"/>
+					</g:customCell>
+					<g:customCell>
+						<g:SimpleCheckBox ui:field="onListCheckBox"/>
+					</g:customCell>
+				</g:row>
+			</g:Grid>
+	</g:AbsolutePanel>
+</ui:UiBinder> 
