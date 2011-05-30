@@ -22,4 +22,21 @@ public class FieldTextAreaDataTuple extends FieldTextAreaTuple implements FieldD
 		tuple.setValue(value);
 		return tuple;
 	}
+	/**
+	 * This method do nothing because {@link FieldTextAreaTuple} could not be on the list
+	 * @see FieldDataTuple#setOnList(boolean)
+	 */
+	@Override
+	public void setOnList(boolean onList) {
+		// FieldTextAreaTuple could not be on the list
+	}
+	/**
+	 * This method always return false because {@link FieldTextAreaDataTuple} could not be on the list
+	 * @see FieldDataTuple#isOnList()
+	 * @return false
+	 */
+	@Override
+	public boolean isOnList() {
+		return false;
+	}
 }

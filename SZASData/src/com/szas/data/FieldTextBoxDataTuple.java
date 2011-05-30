@@ -7,6 +7,7 @@ public class FieldTextBoxDataTuple extends FieldTextBoxTuple implements FieldDat
 	 */
 	private static final long serialVersionUID = 1L;
 	private boolean nullable;
+	private boolean onList;
 	public void setNullable(boolean nullable) {
 		this.nullable = nullable;
 	}
@@ -19,7 +20,14 @@ public class FieldTextBoxDataTuple extends FieldTextBoxTuple implements FieldDat
 			new FieldTextBoxTuple();
 		tuple.setName(name);
 		tuple.setValue(value);
-		tuple.setOnList(onList);
 		return tuple;
+	}
+	@Override
+	public void setOnList(boolean onList) {
+		this.onList = onList;
+	}
+	@Override
+	public boolean isOnList() {
+		return onList;
 	}
 }

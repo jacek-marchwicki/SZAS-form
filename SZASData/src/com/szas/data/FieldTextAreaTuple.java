@@ -17,7 +17,7 @@ public class FieldTextAreaTuple extends FieldTuple {
 		return "";
 	}
 	@Override
-	public void setOnList(boolean onList) {
-		onList = false;
+	public String toString() {
+		return value;
 	}
 }

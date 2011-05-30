@@ -10,6 +10,8 @@ public class FieldIntegerBoxDataTuple extends FieldIntegerBoxTuple implements
 
 	private int min;
 	private int max;
+
+	private boolean onList;
 	public void setMin(int min) {
 		this.min = min;
 	}
@@ -29,5 +31,14 @@ public class FieldIntegerBoxDataTuple extends FieldIntegerBoxTuple implements
 		tuple.setName(name);
 		tuple.setValue(value);
 		return tuple;
+	}
+	
+	@Override
+	public void setOnList(boolean onList) {
+		this.onList = onList;
+	}
+	@Override
+	public boolean isOnList() {
+		return onList;
 	}
 }
