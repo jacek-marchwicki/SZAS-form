@@ -1,7 +1,9 @@
 package com.szas.export;
 
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.Collection;
 
 import com.szas.data.FilledQuestionnaireTuple;
@@ -15,5 +17,14 @@ public class CSVExport extends CSVMapper {
 	public void exportCSVToFile(String path, Collection<FilledQuestionnaireTuple> filledQuestionnaireTuples) throws IOException{
 		FileWriter writer = new FileWriter(path);
 		exportCSV(writer, filledQuestionnaireTuples);
+	}
+	
+	/**
+	 * Import csv from filename
+	 * @see #importCSV(Reader, FilledQuestionnaireTuple)
+	 */
+	public void importCSVFromFile(String filename, FilledQuestionnaireTuple filledQuestionnaireTuple) throws IOException, WrongCSVFile {
+		FileReader fileReader = new FileReader(filename);
+		importCSV(fileReader, filledQuestionnaireTuple);
 	}
 }

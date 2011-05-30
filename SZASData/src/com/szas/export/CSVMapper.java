@@ -3,7 +3,6 @@
  */
 package com.szas.export;
 
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -39,17 +38,22 @@ public class CSVMapper {
 	/**
 	 * Method to create CSV from Collection of FilledQuestionnaireTuple
 	 * @param writer writer for saving csv file
-	 * @param filledQuestionnaireTuples filledQuestionnaireTuples filled Questionnaire tuples, be aware to pass only same category tuples
+	 * @param filledQuestionnaireTuples filledQuestionnaireTuples
+	 * filled Questionnaire tuples, be aware to pass only same category tuples
 	 * @throws IOException When in IO exception occur
 	 */
-	public void exportCSV(Writer writer, Collection<FilledQuestionnaireTuple> filledQuestionnaireTuples) throws IOException {
+	public void exportCSV(Writer writer,
+			Collection<FilledQuestionnaireTuple> filledQuestionnaireTuples)
+	throws IOException {
 		ICsvMapWriter csvWriter = new CsvMapWriter(writer, CsvPreference.EXCEL_PREFERENCE);
 		try {
-			List<Map<String, ? super Object>> listOfAllDate = new ArrayList<Map<String,? super Object>>();
+			List<Map<String, ? super Object>> listOfAllData =
+				new ArrayList<Map<String,? super Object>>();
 			String[] headers = null;
 			int i=1;
 			for(FilledQuestionnaireTuple filledQuestionnaireTuple : filledQuestionnaireTuples){
-				ArrayList<FieldTuple> filledFields = filledQuestionnaireTuple.getFilledFields();
+				ArrayList<FieldTuple> filledFields =
+					filledQuestionnaireTuple.getFilledFields();
 				Map<String, ? super Object> data = new HashMap<String, Object>();
 				if(i == 1){
 					csvWriter.writeHeader(filledQuestionnaireTuple.getName());
@@ -58,36 +62,22 @@ public class CSVMapper {
 					++i;
 				}
 				for(FieldTuple fieldTuple: filledFields){
-					String key = fieldTuple.getName().toString();
+					String key = fieldTuple.getName();
 					if(i<=headers.length){
 						headers[i-1] = key;
 						++i;
 					}
 					data.put("id", fieldTuple.getId());
-					if(fieldTuple instanceof FieldTextBoxTuple || fieldTuple instanceof FieldTextBoxDataTuple){
-						String value = "";
-						value = ((FieldTextBoxTuple)fieldTuple).getValue();
-						data.put(key, value);
-
-					}
-					else if (fieldTuple instanceof FieldTextAreaTuple || fieldTuple instanceof FieldTextAreaDataTuple){
-						String value = "";
-						value = ((FieldTextAreaTuple)fieldTuple).getValue();
-						data.put(key, value);
-					}
-					else if (fieldTuple instanceof FieldIntegerBoxTuple || fieldTuple instanceof FieldIntegerBoxDataTuple){
-						String value = "";
-						value = String.valueOf(((FieldIntegerBoxTuple)fieldTuple).getValue());
-						data.put(key, value);
-					}
+					String value = fieldTuple.toString();
+					data.put(key, value);
 				}
-				listOfAllDate.add(data);
+				listOfAllData.add(data);
 				if((filledFields.size()-1) == i){
 					++i;
 				}
 			}
 			csvWriter.writeHeader(headers);
-			for(Map<String, ? super Object> data : listOfAllDate){
+			for(Map<String, ? super Object> data : listOfAllData){
 				csvWriter.write(data, headers);
 			}
 		} finally {
@@ -100,7 +90,9 @@ public class CSVMapper {
 	 * @return return created string csv
 	 * @see #exportCSV(Writer, Collection)
 	 */
-	public String exportCSVToString(Collection<FilledQuestionnaireTuple> filledQuestionnaireTuples) throws IOException {
+	public String exportCSVToString(
+			Collection<FilledQuestionnaireTuple> filledQuestionnaireTuples)
+	throws IOException {
 		Writer stringWriter = new StringWriter();
 		exportCSV(stringWriter, filledQuestionnaireTuples);
 		return stringWriter.toString();
@@ -110,15 +102,20 @@ public class CSVMapper {
 	 * Import FilledQuestionnaireTuple from CSV file
 	 * CSV file structure:
 	 * 1st header is name of questionnaire like "Ankieta dentystyczna"
-	 * 2nd headers are columns of FilledQuestionnaireTuple to input like "id,Imię,Nazwisko,Który ząb,Opis bólu"
+	 * 2nd headers are columns of FilledQuestionnaireTuple to input like
+	 * "id,Imię,Nazwisko,Który ząb,Opis bólu"
 	 * Rest of file, are data to input.
 	 * If there are null entries it should be skipped
 	 * Standard separator is comma, CSV file accepts space in names
 	 * @param reader with csv, work for both line separators - \n and \r\n
-	 * @param filledQuestionnaireTuple questionnaireTuple to input to get filledFields array
+	 * @param filledQuestionnaireTuple questionnaireTuple to input
+	 * to get filledFields array
 	 * @throws IOException When in IO exception occur
+	 * @throws WrongCSVFile When parsing fail
 	 */
-	public void importCSV(Reader reader, FilledQuestionnaireTuple filledQuestionnaireTuple) throws IOException {
+	public void importCSV(Reader reader,
+			FilledQuestionnaireTuple filledQuestionnaireTuple)
+	throws IOException, WrongCSVFile {
 		ICsvMapReader csvReader = new CsvMapReader(reader, CsvPreference.EXCEL_PREFERENCE);
 		try{
 			String[] headers0 = csvReader.getCSVHeader(false);
@@ -128,7 +125,7 @@ public class CSVMapper {
 			ArrayList<FieldTuple> filledFields = filledQuestionnaireTuple.getFilledFields();
 			while((mapa = csvReader.read(headers1)) != null){
 				for(FieldTuple fieldTuple : filledFields){
-					String key = fieldTuple.getName().toString();
+					String key = fieldTuple.getName();
 					String value = mapa.get(key);
 					if(fieldTuple instanceof FieldTextBoxTuple || fieldTuple instanceof FieldTextBoxDataTuple){
 						((FieldTextBoxTuple)fieldTuple).setValue(value);
@@ -136,8 +133,13 @@ public class CSVMapper {
 					else if (fieldTuple instanceof FieldTextAreaTuple || fieldTuple instanceof FieldTextAreaDataTuple){
 						((FieldTextAreaTuple)fieldTuple).setValue(value);
 					}
-					else if (fieldTuple instanceof FieldIntegerBoxTuple || fieldTuple instanceof FieldIntegerBoxDataTuple){
-						((FieldIntegerBoxTuple)fieldTuple).setValue(Integer.parseInt(value));				
+					else if (fieldTuple instanceof FieldIntegerBoxTuple || fieldTuple instanceof FieldIntegerBoxDataTuple) {
+						try {
+							int intValue = Integer.parseInt(value);
+							((FieldIntegerBoxTuple)fieldTuple).setValue(intValue);
+						} catch (NumberFormatException ex) {
+							throw new WrongCSVFile();
+						}
 					}
 				}
 			}
@@ -149,19 +151,13 @@ public class CSVMapper {
 	}
 
 	/**
-	 * Import csv from filename
-	 * @see #importCSV(Reader, FilledQuestionnaireTuple)
-	 */
-	public void importCSVFromFile(String filename, FilledQuestionnaireTuple filledQuestionnaireTuple) throws IOException {
-		FileReader fileReader = new FileReader(filename);
-		importCSV(fileReader, filledQuestionnaireTuple);
-	}
-
-	/**
 	 * Import CSV from string
 	 * @see #importCSV(Reader, FilledQuestionnaireTuple)
 	 */
-	public void importCSVFromString(String csv, FilledQuestionnaireTuple filledQuestionnaireTuple) throws IOException{
+	public void importCSVFromString(
+			String csv,
+			FilledQuestionnaireTuple filledQuestionnaireTuple)
+	throws IOException, WrongCSVFile{
 		Reader stringReader = new StringReader(csv);
 		importCSV(stringReader, filledQuestionnaireTuple);
 	}
