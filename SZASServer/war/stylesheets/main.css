@@ -40,3 +40,7 @@ h1 {
 .even {
 	background: #F3F7FB;	
 }
+
+.wrong {
+	background: #ff0000;
+}
