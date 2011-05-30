@@ -12,6 +12,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Label;
 import com.szas.data.FieldDataTuple;
+import com.szas.data.FieldIntegerBoxDataTuple;
+import com.szas.data.FieldIntegerBoxTuple;
 import com.szas.data.FieldTextAreaDataTuple;
 import com.szas.data.FieldTextAreaTuple;
 import com.szas.data.FieldTextBoxDataTuple;
@@ -109,10 +111,18 @@ public class EditFilledQuestionnaireWidget extends UniversalWidget<FilledQuestio
 					widget = new FieldUniversalWidget(field);
 				}
 			} else if (field instanceof FieldTextAreaTuple) {
-				if (fieldData != null && fieldData instanceof FieldTextAreaTuple && edit) {
+				if (fieldData != null && fieldData instanceof FieldTextAreaDataTuple && edit) {
 					widget = new FieldTextAreaWidget(
 							(FieldTextAreaTuple) field,
 							(FieldTextAreaDataTuple) fieldData);
+				} else {
+					widget = new FieldUniversalWidget(field);
+				}
+			} else if (field instanceof FieldIntegerBoxTuple) {
+				if (fieldData != null && fieldData instanceof FieldIntegerBoxDataTuple && edit) {
+					widget = new FieldIntegerBoxWidget(
+							(FieldIntegerBoxTuple)field,
+							(FieldIntegerBoxDataTuple) fieldData);
 				} else {
 					widget = new FieldUniversalWidget(field);
 				}

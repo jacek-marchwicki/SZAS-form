@@ -7,8 +7,10 @@
 	<g:AbsolutePanel>
 		<g:VerticalPanel>
 			<g:Label text="New Label" ui:field="nameLabel" />
-
-			<g:TextBox ui:field="valueTextBox" />
+			<g:HorizontalPanel>
+				<g:TextBox ui:field="valueTextBox" />
+				<g:Label text="New Label" ui:field="rangeLabel" />
+			</g:HorizontalPanel>
 		</g:VerticalPanel>
 	</g:AbsolutePanel>
 </ui:UiBinder> 

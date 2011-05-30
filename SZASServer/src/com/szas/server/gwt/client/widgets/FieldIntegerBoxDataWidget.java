@@ -44,19 +44,44 @@ public class FieldIntegerBoxDataWidget extends FieldDataWidget {
 			field.setValue(value);
 		} catch (NumberFormatException ex) {
 		}
+		try {
+			int min = Integer.parseInt(minTextBox.getText());
+			field.setMin(min);
+		} catch (NumberFormatException ex) {
+		}
+		try {
+			int max = Integer.parseInt(maxTextBox.getText());
+			field.setMax(max);
+		} catch (NumberFormatException ex) {
+		}
 	}
 
 	@Override
 	public void updateWidget() {
 		nameTextBox.setText(field.getName());
 		valueTextBox.setText(Integer.toString(field.getValue()));
+		minTextBox.setText(Integer.toString(field.getMin()));
+		maxTextBox.setText(Integer.toString(field.getMax()));
 		onListCheckBox.setValue(field.isOnList());
+		setStyleWhileIsOk();
+	}
+	private boolean isNameOk() {
+		if (nameTextBox.getText().equals("")) {
+			return false;
+		}
+		return true;
 	}
 	private boolean isValueOk() {
-		if (!valueTextBox.getText().equals(""))
+		if (valueTextBox.getText().equals(""))
 			return true;
 		try {
-			Integer.parseInt(valueTextBox.getText());
+			int min = Integer.parseInt(minTextBox.getText());
+			int max = Integer.parseInt(maxTextBox.getText());
+			int value = Integer.parseInt(valueTextBox.getText());
+			if (min > value)
+				return false;
+			if (max < value)
+				return false;
 		} catch (NumberFormatException ex) {
 			return false;
 		}
@@ -86,6 +111,11 @@ public class FieldIntegerBoxDataWidget extends FieldDataWidget {
 	}
 		
 	private void setStyleWhileIsOk() {
+		if (isNameOk()) {
+			nameTextBox.removeStyleName("wrong");
+		} else {
+			nameTextBox.addStyleName("wrong");
+		}
 		if (isMinOk()) {
 			minTextBox.removeStyleName("wrong");
 		} else {
@@ -130,6 +160,16 @@ public class FieldIntegerBoxDataWidget extends FieldDataWidget {
 	
 	@UiHandler("maxTextBox")
 	void onMaxTextBoxChange(KeyUpEvent event) {
+		setStyleWhileIsOk();
+	}
+	
+	@UiHandler("nameTextBox")
+	void onNameTextBoxChange(ChangeEvent event) {
+		setStyleWhileIsOk();
+	}
+	
+	@UiHandler("nameTextBox")
+	void onNameTextBoxChange(KeyUpEvent event) {
 		setStyleWhileIsOk();
 	}
 }
