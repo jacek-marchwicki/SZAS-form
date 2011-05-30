@@ -29,4 +29,7 @@
 	<string name="help2">Application loaded section You asked for.\nThere are 2 headers, Empty questionnaires and Filled questionaires.\nIf You click first one, You can fill empty questionnaire.\nIf you click one of filled questionnaire (if list is not empty) You can edit questionnaire.\nLong click on filled questionnaire allow You to delete it.</string>
 	<string name="questionnaire_context_menu_delete">Delete questionnaire</string>
 	<string name="questionnaire_context_menu_cancel">Cancel</string>
+	<string name="save2pdf">Save to pdf (alpha stadium)</string>
+	<string name="export_to_csv">Export to CSV</string>
+	<string name="import_to_csv">Import from CSV</string>
 </resources>

@@ -27,4 +27,7 @@
 	<string name="help2">Aplikacja ładuje wybrany przez Ciebie rodzaj ankiety.\nW oknie widoczne są 2 nagłówki, "Pusta ankieta" oraz "Wypełniona ankieta".\nW przypadku wybrania ankiety z pierwszej sekcji, wówczas pojawi się okno umożliwiające wypełnienie pustej ankiety.\nW przypadku wybrania jednej z wypełnionych ankiet (jeżeli takie nie istnieją, lista  będzie pusta), pojawi się okno umożliwiające edycję ankiety.\nDługie przytrzymanie na wypełnionej ankiecie wyświetli podręczne menu z opcją usunięcia ankiety.</string>
 	<string name="questionnaire_context_menu_delete">Usuń ankietę</string>
 	<string name="questionnaire_context_menu_cancel">Anuluj</string>
+	<string name="save2pdf">Zapisz do pdf (wersja rozwojowa)</string>
+	<string name="export_to_csv">Eksportuj kategorię do CSV</string>
+	<string name="import_to_csv">Import z pliku CSV</string>
 </resources>

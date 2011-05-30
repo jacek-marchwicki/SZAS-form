@@ -1,5 +1,6 @@
 package com.szas.android.SZASApplication.UI;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -15,13 +16,17 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
@@ -33,6 +38,7 @@ import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
 import com.szas.data.QuestionnaireTuple;
+import com.szas.export.CSVExport;
 
 //"http://szas-form.appspot.com/syncnoauth
 /**
@@ -41,11 +47,12 @@ import com.szas.data.QuestionnaireTuple;
  */
 public class MainActivity extends ListActivity {
 
-	// private LocalDAO<QuestionnaireTuple> questionnaireDAO;
 	private Context context;
 	String[] listViewElementsArray;
-	RefreshSyncReceiver refreshSyncReceiver;
+	CustomDepartmentAdapter arrayAdapter;
 	private IntentFilter intentFilter;
+	private BroadcastReceiver refreshSyncReceiver;
+	private String[] itemForList;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,12 +60,20 @@ public class MainActivity extends ListActivity {
 		context = getApplicationContext();
 		refreshSyncReceiver = new RefreshSyncReceiver();
 		intentFilter = new IntentFilter();
-		intentFilter.addAction(Constans.broadcastMessage);
-		registerReceiver(refreshSyncReceiver, intentFilter);
+		intentFilter.addAction(Constans.changesQuestionnaireMessage);
+		itemForList = new String[0];
+		arrayAdapter = new CustomDepartmentAdapter(context, R.layout.main,
+				itemForList);
+		context.registerReceiver(refreshSyncReceiver, intentFilter);
 		startService(new Intent(context, SyncService.class));
+		setListAdapter(arrayAdapter);
+		csvExport = new CSVExport();
 		executeTask();
 	}
 
+	/**
+	 * Result of coming back to this activity from SecondActivity.java
+	 */
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == Constans.RESULT_EXIT) {
@@ -81,7 +96,11 @@ public class MainActivity extends ListActivity {
 	 */
 	@Override
 	protected void onPause() {
-		unregisterReceiver(refreshSyncReceiver);
+		try {
+			unregisterReceiver(refreshSyncReceiver);
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		}
 		super.onPause();
 	}
 
@@ -96,6 +115,9 @@ public class MainActivity extends ListActivity {
 		super.onResume();
 	}
 
+	/**
+	 * Options menu
+	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
@@ -129,7 +151,6 @@ public class MainActivity extends ListActivity {
 				AlertsDialog.DialogBuilder.createHelpWindow(this,
 						getString(R.string.help1)).show();
 			} catch (NameNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return true;
@@ -150,17 +171,95 @@ public class MainActivity extends ListActivity {
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
 			Intent i = new Intent(MainActivity.this, SecondActivity.class);
-			i.putExtra("title", ((TextView) view.findViewById(R.id.list_item_firstscreen)).getText());
+			i.putExtra("title", ((TextView) view
+					.findViewById(R.id.list_item_firstscreen)).getText());
 			i.putExtra("questionnaryName", listViewElementsArray[(int) id]);
+			try {
+				unregisterReceiver(refreshSyncReceiver);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
 			startActivityForResult(i, 0);
 		}
 	};
 
+	private OnCreateContextMenuListener onCreateContextMenuListener = new OnCreateContextMenuListener() {
+
+		@Override
+		public void onCreateContextMenu(ContextMenu menu, View v,
+				ContextMenuInfo menuInfo) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.csv_main_screen_context, menu);
+		}
+	};
+	private CSVExport csvExport;
+
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+				.getMenuInfo();
+		long id = info.id;
+		switch (item.getItemId()) {
+		case R.id.csvexport:
+			try {
+				csvExport
+						.exportCSVToFile(
+								"/mnt/sdcard/file2.csv",
+								LocalDAOContener
+										.getFilledQuestionnaireTupleByName(listViewElementsArray[(int) id]));
+				// TODO file chooser in preferences
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return true;
+		case R.id.csvimport:
+			ArrayList<QuestionnaireTuple> questionnaireTuples = new ArrayList<QuestionnaireTuple>(
+					LocalDAOContener
+							.getQuestionnaireTuplesByName(listViewElementsArray[(int) id]));
+			try {
+				csvExport.importCSVFromFile("/mnt/sdcard/file2.csv",
+						questionnaireTuples.get(0).getFilled());
+				// TODO file name to input and in preferences to choose
+				// directory to save
+				// XXX how it is about get(0). is any time
+				// getQuestionnaireTuplesByName -> should be by id
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return true;
+		case R.id.cancelitem:
+			return false;
+		default:
+			return super.onContextItemSelected(item);
+		}
+	};
+
+	/**
+	 * Execute task in AsyncTask
+	 */
 	private void executeTask() {
-		new GetItemFromDatabase().execute(0);
+		new GetFirstTimeItemFromDatabase().execute(0);
 	}
 
-	private class GetItemFromDatabase extends
+	private String[] getItemForList() {
+		ArrayList<String> array = new ArrayList<String>();
+		Collection<QuestionnaireTuple> qq = LocalDAOContener
+				.getQuestionnaireTuples();
+		for (QuestionnaireTuple q : qq) {
+			array.add(q.getName());
+		}
+		listViewElementsArray = new String[array.size()];
+		array.toArray(listViewElementsArray);
+		return listViewElementsArray;
+	}
+
+	/**
+	 * Class to load items from database. Set loading window with progressbar
+	 * because first time this could take more time that expected
+	 * 
+	 * @author pszafer@gmail.com
+	 * 
+	 */
+	private class GetFirstTimeItemFromDatabase extends
 			AsyncTask<Integer, Integer, CustomDepartmentAdapter> {
 		ProgressDialog progressDialog = new ProgressDialog(MainActivity.this);
 
@@ -174,17 +273,12 @@ public class MainActivity extends ListActivity {
 			progressDialog.setTitle(getString(R.string.app_name));
 			progressDialog.setIcon(R.drawable.icon);
 			progressDialog.setMessage(getString(R.string.loading_progressbar));
-			progressDialog.show();
-		}
-
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-		 */
-		@Override
-		protected void onProgressUpdate(Integer... values) {
-
+			MainActivity.this.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					progressDialog.show();
+				}
+			});
 		}
 
 		/*
@@ -194,8 +288,10 @@ public class MainActivity extends ListActivity {
 		 */
 		@Override
 		protected CustomDepartmentAdapter doInBackground(Integer... params) {
+			LocalDAOContener.loadContext(context);
+			itemForList = getItemForList();
 			CustomDepartmentAdapter arrayAdapter = new CustomDepartmentAdapter(
-					context, R.layout.main, getItemForList());
+					context, R.layout.main, itemForList);
 			if (arrayAdapter != null && arrayAdapter.getCount() > 0) {
 				return arrayAdapter;
 			}
@@ -206,37 +302,69 @@ public class MainActivity extends ListActivity {
 		protected void onPostExecute(CustomDepartmentAdapter arrayAdapter) {
 			progressDialog.dismiss();
 			if (arrayAdapter != null) {
-				setListAdapter(arrayAdapter);
+				MainActivity.this.arrayAdapter = arrayAdapter;
+				setListAdapter(MainActivity.this.arrayAdapter);
 				ListView lv = getListView();
 				lv.setTextFilterEnabled(true);
 				lv.setOnItemClickListener(onItemClickListener);
+				lv.setOnCreateContextMenuListener(onCreateContextMenuListener);
 				Log.v("MainActivity", "ok");
 			} else {
 				String temp = context.getString(R.string.problem_information);
-				arrayAdapter = new CustomDepartmentAdapter(context, R.layout.problem_main, new String[] {  temp});
-				setListAdapter(arrayAdapter);
+				MainActivity.this.arrayAdapter = new CustomDepartmentAdapter(
+						context, R.layout.problem_main, new String[] { temp });
+				setListAdapter(MainActivity.this.arrayAdapter);
 				try {
 					Constans.RefreshSyncAdapter.refreshSyncAdapter(context);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-
 			super.onPostExecute(arrayAdapter);
 		}
 
-		private String[] getItemForList() {
-			ArrayList<String> array = new ArrayList<String>();
-			LocalDAOContener.loadContext(context);
-			Collection<QuestionnaireTuple> qq = LocalDAOContener
-					.getQuestionnaireTuples();
-			for (QuestionnaireTuple q : qq) {
-				array.add(q.getName());
-			}
-			listViewElementsArray = new String[array.size()];
-			array.toArray(listViewElementsArray);
-			return listViewElementsArray;
+	}
+
+	/**
+	 * Refresh CustomDepartmentAdapter using notifyDataSetChanged in AsyncTask
+	 * to save UI
+	 * 
+	 * @author pszafer@gmail.com
+	 * 
+	 */
+	private class RefreshItemsFromDatabase extends
+			AsyncTask<Integer, Integer, String[]> {
+
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.os.AsyncTask#doInBackground(Params[])
+		 */
+		@Override
+		protected String[] doInBackground(Integer... params) {
+			String[] array = getItemForList();
+			MainActivity.this.itemForList = array;
+			return array;
 		}
+
+		@Override
+		protected void onPostExecute(String[] stringAdapter) {
+			if (stringAdapter != null && stringAdapter.length > 0) {
+				MainActivity.this.arrayAdapter.notifyDataSetChanged();
+			} else {
+				String temp = context.getString(R.string.problem_information);
+				MainActivity.this.arrayAdapter = new CustomDepartmentAdapter(
+						context, R.layout.problem_main, new String[] { temp });
+				setListAdapter(MainActivity.this.arrayAdapter);
+				try {
+					Constans.RefreshSyncAdapter.refreshSyncAdapter(context);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			super.onPostExecute(stringAdapter);
+		}
+
 	}
 
 	private class RefreshSyncReceiver extends BroadcastReceiver {
@@ -252,7 +380,7 @@ public class MainActivity extends ListActivity {
 		public void onReceive(Context context, Intent intent) {
 			String info = intent.getStringExtra("info");
 			if (info != null) {
-				executeTask();
+				new RefreshItemsFromDatabase().execute(0);
 			}
 		}
 
@@ -271,34 +399,42 @@ public class MainActivity extends ListActivity {
 			this.objects = objects;
 		}
 
-		
+		/*
+		 * (non-Javadoc)
+		 * 
+		 * @see android.widget.ArrayAdapter#notifyDataSetChanged()
+		 */
+		@Override
+		public void notifyDataSetChanged() {
+			objects = MainActivity.this.itemForList;
+			super.notifyDataSetChanged();
+		}
+
 		public int getCount() {
 			return this.objects.length;
 		}
-		
+
 		public String getItem(int index) {
 			return this.objects[index];
 		}
 
-		
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			View row = convertView;
-			if(row == null){
-				LayoutInflater inflater = (LayoutInflater)getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			if (row == null) {
+				LayoutInflater inflater = (LayoutInflater) getContext()
+						.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				row = inflater.inflate(textViewResourceId, parent, false);
 			}
 			int textViewID, iconID;
-			if(R.layout.main == textViewResourceId){
+			if (R.layout.main == textViewResourceId) {
 				textViewID = R.id.list_item_firstscreen;
 				iconID = R.id.department_icon;
-			}
-			else{
+			} else {
 				textViewID = R.id.list_item_firstscreen_problem;
 				iconID = R.id.department_icon_problem;
 			}
-			TextView label = (TextView) row
-					.findViewById(textViewID);
+			TextView label = (TextView) row.findViewById(textViewID);
 			label.setText(objects[position]);
 			ImageView icon = (ImageView) row.findViewById(iconID);
 			String information = context
