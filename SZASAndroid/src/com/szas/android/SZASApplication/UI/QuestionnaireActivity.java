@@ -20,12 +20,16 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RadioButton;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
@@ -54,6 +58,7 @@ public class QuestionnaireActivity extends Activity {
 	 * Linear layout and view to build screen
 	 */
 	LinearLayout linear;
+	RelativeLayout relativeLayout;
 	ScrollView sv;
 	/**
 	 * Text view to show header
@@ -124,7 +129,14 @@ public class QuestionnaireActivity extends Activity {
 				"filledQuestionnaireID");
 		sv = new ScrollView(this);
 		linear = new LinearLayout(this);
+		relativeLayout = new RelativeLayout(this);
+		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
+		params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
+		relativeLayout.setLayoutParams(params);
 		linear.setOrientation(LinearLayout.VERTICAL);
+		LinearLayout.LayoutParams linearParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
+		linear.setLayoutParams(linearParams);
+	//	relativeLayout.addView(linear);
 		sv.addView(linear);
 		alreadySaved = false;
 		new GetQuestonnaireFromDB().execute(0);
@@ -469,7 +481,7 @@ public class QuestionnaireActivity extends Activity {
 				editText = new EditText(QuestionnaireActivity.this);
 				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
 						editText));
-				txt = ((FieldTextBoxTuple)object).getValue();
+				txt = ((FieldTextBoxTuple) object).getValue();
 				if (txt != null)
 					editText.setText(txt);
 			} else
@@ -484,7 +496,7 @@ public class QuestionnaireActivity extends Activity {
 				editText.setMaxLines(4);
 				editText.setMinLines(2);
 				editText.setScrollbarFadingEnabled(true);
-				txt = ((FieldTextAreaTuple)object).getValue();
+				txt = ((FieldTextAreaTuple) object).getValue();
 				if (txt != null)
 					editText.setText(txt);
 			} else
@@ -495,20 +507,38 @@ public class QuestionnaireActivity extends Activity {
 				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
 						editText));
 				editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
-				int val = ((FieldIntegerBoxTuple)object).getValue();
+				int val = ((FieldIntegerBoxTuple) object).getValue();
 				if (val > -1)
 					editText.setText(val);
 			}
 			if (isOnList)
 				editText.setBackgroundColor(android.graphics.Color.CYAN);
-			
+
 			editText.addTextChangedListener(new CustomTextWatcher());
 			editText.setTag(R.id.nameTag, name);
 			editText.setTag(R.id.onListTag, Boolean.toString(isOnList));
 			linear.addView(text);
 			linear.addView(editText);
 		}
-
+		LinearLayout linear2 = new LinearLayout(QuestionnaireActivity.this);
+		SeekBar seekBar = new SeekBar(QuestionnaireActivity.this);
+		TextView textView = new TextView(QuestionnaireActivity.this);
+		LayoutParams params2 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		textView.setLayoutParams(params2);
+		seekBar.setLayoutParams(params2);
+		try {
+			textView.setText("test");
+			seekBar.setMax(180);
+			//seekBarView.addView(seekBar);
+			//seekBarView.addView(textView);
+			//linear.addView(seekBarView);
+			linear2.addView(textView);
+			linear2.addView(seekBar);
+			linear.addView(linear2);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		// linear.addView(view);
 	}
 
 	/**

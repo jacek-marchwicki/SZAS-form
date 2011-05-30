@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="/home/xps/Pobrane/supercsv/SuperCSV-1.52/SuperCSV-1.52-javadoc.zip"/>
-	<classpathentry kind="lib" path="/home/xps/Pobrane/supercsv/SuperCSV-1.52/SuperCSV-with_src-1.52.jar"/>
+	<classpathentry kind="lib" path="libs/SuperCSV-1.52-javadoc.zip"/>
+	<classpathentry kind="lib" path="libs/SuperCSV-with_src-1.52.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
