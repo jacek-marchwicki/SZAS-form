@@ -70,7 +70,12 @@ public class GoogleAuthentication {
 	 * @return authCookie
 	 */
 	public Cookie getAuthCookie() {
+		try{
 		Log.v("GoogleAuthentication", "Cookie value: " + authCookie.getValue());
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 		return authCookie;
 	}
 

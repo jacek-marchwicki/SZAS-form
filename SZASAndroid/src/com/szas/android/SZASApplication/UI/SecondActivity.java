@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
+
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -38,6 +39,7 @@ import com.szas.android.SZASApplication.Constans;
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.QuestionnaireTypeRow;
 import com.szas.android.SZASApplication.R;
+import com.szas.data.FieldDataTuple;
 import com.szas.data.FieldTextBoxTuple;
 import com.szas.data.FieldTuple;
 import com.szas.data.FilledQuestionnaireTuple;
@@ -62,6 +64,7 @@ public class SecondActivity extends ListActivity {
 	private Context context;
 	private IntentFilter intentFilter;
 	private SeparatedListAdapter arrayAdapter;
+	private ArrayList<String> isOnListStrings;
 
 	/**
 	 * Items showed in AlertDialog ListAdapter
@@ -226,13 +229,16 @@ public class SecondActivity extends ListActivity {
 				i.putExtra("filledQuestionnaireID", String.valueOf(_id));
 			i.putExtra("questionnaryType", mQuestionnaireTypeRows.get((int) id)
 					.getType());
+			i.putStringArrayListExtra("isOnListStrings", isOnListStrings);
 			startActivityForResult(i, 1);
 		}
 	};
 
 	/**
 	 * Remove selected item from list from database
-	 * @param id id of item
+	 * 
+	 * @param id
+	 *            id of item
 	 */
 	private void deleteItem(long id) {
 		long _id = mQuestionnaireTypeRows.get((int) id).getId();
@@ -242,6 +248,7 @@ public class SecondActivity extends ListActivity {
 
 	/**
 	 * Get filled items by questionnaireName
+	 * 
 	 * @return returns List<QuestionnaireTypeRow>
 	 */
 	private List<QuestionnaireTypeRow> getFilledItemsForList() {
@@ -251,12 +258,24 @@ public class SecondActivity extends ListActivity {
 		List<QuestionnaireTypeRow> questionnaireTypeRows = new ArrayList<QuestionnaireTypeRow>();
 		for (FilledQuestionnaireTuple filledQuestionnaireTuple : filledQuestionnaireTuples) {
 			long id2 = filledQuestionnaireTuple.getId();
+
 			String fullName = "";
-			for (FieldTuple fieldTuple : filledQuestionnaireTuple
-					.getFilledFields()) {
-				if (fieldTuple.isOnList())
-					fullName += ((FieldTextBoxTuple) fieldTuple).getValue()
-							+ " ";
+			if (isOnListStrings != null) {
+				ArrayList<FieldTuple> filledFields = filledQuestionnaireTuple
+						.getFilledFields();
+				for (FieldTuple fieldTuple : filledFields) {
+					if (isOnListStrings.contains(fieldTuple.getName())) {
+						String value = ((FieldTextBoxTuple) fieldTuple).getValue();
+						if(value.equals("")){
+							fullName += fieldTuple.getName() + " ";
+						}
+						else
+						{
+							fullName += value
+								+ " ";
+						}
+					}
+				}
 			}
 			if (!fullName.equals(""))
 				fullName = fullName.substring(0, fullName.lastIndexOf(" "));
@@ -271,8 +290,18 @@ public class SecondActivity extends ListActivity {
 		questionnaireTuples = new ArrayList<QuestionnaireTuple>(
 				LocalDAOContener.getQuestionnaireTuplesByName(questionnaryName));
 		List<QuestionnaireTypeRow> questionnaireTypeRows = new ArrayList<QuestionnaireTypeRow>();
-		long id = questionnaireTuples.get(0).getId();
-		QuestionnaireTypeRow questionnaireTypeRow = new QuestionnaireTypeRow(questionnaireTuples.get(0).getName(), 0, id, "");
+		QuestionnaireTuple questionnaireTuple = questionnaireTuples.get(0);
+		long id = questionnaireTuple.getId();
+		ArrayList<FieldDataTuple> fields = questionnaireTuple.getFields();
+		for (FieldDataTuple field : fields) {
+			if (field.isOnList()) {
+				if (isOnListStrings == null)
+					isOnListStrings = new ArrayList<String>();
+				isOnListStrings.add(field.getName());
+			}
+		}
+		QuestionnaireTypeRow questionnaireTypeRow = new QuestionnaireTypeRow(
+				questionnaireTuple.getName(), 0, id, "");
 		questionnaireTypeRows.add(questionnaireTypeRow);
 		mQuestionnaireTypeRows.add(0, questionnaireTypeRow);
 		return questionnaireTypeRows;
@@ -335,7 +364,8 @@ public class SecondActivity extends ListActivity {
 						getString(R.string.empty_questionnaire),
 						new CustomArrayAdapter(context, R.layout.second_screen,
 								emptyItem));
-				SecondActivity.this.itemForList = filledItems != null ? filledItems : new ArrayList<QuestionnaireTypeRow>(); 
+				SecondActivity.this.itemForList = filledItems != null ? filledItems
+						: new ArrayList<QuestionnaireTypeRow>();
 				SecondActivity.this.itemCustomArrayAdapter
 						.notifyDataSetChanged();
 				arrayAdapter.addSection(
@@ -348,7 +378,7 @@ public class SecondActivity extends ListActivity {
 				lv.setOnCreateContextMenuListener(onCreateContextMenuListener);
 				isProblemInformationShowed = false;
 			} else {
-				isProblemInformationShowed =true;
+				isProblemInformationShowed = true;
 				ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<String>(
 						context,
 						R.layout.main,
@@ -372,19 +402,21 @@ public class SecondActivity extends ListActivity {
 			if (params[0] == 1) {
 				LocalDAOContener.refreshFilledQuestionnaireTuples();
 			}
-			QuestionnaireTypeRow questionnaireTypeRow = mQuestionnaireTypeRows.get(0);
+			QuestionnaireTypeRow questionnaireTypeRow = mQuestionnaireTypeRows
+					.get(0);
 			mQuestionnaireTypeRows.clear();
 			mQuestionnaireTypeRows.add(questionnaireTypeRow);
-			List<QuestionnaireTypeRow> filledItems = getFilledItemsForList(); 
+			List<QuestionnaireTypeRow> filledItems = getFilledItemsForList();
 			SecondActivity.this.itemForList = filledItems;
-			if(filledItems!=null && filledItems.size()>0)
+			if (filledItems != null && filledItems.size() > 0)
 				return filledItems;
 			return null;
 		}
 
 		protected void onPostExecute(List<QuestionnaireTypeRow> items) {
 			if (items != null) {
-				SecondActivity.this.itemCustomArrayAdapter.notifyDataSetChanged();
+				SecondActivity.this.itemCustomArrayAdapter
+						.notifyDataSetChanged();
 				isProblemInformationShowed = false;
 			} else {
 				isProblemInformationShowed = true;
@@ -411,10 +443,9 @@ public class SecondActivity extends ListActivity {
 		public void onReceive(Context context, Intent intent) {
 			String info = intent.getStringExtra("info");
 			if (info != null && info.equals("filled")) {
-				if(isProblemInformationShowed){
+				if (isProblemInformationShowed) {
 					new GetFirstTimeItemFromDatabase().execute(1);
-				}
-				else
+				} else
 					new GetFilledItemsFromDatabase().execute(0);
 			}
 		}
