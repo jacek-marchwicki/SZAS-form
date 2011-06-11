@@ -23,5 +23,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/spiffy-with_source-all-0.05.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/SuperCSV-1.52.jar" sourcepath="war/WEB-INF/lib/SuperCSV-with_src-1.52.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/SuperCSV-with_src-1.52.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/xmlpull_1_1_3_4c.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
