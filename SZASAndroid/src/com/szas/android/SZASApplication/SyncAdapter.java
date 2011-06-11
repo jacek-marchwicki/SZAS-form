@@ -11,6 +11,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.http.client.ClientProtocolException;
 
@@ -114,6 +115,8 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			URL url = new URL(gaeUrl + "sync");
 			URLConnection conn = url.openConnection();
 			conn.addRequestProperty("Content-Type", "application/json; charset=UTF-8");
+			conn.addRequestProperty("Accept-Encoding", "gzip,deflate,sdch");
+			conn.addRequestProperty("Content-Encoding", "gzip");
 			conn.addRequestProperty("Cookie", googleAuthentication.getAuthCookie()
 					.getName()
 					+ "="
@@ -122,10 +125,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 			//this do post method
 			conn.setDoOutput(true);		
 			OutputStream outputStream = conn.getOutputStream();
-			OutputStreamWriter out = new OutputStreamWriter(outputStream);
+			GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
+			OutputStreamWriter out = new OutputStreamWriter(gzipOutputStream);
 			new JSONSerializer().prettyPrint(true).include("*").serialize(elementsToSync, out);
 			out.close();
-
+			gzipOutputStream.close();
 			InputStream inputStream = null;
 			inputStream = conn.getInputStream();
 			String encoding = conn.getContentEncoding();
