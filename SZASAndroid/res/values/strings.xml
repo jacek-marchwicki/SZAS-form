@@ -11,6 +11,7 @@
 	<string name="help">Help</string>
 	<string name="refresh_elements">Refresh from network</string>
 	<string name="refresh_elements_short">Sync</string>
+	<string name="menu_preferences">Preferences</string>
 	<string name="problem_information">Sorry. I am looking for download data from servers
 		for you, right now. </string>
 	<string name="delete_action">Delete</string>
@@ -32,4 +33,12 @@
 	<string name="save2pdf">Save to pdf (alpha stadium)</string>
 	<string name="export_to_csv">Export to CSV</string>
 	<string name="import_to_csv">Import from CSV</string>
+	<string name="preferenceName">Preferences</string>
+	<string name="preference_account_category">Change used Google account</string>
+	<string name="preference_chooseAccount">Choose account</string>
+	<string name="preference_accountchoose_key">preference_account_choose</string>
+	<string name="preferences_import_directory">Import directory for CSV files (not changeable)</string>
+	<string name="preference_import_key">preference_import_dir</string>
+	<string name="preferences_export_directory">Export directory for CSV files (not changeable)</string>
+	<string name="preference_export_key">preference_export_dir</string>
 </resources>

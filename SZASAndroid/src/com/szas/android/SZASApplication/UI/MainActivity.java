@@ -39,6 +39,7 @@ import com.szas.android.SZASApplication.R;
 import com.szas.android.SZASApplication.SyncService;
 import com.szas.data.QuestionnaireTuple;
 import com.szas.export.CSVExport;
+import com.szas.export.WrongCSVFile;
 
 //"http://szas-form.appspot.com/syncnoauth
 /**
@@ -157,6 +158,12 @@ public class MainActivity extends ListActivity {
 		case R.id.refresh_item:
 			Constans.RefreshSyncAdapter.refreshSyncAdapter(context);
 			return true;
+		case R.id.preferencesmenu:
+			Constans.createDirectory(context, true);
+			Constans.createDirectory(context, false);
+			Intent i = new Intent(MainActivity.this, Preferences.class);
+			startActivity(i);
+			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -200,10 +207,11 @@ public class MainActivity extends ListActivity {
 		long id = info.id;
 		switch (item.getItemId()) {
 		case R.id.csvexport:
+			Constans.createDirectory(context, false);
 			try {
 				csvExport
 						.exportCSVToFile(
-								"/mnt/sdcard/file2.csv",
+								Constans.mCSVExportDirectory + "/"+listViewElementsArray[(int) id],
 								LocalDAOContener
 										.getFilledQuestionnaireTupleByName(listViewElementsArray[(int) id]));
 				// TODO file chooser in preferences
@@ -212,17 +220,20 @@ public class MainActivity extends ListActivity {
 			}
 			return true;
 		case R.id.csvimport:
+			Constans.createDirectory(context, true);
 			ArrayList<QuestionnaireTuple> questionnaireTuples = new ArrayList<QuestionnaireTuple>(
 					LocalDAOContener
 							.getQuestionnaireTuplesByName(listViewElementsArray[(int) id]));
 			try {
-				csvExport.importCSVFromFile("/mnt/sdcard/file2.csv",
+				csvExport.importCSVFromFile(Constans.mCSVImportDirectory,
 						questionnaireTuples.get(0).getFilled());
 				// TODO file name to input and in preferences to choose
 				// directory to save
 				// XXX how it is about get(0). is any time
 				// getQuestionnaireTuplesByName -> should be by id
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (WrongCSVFile e) {
 				e.printStackTrace();
 			}
 			return true;
@@ -389,7 +400,7 @@ public class MainActivity extends ListActivity {
 	public class CustomDepartmentAdapter extends ArrayAdapter<String> {
 
 		String[] objects;
-		private final int textViewResourceId;
+		private int textViewResourceId;
 
 		public CustomDepartmentAdapter(Context context, int textViewResourceId,
 				String[] objects) {
@@ -407,6 +418,9 @@ public class MainActivity extends ListActivity {
 		@Override
 		public void notifyDataSetChanged() {
 			objects = MainActivity.this.itemForList;
+			if(MainActivity.this.arrayAdapter.textViewResourceId == R.layout.problem_main){
+				MainActivity.this.arrayAdapter.textViewResourceId = R.layout.main;
+			}
 			super.notifyDataSetChanged();
 		}
 

@@ -11,6 +11,7 @@
 	<string name="help">Pomoc</string>
 	<string name="refresh_elements">Odśwież z sieci</string>
 	<string name="refresh_elements_short">Sync</string>
+	<string name="menu_preferences">Ustawienia</string>
 	<string name="problem_information">Przepraszam. W tej chwili staram się pobrać dane z
 		serwera dla Ciebie. </string>
 	<string name="delete_action">Usuń</string>
@@ -30,4 +31,9 @@
 	<string name="save2pdf">Zapisz do pdf (wersja rozwojowa)</string>
 	<string name="export_to_csv">Eksportuj kategorię do CSV</string>
 	<string name="import_to_csv">Import z pliku CSV</string>
+	<string name="preferenceName">Ustawienia</string>
+	<string name="preference_account_category">Zmień wykorzystane konto Google</string>
+	<string name="preference_chooseAccount">Wybierz konto</string>
+	<string name="preferences_import_directory">Katalog importowanych plików CSV (brak możliwości edycji)</string>
+	<string name="preferences_export_directory">Katalog eksportowanych plików CSV (brak możliwości edycji)</string>
 </resources>

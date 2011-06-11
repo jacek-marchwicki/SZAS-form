@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.szas.android.SZASApplication" android:versionCode="1"
-	android:versionName="0.5">
+	package="com.szas.android.SZASApplication" android:versionCode="1" android:versionName="0.7">
 
 	<uses-sdk android:minSdkVersion="9" android:targetSdkVersion="9" />
 
@@ -41,5 +40,6 @@
 				android:resource="@xml/syncadapter" />
 		</service>
 		<activity android:name=".UI.QuestionnaireActivity"></activity>
+		<activity android:name=".UI.Preferences"></activity>
 	</application>
 </manifest>

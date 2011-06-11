@@ -10,27 +10,29 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RadioButton;
-import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
@@ -58,7 +60,6 @@ public class QuestionnaireActivity extends Activity {
 	 * Linear layout and view to build screen
 	 */
 	LinearLayout linear;
-	RelativeLayout relativeLayout;
 	ScrollView sv;
 	/**
 	 * Text view to show header
@@ -68,7 +69,7 @@ public class QuestionnaireActivity extends Activity {
 	/**
 	 * Forms for input data
 	 */
-	EditText editText;
+	View editText;
 	RadioButton radioButton;
 	MultiAutoCompleteTextView multiAutoCompleteTextView;
 
@@ -81,20 +82,6 @@ public class QuestionnaireActivity extends Activity {
 	 * ID different than null if SecondActivity opens filled questionnaire
 	 */
 	String _filledId = null;
-
-	/**
-	 * Local variable to save FilledQuestionnaireTuple
-	 */
-	private FilledQuestionnaireTuple filledQuestionnaireTuple;
-
-	/**
-	 * Filled fields from filledQuestionnaireTuple
-	 */
-	private ArrayList<FieldTuple> filledFields;
-	/**
-	 * Local variable to save empty questionnaireTuple
-	 */
-	private QuestionnaireTuple questionnaireTuple;
 
 	/**
 	 * Check if data was already saved, because we won't save it too many times
@@ -116,6 +103,47 @@ public class QuestionnaireActivity extends Activity {
 	 */
 	int counter = 0;
 
+	/**
+	 * Local variable to save empty questionnaireTuple
+	 */
+	private QuestionnaireTuple questionnaireTuple;
+
+	/**
+	 * Local variable to save FilledQuestionnaireTuple
+	 */
+	private FilledQuestionnaireTuple filledQuestionnaireTuple;
+
+	/**
+	 * Empty fields to fill
+	 */
+	private ArrayList<FieldDataTuple> questionnaireFields;
+
+	/**
+	 * Filled fields from filledQuestionnaireTuple
+	 */
+	private ArrayList<FieldTuple> filledFields;
+
+	ArrayList<String> isOnListStrings;
+
+	/**
+	 * Flag to know if AsyncTask is working to avoid recreating it on change
+	 * screen orientation
+	 */
+	private boolean mShownDialog = false;
+
+	private final static int DIALOG_ID = 1;
+
+	private GetQuestonnaireFromDB mTask;
+
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog) {
+		super.onPrepareDialog(id, dialog);
+
+		if (id == DIALOG_ID) {
+			mShownDialog = true;
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -124,23 +152,41 @@ public class QuestionnaireActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		this._id = getIntent().getExtras().getLong("questionnaryID");
-		this._filledId = getIntent().getExtras().getString(
-				"filledQuestionnaireID");
-		sv = new ScrollView(this);
-		linear = new LinearLayout(this);
-		relativeLayout = new RelativeLayout(this);
-		RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.FILL_PARENT, RelativeLayout.LayoutParams.FILL_PARENT);
-		params.addRule(RelativeLayout.ALIGN_PARENT_LEFT, RelativeLayout.TRUE);
-		relativeLayout.setLayoutParams(params);
-		linear.setOrientation(LinearLayout.VERTICAL);
-		LinearLayout.LayoutParams linearParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT);
-		linear.setLayoutParams(linearParams);
-	//	relativeLayout.addView(linear);
-		sv.addView(linear);
+		setContentView(R.layout.questionnaires_layout);
+		Intent i = getIntent();
+		this._id = i.getExtras().getLong("questionnaryID");
+		this.isOnListStrings = i.getStringArrayListExtra("isOnListStrings");
+		this._filledId = i.getExtras().getString("filledQuestionnaireID");
 		alreadySaved = false;
-		new GetQuestonnaireFromDB().execute(0);
+		Object retained = getLastNonConfigurationInstance();
+		if (retained instanceof GetQuestonnaireFromDB) {
+			mTask = (GetQuestonnaireFromDB) retained;
+			mTask.setActivity(this);
+		} else {
+			mTask = new GetQuestonnaireFromDB(QuestionnaireActivity.this);
+			mTask.execute(0);
+		}
 
+	}
+
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+		mTask.setActivity(null);
+		return mTask;
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		switch (id) {
+		case DIALOG_ID:
+			ProgressDialog progressDialog = new ProgressDialog(
+					QuestionnaireActivity.this);
+			progressDialog.setTitle(getString(R.string.app_name));
+			progressDialog.setIcon(R.drawable.icon);
+			progressDialog.setMessage(getString(R.string.loading_progressbar));
+			return progressDialog;
+		}
+		return super.onCreateDialog(id);
 	}
 
 	@Override
@@ -175,6 +221,16 @@ public class QuestionnaireActivity extends Activity {
 	protected void onResume() {
 		alreadySaved = false;
 		super.onResume();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
 	}
 
 	/*
@@ -246,9 +302,9 @@ public class QuestionnaireActivity extends Activity {
 			filledQuestionnaireTuple = questionnaireTuple.getFilled();
 		}
 		filledFields = filledQuestionnaireTuple.getFilledFields();
+		String tag = editText.getTag(R.id.nameTag).toString();
 		for (FieldTuple fieldTuple : filledFields)
-			if (fieldTuple.getName().equals(
-					editText.getTag(R.id.nameTag).toString())) {
+			if (fieldTuple.getName().equals(tag)) {
 				((FieldTextBoxTuple) fieldTuple).setValue((editText.getText())
 						.toString());
 				break;
@@ -287,6 +343,19 @@ public class QuestionnaireActivity extends Activity {
 				.insertUpdateFilledQuestionnaireTuple(filledQuestionnaireTuple);
 	}
 
+	private void onTaskCompleted(int asyncResult) {
+		if (mShownDialog) {
+			dismissDialog(DIALOG_ID);
+			Toast.makeText(this, "Finished..", Toast.LENGTH_LONG).show();
+		}
+		linear = (LinearLayout) findViewById(R.id.linearLayout1);
+		if (asyncResult == 0) {
+			loadData(questionnaireFields);
+		} else {
+			loadData(filledFields);
+		}
+	}
+
 	/**
 	 * Class to listen of focus changed in EditText or MultiAutoCompleteTextView
 	 * 
@@ -298,8 +367,8 @@ public class QuestionnaireActivity extends Activity {
 	 */
 	private class CustomOnFocusChangeListener implements
 			View.OnFocusChangeListener {
-		EditText editText;
-		MultiAutoCompleteTextView multiAutoCompleteTextView;
+		private EditText editText;
+		private MultiAutoCompleteTextView multiAutoCompleteTextView;
 
 		/**
 		 * Constructor for EditText
@@ -389,12 +458,37 @@ public class QuestionnaireActivity extends Activity {
 	private class GetQuestonnaireFromDB extends
 			AsyncTask<Integer, Integer, Integer> {
 
-		ProgressDialog progressDialog;
+		/**
+		 * Local variable to save empty questionnaireTuple
+		 */
+		private QuestionnaireTuple questionnaireTuple;
+
+		/**
+		 * Local variable to save FilledQuestionnaireTuple
+		 */
+		private FilledQuestionnaireTuple filledQuestionnaireTuple;
 
 		/**
 		 * Empty fields to fill
 		 */
-		ArrayList<FieldDataTuple> questionnaireFields;
+		private ArrayList<FieldDataTuple> questionnaireFields;
+
+		/**
+		 * Filled fields from filledQuestionnaireTuple
+		 */
+		private ArrayList<FieldTuple> filledFields;
+
+		QuestionnaireActivity activity;
+
+		private boolean completed;
+		private int asyncResult = -1;
+
+		/**
+		 * 
+		 */
+		public GetQuestonnaireFromDB(QuestionnaireActivity activity) {
+			this.activity = activity;
+		}
 
 		/*
 		 * (non-Javadoc)
@@ -403,17 +497,7 @@ public class QuestionnaireActivity extends Activity {
 		 */
 		@Override
 		protected void onPreExecute() {
-			progressDialog = new ProgressDialog(QuestionnaireActivity.this);
-			progressDialog.setTitle(getString(R.string.app_name));
-			progressDialog.setIcon(R.drawable.icon);
-			progressDialog.setMessage(getString(R.string.loading_progressbar));
-			QuestionnaireActivity.this.runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					progressDialog.show();
-				}
-			});
-			super.onPreExecute();
+			activity.showDialog(DIALOG_ID);
 		}
 
 		/*
@@ -427,13 +511,14 @@ public class QuestionnaireActivity extends Activity {
 				questionnaireTuple = LocalDAOContener
 						.getQuestionnaireTupleById(_id);
 				questionnaireName = questionnaireTuple.getName();
-				this.questionnaireFields = questionnaireTuple.getFields();
+				questionnaireFields = questionnaireTuple.getFields();
 				return 0;
 			} else {
 				filledQuestionnaireTuple = LocalDAOContener
 						.getFilledQuestionnaireTupleById(Long
 								.parseLong(_filledId));
 				questionnaireName = filledQuestionnaireTuple.getName();
+
 				filledFields = filledQuestionnaireTuple.getFilledFields();
 				return 1;
 			}
@@ -446,16 +531,28 @@ public class QuestionnaireActivity extends Activity {
 		 */
 		@Override
 		protected void onPostExecute(Integer result) {
-			if (result == 0) {
-				loadData(questionnaireFields);
-			} else {
-				loadData(filledFields);
-			}
-			setContentView(sv);
-			progressDialog.dismiss();
+			this.asyncResult = result;
+			completed = true;
+			notifyActivityTaskCompleted();
 			super.onPostExecute(result);
 		}
 
+		private void setActivity(QuestionnaireActivity activity) {
+			this.activity = activity;
+			if (completed) {
+				notifyActivityTaskCompleted();
+			}
+		}
+
+		private void notifyActivityTaskCompleted() {
+			if (activity != null) {
+				activity.questionnaireTuple = questionnaireTuple;
+				activity.filledQuestionnaireTuple = filledQuestionnaireTuple;
+				activity.questionnaireFields = questionnaireFields;
+				activity.filledFields = filledFields;
+				activity.onTaskCompleted(this.asyncResult);
+			}
+		}
 	}
 
 	/**
@@ -469,21 +566,28 @@ public class QuestionnaireActivity extends Activity {
 	 *            filledFields
 	 */
 	private void loadData(ArrayList<?> objects) {
+
 		for (Object object : objects) {
 			String name = ((FieldTuple) object).getName().toString();
 			text = new TextView(QuestionnaireActivity.this);
 			text.setText(name);
-			boolean isOnList = ((FieldTuple) object).isOnList();
+			boolean isOnList = false;
+			if (this.isOnListStrings != null
+					&& this.isOnListStrings.contains(name)) {
+				isOnList = true;
+			}
 			String txt = "";
 			// REGULAR TEXT BOX
 			if ((object instanceof FieldTextBoxDataTuple)
 					|| (object instanceof FieldTextBoxTuple)) {
 				editText = new EditText(QuestionnaireActivity.this);
 				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-						editText));
+						(EditText) editText));
 				txt = ((FieldTextBoxTuple) object).getValue();
 				if (txt != null)
-					editText.setText(txt);
+					((EditText) editText).setText(txt);
+				((EditText) editText)
+						.addTextChangedListener(new CustomTextWatcher());
 			} else
 			// MULTILINE TEXT BOX
 			if ((object instanceof FieldTextAreaTuple)
@@ -493,28 +597,29 @@ public class QuestionnaireActivity extends Activity {
 				((MultiAutoCompleteTextView) editText).setSingleLine(false);
 				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
 						((MultiAutoCompleteTextView) editText)));
-				editText.setMaxLines(4);
-				editText.setMinLines(2);
+				((EditText) editText).setMaxLines(4);
+				((EditText) editText).setMinLines(2);
 				editText.setScrollbarFadingEnabled(true);
 				txt = ((FieldTextAreaTuple) object).getValue();
 				if (txt != null)
-					editText.setText(txt);
+					((EditText) editText).setText(txt);
+				((EditText) editText)
+						.addTextChangedListener(new CustomTextWatcher());
 			} else
 			// INTEGER TEXT BOX
 			if ((object instanceof FieldIntegerBoxTuple)
 					|| (object instanceof FieldIntegerBoxDataTuple)) {
 				editText = new EditText(QuestionnaireActivity.this);
 				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-						editText));
-				editText.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
+						((EditText)editText)));
+				((EditText)editText).setInputType(EditorInfo.TYPE_CLASS_NUMBER);
 				int val = ((FieldIntegerBoxTuple) object).getValue();
 				if (val > -1)
-					editText.setText(val);
+					((EditText)editText).setText(String.valueOf(val));
 			}
 			if (isOnList)
 				editText.setBackgroundColor(android.graphics.Color.CYAN);
 
-			editText.addTextChangedListener(new CustomTextWatcher());
 			editText.setTag(R.id.nameTag, name);
 			editText.setTag(R.id.onListTag, Boolean.toString(isOnList));
 			linear.addView(text);
@@ -523,15 +628,16 @@ public class QuestionnaireActivity extends Activity {
 		LinearLayout linear2 = new LinearLayout(QuestionnaireActivity.this);
 		SeekBar seekBar = new SeekBar(QuestionnaireActivity.this);
 		TextView textView = new TextView(QuestionnaireActivity.this);
-		LayoutParams params2 = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		LayoutParams params2 = new LayoutParams(LayoutParams.WRAP_CONTENT,
+				LayoutParams.WRAP_CONTENT);
 		textView.setLayoutParams(params2);
 		seekBar.setLayoutParams(params2);
 		try {
 			textView.setText("test");
 			seekBar.setMax(180);
-			//seekBarView.addView(seekBar);
-			//seekBarView.addView(textView);
-			//linear.addView(seekBarView);
+			// seekBarView.addView(seekBar);
+			// seekBarView.addView(textView);
+			// linear.addView(seekBarView);
 			linear2.addView(textView);
 			linear2.addView(seekBar);
 			linear.addView(linear2);

@@ -148,6 +148,7 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 				}
 
 			} finally {
+				Log.v(LOGTAG, "info");
 				c1.close();
 				c2.close();
 				c3.close();
@@ -547,11 +548,13 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 						DatabaseContentHelper.DBCOL_T },
 				DatabaseContentHelper.DBCOL_type + " = ?",
 				new String[] { name }, null);
+		try{
 		if (syncingElements == null || syncingElements.getCount() <= 0) {
 			DBContentProvider.moveFromOneTableToAnother(
 					DatabaseContentHelper.tableNameInProgressSyncingElements,
 					DatabaseContentHelper.tableNameNotSyncedElements, true);
 		}
+		syncingElements.close();
 		syncingElements = contentResolver.query(
 				DatabaseContentHelper.contentUriInProgressSyncingElements,
 				new String[] { DatabaseContentHelper.DBCOL_ID,
@@ -567,6 +570,10 @@ public class SQLLocalDAO<T extends Tuple> implements LocalDAO<T> {
 						.deserialize(a);
 				ret.add(localTuple);
 			} while (syncingElements.moveToNext());
+		}
+		}
+		finally{
+			syncingElements.close();
 		}
 		return ret;
 	}
