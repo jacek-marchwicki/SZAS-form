@@ -14,7 +14,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/xpp3_min-1.1.4c.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/xstream-gae.jar"/>
 	<classpathentry kind="lib" path="libs/appengine-testing.jar"/>
 	<classpathentry kind="lib" path="libs/appengine-api-stubs.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gwt-channel-api-0.1.jar"/>
@@ -24,5 +23,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/SuperCSV-1.52.jar" sourcepath="war/WEB-INF/lib/SuperCSV-with_src-1.52.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/SuperCSV-with_src-1.52.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/xmlpull_1_1_3_4c.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/xstreamGae.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>
