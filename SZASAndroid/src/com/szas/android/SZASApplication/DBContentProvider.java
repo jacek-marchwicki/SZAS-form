@@ -248,15 +248,15 @@ public class DBContentProvider extends ContentProvider {
 	 * 
 	 * @param insertTable
 	 * @param fromTable
-	 * @param cleanInsertTable
-	 *            set true if you want clean insert table first
+	 * @param cleanFromTable
+	 *            set true if you want clean fromTable table after moving
 	 */
 	public static void moveFromOneTableToAnother(String insertTable,
-			String fromTable, boolean cleanInsertTable) {
+			String fromTable, boolean cleanFromTable) {
 		SQLiteDatabase sqLiteDatabase = databaseContentHelper.getWritableDatabase();
 		DatabaseContentHelper.moveFromOneTableToAnother(sqLiteDatabase
 				, insertTable,
-				fromTable, cleanInsertTable);
+				fromTable, cleanFromTable);
 	}
 
 	/**
@@ -468,15 +468,15 @@ public class DBContentProvider extends ContentProvider {
 		 *            table to insert content
 		 * @param fromTable
 		 *            source of content
-		 * @param cleanInsertTable
+		 * @param cleanFromTable
 		 *            clean insert table first
 		 */
 		public static void moveFromOneTableToAnother(SQLiteDatabase db,
-				String insertTable, String fromTable, boolean cleanInsertTable) {
-			if (cleanInsertTable)
-				db.execSQL("DELETE FROM " + insertTable);
+				String insertTable, String fromTable, boolean cleanFromTable) {
 			db.execSQL("INSERT INTO " + insertTable + " SELECT * FROM "
 					+ fromTable);
+			if (cleanFromTable)
+				db.execSQL("DELETE FROM " + fromTable);
 		}
 
 		/**
