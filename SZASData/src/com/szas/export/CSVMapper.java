@@ -67,10 +67,10 @@ public class CSVMapper {
 						headers[i-1] = key;
 						++i;
 					}
-					data.put("id", fieldTuple.getId());
 					String value = fieldTuple.toString();
 					data.put(key, value);
 				}
+				data.put("id", filledQuestionnaireTuple.getId());
 				listOfAllData.add(data);
 				if((filledFields.size()-1) == i){
 					++i;
@@ -81,7 +81,7 @@ public class CSVMapper {
 				csvWriter.write(data, headers);
 			}
 		} finally {
-			csvWriter.close();
+				csvWriter.close();
 		}
 	}
 

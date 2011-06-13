@@ -183,6 +183,7 @@ public class SecondActivity extends ListActivity {
 			long idd = info.id;
 			if (idd > 2) {
 				MenuInflater inflater = getMenuInflater();
+				menu.setHeaderTitle(context.getString(R.string.second_screen_menu));
 				inflater.inflate(R.menu.context_menu, menu);
 			}
 		}

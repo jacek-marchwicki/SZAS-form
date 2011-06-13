@@ -18,21 +18,17 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.RadioButton;
 import android.widget.ScrollView;
-import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.szas.android.SZASApplication.DAOClass.LocalDAOContener;
 import com.szas.android.SZASApplication.R;
@@ -303,10 +299,17 @@ public class QuestionnaireActivity extends Activity {
 		}
 		filledFields = filledQuestionnaireTuple.getFilledFields();
 		String tag = editText.getTag(R.id.nameTag).toString();
+		boolean isInteger = editText.getInputType() == EditorInfo.TYPE_CLASS_NUMBER ? true
+				: false;
 		for (FieldTuple fieldTuple : filledFields)
 			if (fieldTuple.getName().equals(tag)) {
-				((FieldTextBoxTuple) fieldTuple).setValue((editText.getText())
-						.toString());
+				if (!isInteger) {
+					((FieldTextBoxTuple) fieldTuple).setValue((editText
+							.getText()).toString());
+				} else {
+					((FieldIntegerBoxTuple) fieldTuple).setValue(Integer
+							.parseInt(editText.getText().toString()));
+				}
 				break;
 			}
 		filledQuestionnaireTuple.setFilledFields(filledFields);
@@ -346,7 +349,6 @@ public class QuestionnaireActivity extends Activity {
 	private void onTaskCompleted(int asyncResult) {
 		if (mShownDialog) {
 			dismissDialog(DIALOG_ID);
-			Toast.makeText(this, "Finished..", Toast.LENGTH_LONG).show();
 		}
 		linear = (LinearLayout) findViewById(R.id.linearLayout1);
 		if (asyncResult == 0) {
@@ -611,11 +613,14 @@ public class QuestionnaireActivity extends Activity {
 					|| (object instanceof FieldIntegerBoxDataTuple)) {
 				editText = new EditText(QuestionnaireActivity.this);
 				editText.setOnFocusChangeListener(new CustomOnFocusChangeListener(
-						((EditText)editText)));
-				((EditText)editText).setInputType(EditorInfo.TYPE_CLASS_NUMBER);
+						((EditText) editText)));
+				((EditText) editText)
+						.setInputType(EditorInfo.TYPE_CLASS_NUMBER);
 				int val = ((FieldIntegerBoxTuple) object).getValue();
 				if (val > -1)
-					((EditText)editText).setText(String.valueOf(val));
+					((EditText) editText).setText(String.valueOf(val));
+				((EditText) editText)
+						.addTextChangedListener(new CustomTextWatcher());
 			}
 			if (isOnList)
 				editText.setBackgroundColor(android.graphics.Color.CYAN);
@@ -625,26 +630,6 @@ public class QuestionnaireActivity extends Activity {
 			linear.addView(text);
 			linear.addView(editText);
 		}
-		LinearLayout linear2 = new LinearLayout(QuestionnaireActivity.this);
-		SeekBar seekBar = new SeekBar(QuestionnaireActivity.this);
-		TextView textView = new TextView(QuestionnaireActivity.this);
-		LayoutParams params2 = new LayoutParams(LayoutParams.WRAP_CONTENT,
-				LayoutParams.WRAP_CONTENT);
-		textView.setLayoutParams(params2);
-		seekBar.setLayoutParams(params2);
-		try {
-			textView.setText("test");
-			seekBar.setMax(180);
-			// seekBarView.addView(seekBar);
-			// seekBarView.addView(textView);
-			// linear.addView(seekBarView);
-			linear2.addView(textView);
-			linear2.addView(seekBar);
-			linear.addView(linear2);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		// linear.addView(view);
 	}
 
 	/**

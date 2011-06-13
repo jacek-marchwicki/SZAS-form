@@ -196,6 +196,8 @@ public class MainActivity extends ListActivity {
 		public void onCreateContextMenu(ContextMenu menu, View v,
 				ContextMenuInfo menuInfo) {
 			MenuInflater inflater = getMenuInflater();
+			menu.setHeaderTitle(context.getString(R.string.csv_title));
+			menu.setHeaderIcon(R.drawable.csv_icon);
 			inflater.inflate(R.menu.csv_main_screen_context, menu);
 		}
 	};
@@ -214,7 +216,6 @@ public class MainActivity extends ListActivity {
 								Constans.mCSVExportDirectory + "/"+listViewElementsArray[(int) id],
 								LocalDAOContener
 										.getFilledQuestionnaireTupleByName(listViewElementsArray[(int) id]));
-				// TODO file chooser in preferences
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -33,12 +33,15 @@
 	<string name="save2pdf">Save to pdf (alpha stadium)</string>
 	<string name="export_to_csv">Export to CSV</string>
 	<string name="import_to_csv">Import from CSV</string>
+	<string name="csv_title">CSV menu</string>
 	<string name="preferenceName">Preferences</string>
 	<string name="preference_account_category">Change used Google account</string>
 	<string name="preference_chooseAccount">Choose account</string>
 	<string name="preference_accountchoose_key">preference_account_choose</string>
-	<string name="preferences_import_directory">Import directory for CSV files (not changeable)</string>
+	<string name="preferences_import_directory">Import directory for CSV files</string>
 	<string name="preference_import_key">preference_import_dir</string>
-	<string name="preferences_export_directory">Export directory for CSV files (not changeable)</string>
+	<string name="preferences_export_directory">Export directory for CSV files</string>
 	<string name="preference_export_key">preference_export_dir</string>
+	<string name="preference_cannotchangestring">Below section cannot be changed</string>
+	<string name="second_screen_menu">Menu</string>
 </resources>
